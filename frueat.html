@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fru’eat Heaven</title>
+
+<style>
+body{
+ font-family: Arial;
+ background:#f2f2f2;
+ padding:15px;
+}
+
+.header{
+ font-size:28px;
+ font-weight:bold;
+ margin-bottom:10px;
+}
+
+.card{
+ background:white;
+ padding:15px;
+ margin:10px 0;
+ border-radius:10px;
+ box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+button{
+ background:#2e7d32;
+ color:white;
+ padding:10px;
+ border:none;
+ border-radius:5px;
+ width:100%;
+ font-size:16px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="header">Fru’eat Heaven 🍓</div>
+
+<div id="kinalat"></div>
+<div id="termekek"></div>
+
+<script>
+
+const API = "https://script.google.com/macros/s/AKfycbyOfBTcodDIxMCyrOwLGX5H_upU11Glay-4cv6jnCS5gd0aU2X_kHFTE0YOSfDtPIFKHQ/exec";
+
+fetch(API)
+.then(r=>r.json())
+.then(data=>{
+
+ document.getElementById("kinalat").innerHTML=`
+  <div class="card">
+   <b>${data.kinalat.cim}</b><br><br>
+   ${data.kinalat.uzenet}<br><br>
+   Határidő: ${data.kinalat.hatarido}<br>
+   ${data.kinalat.atvetel}
+  </div>
+ `;
+
+ let html="";
+
+ data.termekek.forEach(t=>{
+  html+=`
+   <div class="card">
+    <b>${t.nev}</b><br>
+    ${t.ar} ${t.egyseg}<br><br>
+    <button onclick="rendel('${t.nev}')">Rendelés</button>
+   </div>
+  `;
+ });
+
+ document.getElementById("termekek").innerHTML=html;
+
+});
+
+function rendel(termek){
+ alert(termek+" rendelés hamarosan aktív lesz.");
+}
+
+</script>
+
+</body>
+</html>
