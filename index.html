@@ -33,6 +33,7 @@ button{
  border-radius:5px;
  width:100%;
  font-size:16px;
+ cursor:pointer;
 }
 </style>
 
@@ -46,17 +47,19 @@ button{
 
 <script>
 
-// TERMÉK LISTA API (EZ MARAD)
+// TERMÉK LISTA API
 const API = "https://script.google.com/macros/s/AKfycbyOfBTcodDIxMCyrOwLGX5H_upU11Glay-4cv6jnCS5gd0aU2X_kHFTE0YOSfDtPIFKHQ/exec";
 
-// RENDELÉS API (EZ FONTOS)
+// RENDELÉS API
 const ORDER_API = "https://script.google.com/macros/s/AKfycbwOx9Aj14jqdeoncLSwfzqN4Zonf38fR-pv4NP1d-aZRCr4afI4rcpC_0tbOWBMQUCvsw/exec";
 
-fetch(API)
-.then(r=>r.json())
-.then(data=>{
 
- document.getElementById("kinalat").innerHTML=`
+// TERMÉKEK BETÖLTÉSE
+fetch(API)
+.then(r => r.json())
+.then(data => {
+
+ document.getElementById("kinalat").innerHTML = `
   <div class="card">
    <b>${data.kinalat.cim}</b><br><br>
    ${data.kinalat.uzenet}<br><br>
@@ -65,10 +68,10 @@ fetch(API)
   </div>
  `;
 
- let html="";
+ let html = "";
 
- data.termekek.forEach(t=>{
-  html+=`
+ data.termekek.forEach(t => {
+  html += `
    <div class="card">
     <b>${t.nev}</b><br>
     ${t.ar} ${t.egyseg}<br><br>
@@ -77,14 +80,19 @@ fetch(API)
   `;
  });
 
- document.getElementById("termekek").innerHTML=html;
+ document.getElementById("termekek").innerHTML = html;
 
+})
+.catch(err=>{
+ alert("Hiba a termékek betöltésénél!");
+ console.log(err);
 });
+
 
 // RENDELŐ FORM
 function rendel(termek){
 
- document.getElementById("termekek").innerHTML=`
+ document.getElementById("termekek").innerHTML = `
   <div class="card">
    <b>Rendelés: ${termek}</b><br><br>
 
@@ -102,7 +110,8 @@ function rendel(termek){
  `;
 }
 
-// KÜLDÉS (EZ A LÉNYEG)
+
+// KÜLDÉS
 function kuldes(termek){
 
  let nev = document.getElementById("nev").value;
@@ -124,7 +133,12 @@ function kuldes(termek){
  .then(()=>{
   alert("Sikeres rendelés!");
   location.reload();
+ })
+ .catch(err=>{
+  alert("Hiba történt küldés közben!");
+  console.log(err);
  });
+
 }
 
 </script>
