@@ -78,9 +78,50 @@ fetch(API)
 });
 
 function rendel(termek){
- alert(termek+" rendelés hamarosan aktív lesz.");
-}
 
+ document.getElementById("termekek").innerHTML=`
+  <div class="card">
+   <b>Rendelés: ${termek}</b><br><br>
+
+   Név:<br>
+   <input id="nev" style="width:100%;padding:8px;"><br><br>
+
+   Telefonszám:<br>
+   <input id="tel" style="width:100%;padding:8px;"><br><br>
+
+   Cím:<br>
+   <input id="cim" style="width:100%;padding:8px;"><br><br>
+
+   <button onclick="kuldes('${termek}')">Rendelés elküldése</button>
+  </div>
+ `;
+}
+function kuldes(termek){
+
+ let nev = document.getElementById("nev").value;
+ let tel = document.getElementById("tel").value;
+ let cim = document.getElementById("cim").value;
+
+ if(!nev || !tel || !cim){
+  alert("Kérlek tölts ki minden mezőt!");
+  return;
+ }
+
+ fetch("https://script.google.com/macros/s/AKfycbwOx9Aj14jqdeoncLSwfzqN4Zonf38fR-pv4NP1d-aZRCr4afI4rcpC_0tbOWBMQUCvsw/exec", {
+ method: "POST",
+ body: JSON.stringify({
+  nev: nev,
+  tel: tel,
+  cim: cim,
+  termek: termek
+ })
+})
+.then(r=>r.text())
+.then(res=>{
+ alert("Sikeres rendelés!");
+ location.reload();
+});
+}
 </script>
 
 </body>
