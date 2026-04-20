@@ -46,7 +46,11 @@ button{
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbwOx9Aj14jqdeoncLSwfzqN4Zonf38fR-pv4NP1d-aZRCr4afI4rcpC_0tbOWBMQUCvsw/exec";
+// TERMÉK LISTA API (EZ MARAD)
+const API = "https://script.google.com/macros/s/AKfycbyOfBTcodDIxMCyrOwLGX5H_upU11Glay-4cv6jnCS5gd0aU2X_kHFTE0YOSfDtPIFKHQ/exec";
+
+// RENDELÉS API (EZ FONTOS)
+const ORDER_API = "https://script.google.com/macros/s/AKfycbwOx9Aj14jqdeoncLSwfzqN4Zonf38fR-pv4NP1d-aZRCr4afI4rcpC_0tbOWBMQUCvsw/exec";
 
 fetch(API)
 .then(r=>r.json())
@@ -77,6 +81,7 @@ fetch(API)
 
 });
 
+// RENDELŐ FORM
 function rendel(termek){
 
  document.getElementById("termekek").innerHTML=`
@@ -96,6 +101,8 @@ function rendel(termek){
   </div>
  `;
 }
+
+// KÜLDÉS (EZ A LÉNYEG)
 function kuldes(termek){
 
  let nev = document.getElementById("nev").value;
@@ -107,22 +114,19 @@ function kuldes(termek){
   return;
  }
 
- fetch("https://script.google.com/macros/s/AKfycbwOx9Aj14jqdeoncLSwfzqN4Zonf38fR-pv4NP1d-aZRCr4afI4rcpC_0tbOWBMQUCvsw/exec", {
- method: "POST",
- mode: "no-cors",
- body: JSON.stringify({
-  nev: nev,
-  tel: tel,
-  cim: cim,
-  termek: termek
- })
-})
-.then(r=>r.text())
-.then(res=>{
- alert("Sikeres rendelés!");
- location.reload();
-});
+ let url = ORDER_API
+ + "?nev=" + encodeURIComponent(nev)
+ + "&tel=" + encodeURIComponent(tel)
+ + "&cim=" + encodeURIComponent(cim)
+ + "&termek=" + encodeURIComponent(termek);
+
+ fetch(url)
+ .then(()=>{
+  alert("Sikeres rendelés!");
+  location.reload();
+ });
 }
+
 </script>
 
 </body>
