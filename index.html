@@ -5,84 +5,146 @@
 <title>Fru’eat Heaven</title>
 
 <style>
+
 body{
  font-family: Arial;
- background:#f2f2f2;
- padding:15px;
+ background:#f5f5f5;
+ margin:0;
 }
 
-.header{
- font-size:28px;
- font-weight:bold;
- margin-bottom:10px;
-}
-
-.card{
- background:white;
- padding:15px;
- margin:10px 0;
- border-radius:10px;
- box-shadow:0 2px 5px rgba(0,0,0,0.1);
-}
-
-button{
- background:#2e7d32;
- color:white;
+/* CONTAINER */
+.wrapper{
+ max-width:900px;
+ margin:auto;
  padding:10px;
- border:none;
- border-radius:5px;
+}
+
+/* HEADER */
+.header{
+ font-size:26px;
+ font-weight:bold;
+ margin:10px 0;
+}
+
+/* POSZT */
+.post{
+ background:white;
+ border-radius:12px;
+ padding:15px;
+ margin-bottom:15px;
+ box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.post img{
  width:100%;
- font-size:16px;
+ border-radius:10px;
+ margin-top:10px;
+}
+
+/* TERMÉK SOR */
+.product{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ background:white;
+ padding:12px;
+ border-radius:10px;
+ margin-bottom:10px;
+ box-shadow:0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* BAL OLDAL */
+.product-info{
+ flex:1;
+}
+
+/* JOBB OLDAL */
+.product-cart{
+ width:120px;
+ text-align:right;
 }
 
 input{
- width:100%;
- padding:8px;
- margin-top:5px;
+ width:60px;
+ padding:5px;
+ margin-bottom:5px;
 }
-</style>
 
+/* BUTTON */
+button{
+ background:#2e7d32;
+ color:white;
+ border:none;
+ padding:6px;
+ border-radius:6px;
+ width:100%;
+}
+
+/* ADATOK */
+.form{
+ background:white;
+ padding:15px;
+ border-radius:12px;
+ margin-top:15px;
+}
+
+.form input{
+ width:100%;
+ margin-bottom:10px;
+ padding:8px;
+}
+
+.submit{
+ padding:12px;
+ font-size:16px;
+}
+
+</style>
 </head>
+
 <body>
+
+<div class="wrapper">
 
 <div class="header">Fru’eat Heaven 🍓</div>
 
 <div id="kinalat"></div>
 <div id="termekek"></div>
 
-<div class="card">
+<div class="form">
  <b>Adatok</b><br><br>
 
- Név:
- <input id="nev">
+ <input id="nev" placeholder="Név">
+ <input id="tel" placeholder="Telefonszám">
+ <input id="cim" placeholder="Cím">
 
- Telefonszám:
- <input id="tel">
+ <button class="submit" onclick="kuldes()">Rendelés elküldése</button>
+</div>
 
- Cím:
- <input id="cim">
-
- <button onclick="kuldes()">Rendelés elküldése</button>
 </div>
 
 <script>
 
-// TERMÉK API
 const API = "https://script.google.com/macros/s/AKfycbyOfBTcodDIxMCyrOwLGX5H_upU11Glay-4cv6jnCS5gd0aU2X_kHFTE0YOSfDtPIFKHQ/exec";
 
-// RENDELÉS API (A TE LINKED)
 const ORDER_API = "https://script.google.com/macros/s/AKfycbx_9cJfISJNZ7SykOdI83cmrIKXYix-h9Ca8ESbXuWL6WBvPnmSdT9Xh2WIae1TiaX5tA/exec";
 
 fetch(API)
 .then(r=>r.json())
 .then(data=>{
 
+ // POSZT
  document.getElementById("kinalat").innerHTML=`
-  <div class="card">
+  <div class="post">
    <b>${data.kinalat.cim}</b><br><br>
    ${data.kinalat.uzenet}<br><br>
+
+   <small>
    Határidő: ${data.kinalat.hatarido}<br>
    ${data.kinalat.atvetel}
+   </small>
+
+   <img src="https://images.unsplash.com/photo-1567306226416-28f0efdc88ce">
   </div>
  `;
 
@@ -90,12 +152,16 @@ fetch(API)
 
  data.termekek.forEach(t=>{
   html+=`
-   <div class="card">
-    <b>${t.nev}</b><br>
-    ${t.ar} ${t.egyseg}<br><br>
+   <div class="product">
+    <div class="product-info">
+     <b>${t.nev}</b><br>
+     ${t.ar} ${t.egyseg}
+    </div>
 
-    Mennyiség:
-    <input id="menny_${t.nev}" placeholder="pl. 2 kg">
+    <div class="product-cart">
+     <input id="menny_${t.nev}" placeholder="kg">
+     <button onclick="add('${t.nev}')">Kosár</button>
+    </div>
    </div>
   `;
  });
@@ -104,7 +170,16 @@ fetch(API)
 
 });
 
-// ✅ KOSARAS KÜLDÉS
+let kosar = {};
+
+function add(termek){
+ let val = document.getElementById("menny_"+termek).value;
+ if(val){
+  kosar[termek] = val;
+  alert(termek + " hozzáadva");
+ }
+}
+
 function kuldes(){
 
  let nev = document.getElementById("nev").value;
@@ -112,21 +187,18 @@ function kuldes(){
  let cim = document.getElementById("cim").value;
 
  if(!nev || !tel || !cim){
-  alert("Kérlek tölts ki minden mezőt!");
+  alert("Tölts ki mindent!");
   return;
  }
 
- let osszes = "";
+ let lista = "";
 
- document.querySelectorAll("input[id^='menny_']").forEach(i=>{
-  if(i.value){
-   let termek = i.id.replace("menny_","");
-   osszes += termek + ":" + i.value + ", ";
-  }
- });
+ for(let t in kosar){
+  lista += t + ":" + kosar[t] + ", ";
+ }
 
- if(!osszes){
-  alert("Nem adtál meg terméket!");
+ if(!lista){
+  alert("Nincs termék!");
   return;
  }
 
@@ -134,14 +206,14 @@ function kuldes(){
  + "?nev=" + encodeURIComponent(nev)
  + "&tel=" + encodeURIComponent(tel)
  + "&cim=" + encodeURIComponent(cim)
- + "&termek=" + encodeURIComponent(osszes);
+ + "&termek=" + encodeURIComponent(lista);
 
  let iframe = document.createElement("iframe");
- iframe.style.display = "none";
- iframe.src = url;
+ iframe.style.display="none";
+ iframe.src=url;
  document.body.appendChild(iframe);
 
- alert("Sikeres rendelés!");
+ alert("Rendelés elküldve!");
  location.reload();
 }
 
