@@ -38,6 +38,7 @@ button{
 input{
  width:100%;
  padding:8px;
+ margin-top:5px;
 }
 </style>
 
@@ -48,6 +49,21 @@ input{
 
 <div id="kinalat"></div>
 <div id="termekek"></div>
+
+<div class="card">
+ <b>Adatok</b><br><br>
+
+ Név:
+ <input id="nev">
+
+ Telefonszám:
+ <input id="tel">
+
+ Cím:
+ <input id="cim">
+
+ <button onclick="kuldes()">Rendelés elküldése</button>
+</div>
 
 <script>
 
@@ -77,7 +93,9 @@ fetch(API)
    <div class="card">
     <b>${t.nev}</b><br>
     ${t.ar} ${t.egyseg}<br><br>
-    <button onclick="rendel('${t.nev}')">Rendelés</button>
+
+    Mennyiség:
+    <input id="menny_${t.nev}" placeholder="pl. 2 kg">
    </div>
   `;
  });
@@ -86,28 +104,8 @@ fetch(API)
 
 });
 
-function rendel(termek){
-
- document.getElementById("termekek").innerHTML=`
-  <div class="card">
-   <b>Rendelés: ${termek}</b><br><br>
-
-   Név:<br>
-   <input id="nev"><br><br>
-
-   Telefonszám:<br>
-   <input id="tel"><br><br>
-
-   Cím:<br>
-   <input id="cim"><br><br>
-
-   <button onclick="kuldes('${termek}')">Rendelés elküldése</button>
-  </div>
- `;
-}
-
-// ✅ JAVÍTOTT KÜLDÉS (NINCS CORS HIBA)
-function kuldes(termek){
+// ✅ KOSARAS KÜLDÉS
+function kuldes(){
 
  let nev = document.getElementById("nev").value;
  let tel = document.getElementById("tel").value;
@@ -118,13 +116,26 @@ function kuldes(termek){
   return;
  }
 
+ let osszes = "";
+
+ document.querySelectorAll("input[id^='menny_']").forEach(i=>{
+  if(i.value){
+   let termek = i.id.replace("menny_","");
+   osszes += termek + ":" + i.value + ", ";
+  }
+ });
+
+ if(!osszes){
+  alert("Nem adtál meg terméket!");
+  return;
+ }
+
  let url = ORDER_API
  + "?nev=" + encodeURIComponent(nev)
  + "&tel=" + encodeURIComponent(tel)
  + "&cim=" + encodeURIComponent(cim)
- + "&termek=" + encodeURIComponent(termek);
+ + "&termek=" + encodeURIComponent(osszes);
 
- // iframe hack → biztos működik
  let iframe = document.createElement("iframe");
  iframe.style.display = "none";
  iframe.src = url;
