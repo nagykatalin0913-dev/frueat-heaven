@@ -109,6 +109,7 @@ function kuldes(termek){
 
  fetch("https://script.google.com/macros/s/AKfycbwOx9Aj14jqdeoncLSwfzqN4Zonf38fR-pv4NP1d-aZRCr4afI4rcpC_0tbOWBMQUCvsw/exec", {
  method: "POST",
+ mode: "no-cors",
  body: JSON.stringify({
   nev: nev,
   tel: tel,
