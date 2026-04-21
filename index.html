@@ -2,63 +2,72 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fru’eat Heaven</title>
 
     <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; color: #333; }
-        .wrapper { max-width: 900px; margin: auto; padding: 10px; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; color: #333; padding-bottom: 30px; }
+        .wrapper { max-width: 600px; margin: auto; padding: 15px; }
 
         /* LOGO & HEADER */
-        .header { text-align: center; margin: 15px 0; }
-        .header img { max-width: 220px; height: auto; }
-        .greeting { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #2e7d32; text-align: center; }
+        .header { text-align: center; margin: 10px 0 20px 0; }
+        .header img { max-width: 200px; height: auto; }
+        .greeting { font-size: 22px; font-weight: bold; margin-bottom: 15px; color: #2e7d32; text-align: center; }
 
         /* PROFIL ŰRLAP */
-        #profile-setup { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
-        #profile-setup h3 { margin-top: 0; color: #2e7d32; }
-        #profile-setup input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
+        #profile-setup { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; }
+        #profile-setup h3 { margin-top: 0; color: #2e7d32; font-size: 20px; }
+        #profile-setup input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background:#fafafa; }
         .half-input { width: 48%; display: inline-block; }
         .half-input:nth-child(odd) { margin-right: 2%; }
         #main-app { display: none; }
 
         /* KÍNÁLAT POSZT */
-        .post { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .post { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .post-image { width: 100%; border-radius: 10px; margin-top: 15px; display: block; }
-        .info-box { background: #e8f5e9; padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 14px; line-height: 1.5; border-left: 4px solid #2e7d32; }
+        .info-box { background: #e8f5e9; padding: 12px; border-radius: 10px; margin-top: 15px; font-size: 14px; line-height: 1.5; border-left: 4px solid #2e7d32; }
 
         /* TERMÉKEK */
-        .product { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+        .product { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .product-top { display: flex; justify-content: space-between; align-items: center; }
-        .product-images { display: flex; gap: 10px; margin-bottom: 10px; }
-        .product-images img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid #eee; }
+        .product-images { display: flex; gap: 10px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .product-images img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 1px solid #eee; flex-shrink: 0; }
         .product-info { flex: 1; }
         .product-info b { font-size: 18px; }
-        .product-cart { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-        .product-cart input { width: 70px; padding: 8px; border-radius: 6px; border: 1px solid #ddd; text-align: center; font-size:16px;}
+        .product-cart { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+        .product-cart input { width: 60px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; text-align: center; font-size:16px; background:#fafafa;}
         
-        button { background: #2e7d32; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s; }
-        button:hover { background: #1b5e20; }
+        button { background: #2e7d32; color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; width: 100%; box-shadow: 0 4px 6px rgba(46,125,50,0.2); }
+        button:active { transform: scale(0.98); background: #1b5e20; }
+        .btn-small { width: auto; padding: 10px 15px; }
 
         /* KOSÁR ÉS RENDELÉS PANEL */
-        .form { background: white; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #eee; }
-        .cart-summary { background: #fafafa; border: 1px dashed #ccc; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        .cart-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 15px;}
-        .cart-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-top: 10px; border-top: 2px solid #ddd; padding-top: 10px;}
+        .form { background: white; padding: 20px; border-radius: 15px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .cart-summary { background: #fafafa; border: 1px dashed #ccc; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .cart-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px;}
+        .cart-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-top: 12px; border-top: 2px solid #ddd; padding-top: 12px;}
         .free-delivery { color: #2e7d32; font-weight: bold; }
         
-        .form textarea { width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; }
-        .submit-btn { width: 100%; font-size: 18px; margin-top: 15px; background: #2e7d32; }
-        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .form textarea { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; font-size:15px; background:#fafafa; resize: none; }
+        .submit-btn { font-size: 18px; margin-top: 15px; }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+
+        /* SZÉP SIKERES RENDELÉS ABLAK (MODAL) */
+        #success-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .modal-content { background: white; padding: 30px 20px; border-radius: 20px; text-align: center; width: 85%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; }
+        .modal-content .check-icon { font-size: 60px; line-height: 1; margin-bottom: 10px; }
+        .modal-content h3 { margin: 0 0 10px 0; color: #2e7d32; font-size: 22px; }
+        .modal-content p { color: #666; margin: 0 0 20px 0; font-size: 15px; line-height: 1.4; }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         /* LIGHTBOX */
         #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
-        #lightbox img { max-width: 95%; max-height: 90%; border-radius: 5px; }
+        #lightbox img { max-width: 95%; max-height: 90%; border-radius: 10px; }
         .close-lb { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; }
-        .reset-link { display: block; text-align: center; margin-top: 20px; color: #d32f2f; font-size: 12px; text-decoration: underline; cursor: pointer; }
+        .reset-link { display: block; text-align: center; margin-top: 20px; color: #d32f2f; font-size: 13px; text-decoration: underline; cursor: pointer; padding: 10px; }
 
         /* HIBA ÜZENET */
-        #out-of-zone { display: none; background: #ffebee; color: #c62828; padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; font-weight: bold; line-height: 1.5; }
+        #out-of-zone { display: none; background: #ffebee; color: #c62828; padding: 20px; border-radius: 15px; text-align: center; margin-top: 20px; font-weight: bold; line-height: 1.5; }
     </style>
 </head>
 
@@ -68,6 +77,15 @@
         <img id="lb-img" src="">
     </div>
 
+    <div id="success-modal">
+        <div class="modal-content">
+            <div class="check-icon">✅</div>
+            <h3>Sikeres rendelés!</h3>
+            <p>Nagyon köszönjük! A rendelésedet megkaptuk, hamarosan készítjük is össze.</p>
+            <button onclick="zarasEsFrissites()">Rendben</button>
+        </div>
+    </div>
+
     <div class="wrapper">
         <div class="header">
             <img src="https://via.placeholder.com/220x100?text=Fru%27eat+Heaven+Logo" alt="Fru'eat Heaven Logo">
@@ -75,7 +93,7 @@
 
         <div id="profile-setup">
             <h3>Üdvözlünk nálunk! 👋</h3>
-            <p>Kérlek, add meg az adataidat a böngészéshez!</p>
+            <p style="color:#666; font-size:14px; margin-bottom:20px;">Kérlek, add meg az adataidat a böngészéshez!</p>
             
             <input id="p-vnev" class="half-input" placeholder="Vezetéknév">
             <input id="p-knev" class="half-input" placeholder="Keresztnév">
@@ -84,12 +102,12 @@
             <input id="p-varos" class="half-input" placeholder="Település">
             <input id="p-utca" placeholder="Utca, házszám, emelet/ajtó">
             
-            <button onclick="saveProfile()" style="width: 100%;">Mentés és Tovább</button>
+            <button onclick="saveProfile()" style="margin-top:10px;">Mentés és Tovább</button>
         </div>
 
         <div id="out-of-zone">
             Sajnos a megadott irányítószámra jelenleg nem vállalunk kiszállítást. 😔<br><br>
-            <button onclick="resetProfile()" style="background:#c62828; width:auto; padding:8px 15px; margin-top:10px;">Adatok módosítása</button>
+            <button onclick="resetProfile()" style="background:#c62828; margin-top:15px;">Adatok módosítása</button>
         </div>
 
         <div id="main-app">
@@ -99,31 +117,33 @@
             <div id="termek-lista"></div>
 
             <div class="form">
-                <b>Kosár tartalma 🛒</b>
-                <div class="cart-summary" id="cart-content">
-                    <i>Még nincs termék a kosaradban.</i>
+                <b style="font-size: 18px;">Kosár tartalma 🛒</b>
+                <div class="cart-summary" id="cart-content" style="margin-top: 15px;">
+                    <i style="color:#888;">Még nincs termék a kosaradban.</i>
                 </div>
 
-                <div id="szallitas-valaszto" style="display:none; margin-bottom: 15px; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px; background: #e8f5e9;">
-                    <b style="color: #2e7d32;">Hogyan szeretnéd megkapni?</b><br>
-                    <label style="display:block; margin-top:8px; cursor:pointer;">
-                        <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')"> 🛵 Házhozszállítás
+                <div id="szallitas-valaszto" style="display:none; margin-bottom: 20px; padding: 15px; border: 1px solid #c8e6c9; border-radius: 12px; background: #e8f5e9;">
+                    <b style="color: #2e7d32; display:block; margin-bottom:10px;">Hogyan szeretnéd megkapni?</b>
+                    <label style="display:flex; align-items:center; margin-bottom:12px; cursor:pointer; font-size:16px;">
+                        <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')" style="width:20px; height:20px; margin-right:10px;"> 🛵 Házhozszállítás
                     </label>
-                    <label style="display:block; margin-top:8px; cursor:pointer;">
-                        <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')"> 📦 Személyes átvétel (Ingyenes)
+                    <label style="display:flex; align-items:center; cursor:pointer; font-size:16px;">
+                        <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')" style="width:20px; height:20px; margin-right:10px;"> 📦 Személyes átvétel (Ingyenes)
                     </label>
                 </div>
 
-                <small>Szállítási/Számlázási adataid:</small><br>
-                Név: <b id="show-nev"></b><br>
-                Cím: <b id="show-cim"></b><br>
-                Körzet: <b id="show-zona"></b><br><br>
+                <small style="color:#666;">Szállítási/Számlázási adataid:</small><br>
+                <div style="background:#f9f9f9; padding:10px; border-radius:8px; margin-top:5px; font-size:14px; line-height:1.4;">
+                    Név: <b id="show-nev"></b><br>
+                    Cím: <b id="show-cim"></b><br>
+                    Körzet: <b id="show-zona"></b>
+                </div><br>
 
-                <label>Megjegyzés (pl. kapukód):</label>
+                <label style="font-weight:bold; font-size:14px;">Megjegyzés (pl. kapukód):</label>
                 <textarea id="megjegyzes" rows="3" placeholder="Írj ide, ha van különleges kérésed..."></textarea>
 
                 <button id="btn-submit" class="submit-btn" onclick="kuldes()" disabled>Rendelés elküldése</button>
-                <span class="reset-link" onclick="resetProfile()">Adataim módosítása</span>
+                <span class="reset-link" onclick="resetProfile()">Adatok megváltoztatása</span>
             </div>
         </div>
     </div>
@@ -136,14 +156,11 @@
         let termekAdatbazis = {};
         let kosar = {}; 
         let aktualisZonaAdat = null; 
-        
-        // Alapértelmezett átvételi mód
         let atveteliMod = "hazhoz";
 
-        // Segédfüggvény a módváltáshoz
         function modValtas(mod) {
             atveteliMod = mod;
-            frissitKosarUI(); // Újraszámolja a végösszeget
+            frissitKosarUI(); 
         }
 
         document.getElementById("p-irsz").addEventListener("input", function() {
@@ -198,8 +215,6 @@
             .then(r => r.json())
             .then(data => {
                 osszesitettAdatok = data;
-                
-                // Zóna ellenőrzése
                 aktualisZonaAdat = data.zonak.find(z => z["iranyitoszam"] == userProfile.irsz);
 
                 if(!aktualisZonaAdat) {
@@ -209,18 +224,15 @@
 
                 document.getElementById("main-app").style.display = "block";
                 
-                // Ha lehetséges a személyes átvétel, mutassuk meg a választó rádiógombokat
                 if(aktualisZonaAdat["atvetel_lehetseges?"] && aktualisZonaAdat["atvetel_lehetseges?"].toLowerCase() === "igen") {
                     document.getElementById("szallitas-valaszto").style.display = "block";
                 }
 
-                // UI Frissítés
                 document.getElementById("greet-name").innerText = userProfile.knev;
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
                 document.getElementById("show-cim").innerText = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
                 document.getElementById("show-zona").innerText = aktualisZonaAdat["telepules/kerulet"];
 
-                // Kínálat és Szállítási infók
                 let szallitasSzoveg = "";
                 let dij = aktualisZonaAdat["szallitasi_dij"];
                 let hatar = aktualisZonaAdat["ingyenes_hatar"];
@@ -238,7 +250,7 @@
 
                 document.getElementById("kinalat-poszt").innerHTML = `
                     <div class="post">
-                        <b>${data.kinalat.cim}</b><br><br>
+                        <b style="font-size:18px;">${data.kinalat.cim}</b><br><br>
                         ${data.kinalat.uzenet}
                         <div class="info-box">
                             <strong>⏳ Rendelési határidő:</strong> ${formatDatum(data.kinalat.hatarido)}<br><br>
@@ -248,7 +260,6 @@
                     </div>
                 `;
 
-                // Termékek generálása
                 let html = "";
                 data.termekek.forEach(t => {
                     termekAdatbazis[t.nev] = t;
@@ -260,7 +271,7 @@
                     if(kep1) kepek += `<img src="${kep1}" onclick="document.getElementById('lb-img').src='${kep1}'; document.getElementById('lightbox').style.display='flex'">`;
                     if(kep2) kepek += `<img src="${kep2}" onclick="document.getElementById('lb-img').src='${kep2}'; document.getElementById('lightbox').style.display='flex'">`;
                     
-                    let min = t.min_mennyiseg > 0 ? `<br><small style="color:red">Min: ${t.min_mennyiseg} ${t.egyseg}</small>` : "";
+                    let min = t.min_mennyiseg > 0 ? `<br><small style="color:#d32f2f; font-weight:bold;">Min: ${t.min_mennyiseg} ${t.egyseg}</small>` : "";
 
                     html += `
                         <div class="product">
@@ -268,11 +279,11 @@
                             <div class="product-top">
                                 <div class="product-info">
                                     <b>${t.nev}</b><br>
-                                    <span style="color:#666">${t.ar} Ft / ${t.egyseg}</span>${min}
+                                    <span style="color:#666; font-size:15px;">${t.ar} Ft / ${t.egyseg}</span>${min}
                                 </div>
                                 <div class="product-cart">
                                     <input id="qty_${t.nev}" type="number" step="0.1" placeholder="0">
-                                    <button onclick="addToCart('${t.nev}')">Kosárba</button>
+                                    <button class="btn-small" onclick="addToCart('${t.nev}')">Kosárba</button>
                                 </div>
                             </div>
                         </div>
@@ -322,7 +333,7 @@
             }
 
             if(!vanTermek) {
-                document.getElementById("cart-content").innerHTML = "<i>Még nincs termék a kosaradban.</i>";
+                document.getElementById("cart-content").innerHTML = "<i style='color:#888;'>Még nincs termék a kosaradban.</i>";
                 document.getElementById("btn-submit").disabled = true;
                 return;
             }
@@ -333,7 +344,6 @@
             let szallitasiDij = 0;
             let szallitasSzovegHtml = "";
 
-            // Ellenőrizzük, mit választott a vevő
             if(atveteliMod === "szemelyes") {
                 szallitasiDij = 0;
                 szallitasSzovegHtml = `<span class="free-delivery">Személyes átvétel (0 Ft)</span>`;
@@ -356,10 +366,10 @@
                 </div>
                 <div class="cart-total">
                     <span>Fizetendő összesen:</span>
-                    <span>${vegszamlaHUF} Ft</span>
+                    <span style="color:#2e7d32; font-size:20px;">${vegszamlaHUF} Ft</span>
                 </div>
-                <div style="text-align:right; margin-top:10px;">
-                    <button onclick="kosarUrites()" style="background:#d32f2f; padding:6px; font-size:12px;">Kosár ürítése</button>
+                <div style="text-align:right; margin-top:15px;">
+                    <span onclick="kosarUrites()" style="color:#d32f2f; font-size:13px; text-decoration:underline; cursor:pointer; padding:5px;">🗑️ Kosár ürítése</span>
                 </div>
             `;
 
@@ -384,7 +394,6 @@
             let megj = document.getElementById("megjegyzes").value;
             let teljesCim = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
             
-            // Beleírjuk a megjegyzésbe, hogy mit választott
             let atvetelSzoveg = atveteliMod === "szemelyes" ? "SZEMÉLYES ÁTVÉTEL" : "Házhozszállítás";
             let vegsMegjegyzes = `[${atvetelSzoveg}] Fizetendő összesen: ${vegszamlaHUF} Ft | Vevő megjegyzése: ${megj}`;
 
@@ -401,11 +410,17 @@
             ifr.src = url;
             document.body.appendChild(ifr);
 
+            // ÚJ: A régi alert helyett a szép ablakot jelenítjük meg
             setTimeout(() => {
-                alert("Köszönjük! A rendelésedet megkaptuk!");
-                kosar = {};
-                location.reload();
+                document.getElementById("success-modal").style.display = "flex";
+                kosar = {}; // Kosár ürítése a háttérben
             }, 1500); 
+        }
+
+        // A szép ablak "Rendben" gombja ezt hívja meg
+        function zarasEsFrissites() {
+            document.getElementById("success-modal").style.display = "none";
+            location.reload(); // Oldal újratöltése
         }
     </script>
 </body>
