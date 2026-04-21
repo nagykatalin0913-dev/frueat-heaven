@@ -20,224 +20,91 @@
         }
 
         /* LOGO & HEADER */
-        .header {
-            text-align: center;
-            margin: 15px 0;
-        }
-        .header img {
-            max-width: 220px;
-            height: auto;
-        }
-        .greeting {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #2e7d32;
-            text-align: center;
-        }
+        .header { text-align: center; margin: 15px 0; }
+        .header img { max-width: 220px; height: auto; }
+        .greeting { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #2e7d32; text-align: center; }
 
-        /* PROFIL KÉPERNYŐ (Első belépés) */
+        /* PROFIL ŰRLAP */
         #profile-setup {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            text-align: center;
+            background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;
         }
         #profile-setup h3 { margin-top: 0; color: #2e7d32; }
         #profile-setup input {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            box-sizing: border-box;
-            font-size: 16px;
+            width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px;
         }
-        #profile-setup .half-input {
-            width: 48%;
-            display: inline-block;
-        }
-        #profile-setup .half-input:nth-child(even) { margin-right: 2%; }
+        .half-input { width: 48%; display: inline-block; }
+        .half-input:nth-child(odd) { margin-right: 2%; }
 
-        /* FŐ ALKALMAZÁS (Alapból rejtve) */
-        #main-app {
-            display: none; 
-        }
+        #main-app { display: none; }
 
-        /* POSZT / KÍNÁLAT */
-        .post {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-        .post-image {
-            width: 100%;
-            border-radius: 10px;
-            margin-top: 15px;
-            display: block;
-        }
-        .info-box {
-            background: #e8f5e9;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 14px;
-            line-height: 1.5;
-            border-left: 4px solid #2e7d32;
-        }
+        /* KÍNÁLAT POSZT */
+        .post { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .post-image { width: 100%; border-radius: 10px; margin-top: 15px; display: block; }
+        .info-box { background: #e8f5e9; padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 14px; line-height: 1.5; border-left: 4px solid #2e7d32; }
 
         /* TERMÉKEK */
-        .product {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-        }
-        .product-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .product-images {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .product-images img {
-            width: 70px;
-            height: 70px;
-            object-fit: cover;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 1px solid #eee;
-            transition: transform 0.2s;
-        }
-        .product-images img:hover { transform: scale(1.05); }
-
+        .product { background: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+        .product-top { display: flex; justify-content: space-between; align-items: center; }
+        .product-images { display: flex; gap: 10px; margin-bottom: 10px; }
+        .product-images img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid #eee; }
         .product-info { flex: 1; }
         .product-info b { font-size: 18px; }
+        .product-cart { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .product-cart input { width: 70px; padding: 8px; border-radius: 6px; border: 1px solid #ddd; text-align: center; font-size:16px;}
         
-        .product-cart {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .product-cart input {
-            width: 70px;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-
-        button {
-            background: #2e7d32;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
+        button { background: #2e7d32; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s; }
         button:hover { background: #1b5e20; }
 
-        /* RENDELÉSI PANEL */
-        .form {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            border: 1px solid #eee;
-        }
-        .form textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-        .submit-btn {
-            width: 100%;
-            font-size: 18px;
-            margin-top: 15px;
-            background: #2e7d32;
-        }
+        /* KOSÁR ÉS RENDELÉS PANEL */
+        .form { background: white; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #eee; }
+        .cart-summary { background: #fafafa; border: 1px dashed #ccc; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .cart-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 15px;}
+        .cart-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-top: 10px; border-top: 2px solid #ddd; padding-top: 10px;}
+        .free-delivery { color: #2e7d32; font-weight: bold; }
+        
+        .form textarea { width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; }
+        .submit-btn { width: 100%; font-size: 18px; margin-top: 15px; background: #2e7d32; }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* LIGHTBOX (Kép nagyító) */
-        #lightbox {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            cursor: zoom-out;
-        }
-        #lightbox img {
-            max-width: 95%;
-            max-height: 90%;
-            border-radius: 5px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        .close-lb {
-            position: absolute;
-            top: 20px; right: 30px;
-            color: white; font-size: 40px; font-weight: bold;
-        }
+        /* LIGHTBOX */
+        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
+        #lightbox img { max-width: 95%; max-height: 90%; border-radius: 5px; }
+        .close-lb { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; }
+        .reset-link { display: block; text-align: center; margin-top: 20px; color: #d32f2f; font-size: 12px; text-decoration: underline; cursor: pointer; }
 
-        .reset-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #d32f2f;
-            font-size: 12px;
-            text-decoration: underline;
-            cursor: pointer;
-        }
+        /* HIBA ÜZENET (Ha nincs a zónában) */
+        #out-of-zone { display: none; background: #ffebee; color: #c62828; padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; font-weight: bold; line-height: 1.5; }
     </style>
 </head>
 
 <body>
-
     <div id="lightbox" onclick="this.style.display='none'">
         <span class="close-lb">&times;</span>
         <img id="lb-img" src="">
     </div>
 
     <div class="wrapper">
-
         <div class="header">
             <img src="https://via.placeholder.com/220x100?text=Fru%27eat+Heaven+Logo" alt="Fru'eat Heaven Logo">
         </div>
 
         <div id="profile-setup">
             <h3>Üdvözlünk nálunk! 👋</h3>
-            <p>Kérlek, add meg az adataidat a rendeléshez!</p>
+            <p>Kérlek, add meg az adataidat a böngészéshez!</p>
             
             <input id="p-vnev" class="half-input" placeholder="Vezetéknév">
             <input id="p-knev" class="half-input" placeholder="Keresztnév">
-            
-            <input id="p-tel" type="tel" placeholder="Telefonszám (pl. 06301234567)">
-            
+            <input id="p-tel" type="tel" placeholder="Telefonszám (pl. 0630...)">
             <input id="p-irsz" class="half-input" type="number" placeholder="Irányítószám">
-            <input id="p-varos" class="half-input" placeholder="Település" readonly style="background: #f9f9f9;">
-            
+            <input id="p-varos" class="half-input" placeholder="Település">
             <input id="p-utca" placeholder="Utca, házszám, emelet/ajtó">
             
-            <button onclick="saveProfile()" style="width: 100%;">Mentés és Böngészés</button>
+            <button onclick="saveProfile()" style="width: 100%;">Mentés és Tovább</button>
+        </div>
+
+        <div id="out-of-zone">
+            Sajnos a megadott irányítószámra jelenleg nem vállalunk kiszállítást. 😔<br><br>
+            <button onclick="resetProfile()" style="background:#c62828; width:auto; padding:8px 15px; margin-top:10px;">Adatok módosítása</button>
         </div>
 
         <div id="main-app">
@@ -247,28 +114,34 @@
             <div id="termek-lista"></div>
 
             <div class="form">
-                <b>Rendelés véglegesítése</b><br>
-                <small>Szállítási adatok ellenőrzése:</small><br><br>
-                
+                <b>Kosár tartalma 🛒</b>
+                <div class="cart-summary" id="cart-content">
+                    <i>Még nincs termék a kosaradban.</i>
+                </div>
+
+                <small>Szállítási adataid:</small><br>
                 Név: <b id="show-nev"></b><br>
                 Cím: <b id="show-cim"></b><br>
-                Zóna: <b id="show-zona"></b><br><br>
+                Körzet: <b id="show-zona"></b><br><br>
 
                 <label>Megjegyzés (pl. kapukód):</label>
                 <textarea id="megjegyzes" rows="3" placeholder="Írj ide, ha van különleges kérésed..."></textarea>
 
-                <button class="submit-btn" onclick="kuldes()">Rendelés elküldése</button>
-                
-                <span class="reset-link" onclick="resetProfile()">Adatok módosítása / Új profil</span>
+                <button id="btn-submit" class="submit-btn" onclick="kuldes()" disabled>Rendelés elküldése</button>
+                <span class="reset-link" onclick="resetProfile()">Adataim módosítása</span>
             </div>
         </div>
-
     </div>
 
     <script>
-        // --- API CÍMEK ---
-        const API_GET = "https://script.google.com/macros/s/AKfycbyOfBTcodDIxMCyrOwLGX5H_upU11Glay-4cv6jnCS5gd0aU2X_kHFTE0YOSfDtPIFKHQ/exec";
-        const API_ORDER = "https://script.google.com/macros/s/AKfycbx_9cJfISJNZ7SykOdI83cmrIKXYix-h9Ca8ESbXuWL6WBvPnmSdT9Xh2WIae1TiaX5tA/exec";
+        // === FONTOS! IDE ILLESZD BE A LEGÚJABB APPS SCRIPT URL-EDET! ===
+        const API_URL = "IDE_ILLYESZD_BE_A_GOOGLE_SCRIPT_LINKET"; 
+
+        // --- ADATBÁZIS ÉS KOSÁR ---
+        let osszesitettAdatok = {};
+        let termekAdatbazis = {};
+        let kosar = {}; 
+        let aktualisZonaAdat = null; // A vevő zónájának adatai a sheetből
 
         // --- IRÁNYÍTÓSZÁM ALAPÚ VÁROS KERESÉS ---
         document.getElementById("p-irsz").addEventListener("input", function() {
@@ -276,105 +149,110 @@
             if(irsz.length === 4) {
                 fetch(`https://api.zippopotam.us/hu/${irsz}`)
                 .then(r => r.ok ? r.json() : Promise.reject())
-                .then(data => {
-                    document.getElementById("p-varos").value = data.places[0]["place name"];
-                })
-                .catch(() => {
-                    document.getElementById("p-varos").value = "";
-                    document.getElementById("p-varos").readOnly = false; // Ha nincs találat, engedjük beírni
-                    document.getElementById("p-varos").style.background = "white";
-                });
+                .then(data => document.getElementById("p-varos").value = data.places[0]["place name"])
+                .catch(() => {});
             }
         });
 
         // --- PROFIL KEZELÉS ---
         let userProfile = JSON.parse(localStorage.getItem("frueat_profile"));
-
-        if(userProfile) {
-            mutatAppot();
-        }
+        if(userProfile) adatokBetoltese();
 
         function saveProfile() {
-            let vnev = document.getElementById("p-vnev").value.trim();
-            let knev = document.getElementById("p-knev").value.trim();
-            let tel = document.getElementById("p-tel").value.trim();
-            let irsz = document.getElementById("p-irsz").value.trim();
-            let varos = document.getElementById("p-varos").value.trim();
-            let utca = document.getElementById("p-utca").value.trim();
+            let p = {
+                vnev: document.getElementById("p-vnev").value.trim(),
+                knev: document.getElementById("p-knev").value.trim(),
+                tel: document.getElementById("p-tel").value.trim().replace(/\s+/g, '').replace(/-/g, ''),
+                irsz: document.getElementById("p-irsz").value.trim(),
+                varos: document.getElementById("p-varos").value.trim(),
+                utca: document.getElementById("p-utca").value.trim()
+            };
 
-            if(!vnev || !knev || !tel || !irsz || !varos || !utca) {
-                alert("Kérlek, minden mezőt tölts ki!");
-                return;
+            if(!p.vnev || !p.knev || !p.tel || !p.irsz || !p.varos || !p.utca) {
+                alert("Kérlek, minden mezőt tölts ki!"); return;
             }
+            if(p.tel.startsWith("06")) p.tel = "+36" + p.tel.substring(2);
+            if(!p.tel.startsWith("+")) p.tel = "+36" + p.tel;
 
-            // Telefonszám tisztítás és formázás
-            tel = tel.replace(/\s+/g, '').replace(/-/g, '');
-            if(tel.startsWith("06")) tel = "+36" + tel.substring(2);
-            if(!tel.startsWith("+")) tel = "+36" + tel;
-
-            // Zóna meghatározás (Pécel: 2119)
-            let zona = (irsz === "2119") ? "Pécel" : "Kiszállítási terület";
-
-            userProfile = { vnev, knev, tel, irsz, varos, utca, zona };
-            localStorage.setItem("frueat_profile", JSON.stringify(userProfile));
-            mutatAppot();
-        }
-
-        function mutatAppot() {
-            document.getElementById("profile-setup").style.display = "none";
-            document.getElementById("main-app").style.display = "block";
-            
-            document.getElementById("greet-name").innerText = userProfile.knev;
-            document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
-            document.getElementById("show-cim").innerText = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
-            document.getElementById("show-zona").innerText = userProfile.zona;
-            
+            localStorage.setItem("frueat_profile", JSON.stringify(p));
+            userProfile = p;
             adatokBetoltese();
         }
 
         function resetProfile() {
-            if(confirm("Biztosan törlöd a mentett adataidat?")) {
-                localStorage.removeItem("frueat_profile");
-                location.reload();
-            }
+            localStorage.removeItem("frueat_profile");
+            location.reload();
         }
 
-        // --- ADATOK LEKÉRÉSE ---
+        function formatDatum(nyers) {
+            if(!nyers) return "";
+            let d = new Date(nyers);
+            return isNaN(d) ? nyers : d.toLocaleString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+        }
+
+        // --- ADATOK BETÖLTÉSE ---
         function adatokBetoltese() {
-            fetch(API_GET)
+            document.getElementById("profile-setup").style.display = "none";
+            
+            fetch(API_URL)
             .then(r => r.json())
             .then(data => {
+                osszesitettAdatok = data;
                 
-                // Szállítási szöveg zóna szerint
-                let szallitasInfo = "";
-                if(userProfile.zona === "Pécel") {
-                    szallitasInfo = `
-                        <strong>🛵 Kiszállítás:</strong> ${data.kinalat.kiszallitas_ideje}<br>
-                        <strong>📦 Személyes átvétel (Pécel):</strong> ${data.kinalat.atvetel_datum} (${data.kinalat.atvetel_tol_ig})
-                    `;
-                } else {
-                    szallitasInfo = `<strong>🛵 Kiszállítás:</strong> ${data.kinalat.kiszallitas_ideje}`;
+                // 1. Zóna ellenőrzése
+                // Megkeressük a zónák fülön (figyelünk az ékezetek eltüntetésére amit a script csinál)
+                aktualisZonaAdat = data.zonak.find(z => z["irányítószám"] == userProfile.irsz);
+
+                if(!aktualisZonaAdat) {
+                    document.getElementById("out-of-zone").style.display = "block";
+                    return; // Megállítjuk a betöltést, mert nem szállítunk ide
                 }
 
-                // Poszt / Kínálat
+                document.getElementById("main-app").style.display = "block";
+                
+                // UI Frissítés
+                document.getElementById("greet-name").innerText = userProfile.knev;
+                document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
+                document.getElementById("show-cim").innerText = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
+                document.getElementById("show-zona").innerText = aktualisZonaAdat["település/kerület"];
+
+                // 2. Kínálat és Szállítási infók összerakása
+                let szallitasSzoveg = "";
+                let dij = aktualisZonaAdat["szállítási_díj_(szám)"];
+                let hatar = aktualisZonaAdat["ingyenes_határ"];
+                
+                let dijSzoveg = dij > 0 ? `${dij} Ft` : "Ingyenes";
+                if(hatar > 0) dijSzoveg += ` (De ${hatar} Ft felett ingyenes!)`;
+
+                szallitasSzoveg += `<strong>🛵 Kiszállítás díja:</strong> ${dijSzoveg}<br>`;
+                szallitasSzoveg += `<strong>⏱ Kiszállítás ideje:</strong> ${data.kinalat.kiszallitas_ideje}<br>`;
+
+                if(aktualisZonaAdat["átvétel_lehetséges?"] === "Igen") {
+                    szallitasSzoveg += `<br><strong>📦 Személyes átvétel (${aktualisZonaAdat["átvételi_pont_címe"]}):</strong><br>`;
+                    szallitasSzoveg += `${data.kinalat.atvetel_datum} (${data.kinalat.atvetel_tol_ig})`;
+                }
+
                 document.getElementById("kinalat-poszt").innerHTML = `
                     <div class="post">
                         <b>${data.kinalat.cim}</b><br><br>
                         ${data.kinalat.uzenet}
                         <div class="info-box">
-                            <strong>⏱ Rendelési határidő:</strong> ${data.kinalat.hatarido}<br>
-                            ${szallitasInfo}
+                            <strong>⏳ Rendelési határidő:</strong> ${formatDatum(data.kinalat.hatarido)}<br><br>
+                            ${szallitasSzoveg}
                         </div>
-                        <img class="post-image" src="${data.kinalat.fokep}" alt="Napi ajánlat">
+                        ${data.kinalat.fokep ? `<img class="post-image" src="${data.kinalat.fokep}">` : ''}
                     </div>
                 `;
 
-                // Termékek
+                // 3. Termékek generálása
                 let html = "";
                 data.termekek.forEach(t => {
+                    termekAdatbazis[t.nev] = t;
                     let kepek = "";
-                    if(t.kep1) kepek += `<img src="${t.kep1}" onclick="openImg('${t.kep1}')">`;
-                    if(t.kep2) kepek += `<img src="${t.kep2}" onclick="openImg('${t.kep2}')">`;
+                    if(t.kep1) kepek += `<img src="${t.kep1}" onclick="document.getElementById('lb-img').src='${t.kep1}'; document.getElementById('lightbox').style.display='flex'">`;
+                    if(t.kep2) kepek += `<img src="${t.kep2}" onclick="document.getElementById('lb-img').src='${t.kep2}'; document.getElementById('lightbox').style.display='flex'">`;
+                    
+                    let min = t.min_mennyiseg > 0 ? `<br><small style="color:red">Min: ${t.min_mennyiseg} ${t.egyseg}</small>` : "";
 
                     html += `
                         <div class="product">
@@ -382,11 +260,11 @@
                             <div class="product-top">
                                 <div class="product-info">
                                     <b>${t.nev}</b><br>
-                                    <span style="color:#666">${t.ar} ${t.egyseg}</span>
+                                    <span style="color:#666">${t.ar} Ft / ${t.egyseg}</span>${min}
                                 </div>
                                 <div class="product-cart">
-                                    <input id="qty_${t.id || t.nev}" type="number" step="0.1" placeholder="0">
-                                    <button onclick="addToCart('${t.nev}', 'qty_${t.id || t.nev}')">Kosárba</button>
+                                    <input id="qty_${t.nev}" type="number" step="0.1" placeholder="0">
+                                    <button onclick="addToCart('${t.nev}')">Kosárba</button>
                                 </div>
                             </div>
                         </div>
@@ -396,48 +274,123 @@
             });
         }
 
-        // --- KOSÁR ÉS RENDELÉS ---
-        let kosar = {};
+        // --- KOSÁR MŰVELETEK ÉS SZÁMOLÁS ---
+        function addToCart(nev) {
+            let inputField = document.getElementById("qty_" + nev);
+            let qty = parseFloat(inputField.value);
+            let t = termekAdatbazis[nev];
 
-        function openImg(src) {
-            document.getElementById("lb-img").src = src;
-            document.getElementById("lightbox").style.display = "flex";
-        }
-
-        function addToCart(nev, inputId) {
-            let qty = document.getElementById(inputId).value;
-            if(qty > 0) {
-                kosar[nev] = qty;
-                alert(nev + " hozzáadva: " + qty);
+            if(!qty || qty <= 0) return;
+            if(t.min_mennyiseg > 0 && qty < t.min_mennyiseg) {
+                alert(`Ebből a termékből a minimális rendelés: ${t.min_mennyiseg} ${t.egyseg}`);
+                return;
             }
+
+            // Ha már volt a kosárban, hozzáadjuk az új mennyiséget
+            if(kosar[nev]) kosar[nev].qty += qty;
+            else kosar[nev] = { qty: qty, ar: t.ar, egyseg: t.egyseg };
+
+            inputField.value = ""; // Mező nullázása
+            frissitKosarUI();
         }
 
-        function kuldes() {
-            let lista = "";
-            for(let t in kosar) { lista += t + ": " + kosar[t] + ", "; }
+        // --- KOSÁR MEGJELENÍTÉSE ---
+        let vegszamlaHUF = 0;
 
-            if(!lista) { alert("Üres a kosarad!"); return; }
+        function frissitKosarUI() {
+            let html = "";
+            let kosarErtek = 0;
+            let vanTermek = false;
+
+            for(let nev in kosar) {
+                vanTermek = true;
+                let t = kosar[nev];
+                let reszosszeg = Math.round(t.qty * t.ar);
+                kosarErtek += reszosszeg;
+                
+                html += `
+                    <div class="cart-item">
+                        <span><b>${t.qty} ${t.egyseg}</b> ${nev}</span>
+                        <span>${reszosszeg} Ft</span>
+                    </div>
+                `;
+            }
+
+            if(!vanTermek) {
+                document.getElementById("cart-content").innerHTML = "<i>Még nincs termék a kosaradban.</i>";
+                document.getElementById("btn-submit").disabled = true;
+                return;
+            }
+
+            // Szállítási díj számolás
+            let alapDij = parseInt(aktualisZonaAdat["szállítási_díj_(szám)"]) || 0;
+            let hatar = parseInt(aktualisZonaAdat["ingyenes_határ"]) || 0;
+            let szallitasiDij = alapDij;
+
+            let szallitasSzovegHtml = `${szallitasiDij} Ft`;
+
+            if(hatar > 0 && kosarErtek >= hatar) {
+                szallitasiDij = 0;
+                szallitasSzovegHtml = `<span class="free-delivery">INGYENES!</span>`;
+            }
+
+            vegszamlaHUF = kosarErtek + szallitasiDij;
+
+            html += `
+                <div class="cart-item" style="margin-top:10px; color:#666;">
+                    <span>Kiszállítás díja:</span>
+                    <span>${szallitasSzovegHtml}</span>
+                </div>
+                <div class="cart-total">
+                    <span>Fizetendő összesen:</span>
+                    <span>${vegszamlaHUF} Ft</span>
+                </div>
+                <div style="text-align:right; margin-top:10px;">
+                    <button onclick="kosarUrites()" style="background:#d32f2f; padding:6px; font-size:12px;">Kosár ürítése</button>
+                </div>
+            `;
+
+            document.getElementById("cart-content").innerHTML = html;
+            document.getElementById("btn-submit").disabled = false;
+        }
+
+        function kosarUrites() {
+            kosar = {};
+            frissitKosarUI();
+        }
+
+        // --- RENDELÉS ELKÜLDÉSE ---
+        function kuldes() {
+            document.getElementById("btn-submit").innerText = "Küldés folyamatban...";
+            document.getElementById("btn-submit").disabled = true;
+
+            let lista = "";
+            for(let nev in kosar) { 
+                lista += `${nev}: ${kosar[nev].qty} ${kosar[nev].egyseg}, `; 
+            }
 
             let megj = document.getElementById("megjegyzes").value;
             let teljesCim = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
+            let vegsMegjegyzes = `Fizetendő összesen: ${vegszamlaHUF} Ft | Vevő megjegyzése: ${megj}`;
 
-            let url = API_ORDER 
+            let url = API_URL 
                 + "?nev=" + encodeURIComponent(userProfile.vnev + " " + userProfile.knev)
                 + "&tel=" + encodeURIComponent(userProfile.tel)
                 + "&cim=" + encodeURIComponent(teljesCim)
-                + "&zona=" + encodeURIComponent(userProfile.zona)
-                + "&megjegyzes=" + encodeURIComponent(megj)
+                + "&zona=" + encodeURIComponent(aktualisZonaAdat["település/kerület"])
+                + "&megjegyzes=" + encodeURIComponent(vegsMegjegyzes)
                 + "&termek=" + encodeURIComponent(lista);
 
-            // Küldés iframe-el (háttérben)
             let ifr = document.createElement("iframe");
             ifr.style.display = "none";
             ifr.src = url;
             document.body.appendChild(ifr);
 
-            alert("Köszönjük! A rendelésedet megkaptuk!");
-            kosar = {};
-            location.reload();
+            setTimeout(() => {
+                alert("Köszönjük! A rendelésedet megkaptuk!");
+                kosar = {};
+                location.reload();
+            }, 1500); // Kicsit várunk, hogy biztos átmenjen az adat
         }
     </script>
 </body>
