@@ -23,11 +23,17 @@ body {
  margin: 15px 0;
 }
 .header img {
- max-width: 200px; /* Ide jön majd a pofás logód */
+ max-width: 200px;
  height: auto;
 }
+.greeting {
+ font-size: 22px;
+ font-weight: bold;
+ margin-bottom: 15px;
+ color: #2e7d32;
+}
 
-/* PROFIL KÉPERNYŐ (Első belépéskor) */
+/* PROFIL KÉPERNYŐ */
 #profile-setup {
  background: white;
  padding: 20px;
@@ -35,18 +41,26 @@ body {
  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
  text-align: center;
 }
-#profile-setup input, #profile-setup select {
+#profile-setup input {
  width: 90%;
  padding: 10px;
- margin: 10px 0;
+ margin: 8px 0;
  border-radius: 6px;
  border: 1px solid #ccc;
+ box-sizing: border-box;
+}
+#profile-setup .half-input {
+ width: 44%;
+ display: inline-block;
+ margin: 8px 1%;
 }
 #profile-setup button {
- margin-top: 10px;
+ margin-top: 15px;
+ padding: 12px;
+ font-size: 16px;
 }
 
-/* FŐ ALKALMAZÁS (Rejtve, amíg nincs profil) */
+/* FŐ ALKALMAZÁS */
 #main-app {
  display: none; 
 }
@@ -84,7 +98,6 @@ body {
  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
  flex-wrap: wrap;
 }
-
 .product-images {
  width: 100%;
  display: flex;
@@ -99,7 +112,6 @@ body {
  cursor: pointer;
  border: 1px solid #eee;
 }
-
 .product-info { flex: 1; }
 .product-cart { width: 120px; text-align: right; }
 .product-cart input { width: 60px; padding: 5px; margin-bottom: 5px; text-align: center;}
@@ -172,19 +184,26 @@ button {
 
  <div id="profile-setup">
   <h3>Üdvözlünk! 👋</h3>
-  <p>Kérlek, add meg az adataidat, hogy a megfelelő kínálatot láthasd!</p>
-  <input id="p-nev" placeholder="Teljes neved">
-  <input id="p-tel" placeholder="Telefonszám (pl. +36...)">
-  <input id="p-cim" placeholder="Pontos cím">
-  <select id="p-zona">
-   <option value="">-- Válassz szállítási zónát --</option>
-   <option value="Pécel">Pécel és környéke (Kiszállítás + Átvétel)</option>
-   <option value="Egyéb">Egyéb terület (Csak kiszállítás)</option>
-  </select>
+  <p>Kérlek, első alkalommal add meg az adataidat!</p>
+  
+  <input id="p-vnev" class="half-input" placeholder="Vezetéknév">
+  <input id="p-knev" class="half-input" placeholder="Keresztnév">
+  
+  <input id="p-tel" type="tel" placeholder="Telefonszám (pl. 06301234567)">
+  
+  <input id="p-irsz" class="half-input" type="number" placeholder="Irányítószám">
+  <input id="p-varos" class="half-input" placeholder="Település">
+  
+  <input id="p-utca" placeholder="Utca, házszám, emelet/ajtó">
+  
   <button onclick="saveProfile()">Mentés és Tovább</button>
  </div>
 
  <div id="main-app">
+  <div class="header">
+   <div class="greeting">Hello <span id="greet-name"></span>! 🍓</div>
+  </div>
+
   <div id="kinalat"></div>
   <div id="termekek"></div>
 
@@ -193,6 +212,7 @@ button {
    <small>Az adataidat elmentettük, de itt ellenőrizheted.</small><br><br>
    
    Vevő: <b id="show-nev"></b><br>
+   Cím: <b id="show-cim"></b><br>
    Zóna: <b id="show-zona"></b><br><br>
 
    <label>Megjegyzés a rendeléshez:</label>
@@ -200,41 +220,72 @@ button {
 
    <button class="submit" onclick="kuldes()">Rendelés elküldése</button>
    <br><br>
-   <button onclick="resetProfile()" style="background:#d32f2f; padding:5px; font-size:12px;">Profil módosítása</button>
+   <button onclick="resetProfile()" style="background:#d32f2f; padding:5px; font-size:12px;">Adataim módosítása</button>
   </div>
  </div>
 
 </div>
 
 <script>
-// --- PROFIL KEZELÉS (localStorage) ---
+// --- PROFIL KEZELÉS ---
 let userProfile = JSON.parse(localStorage.getItem("frueat_profile"));
 
 if(userProfile) {
- // Ha van mentett profil, mutatjuk a fő appot
  document.getElementById("profile-setup").style.display = "none";
  document.getElementById("main-app").style.display = "block";
- document.getElementById("show-nev").innerText = userProfile.nev;
+ 
+ // Megjelenítések
+ document.getElementById("greet-name").innerText = userProfile.knev;
+ document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
+ document.getElementById("show-cim").innerText = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
  document.getElementById("show-zona").innerText = userProfile.zona;
- betoltes(); // Adatok lekérése a Google Sheetből
-} else {
- // Ha nincs profil, az űrlap marad látható
+ 
+ betoltes();
 }
 
 function saveProfile() {
- let nev = document.getElementById("p-nev").value;
- let tel = document.getElementById("p-tel").value;
- let cim = document.getElementById("p-cim").value;
- let zona = document.getElementById("p-zona").value;
+ let vnev = document.getElementById("p-vnev").value.trim();
+ let knev = document.getElementById("p-knev").value.trim();
+ let tel = document.getElementById("p-tel").value.trim();
+ let irsz = document.getElementById("p-irsz").value.trim();
+ let varos = document.getElementById("p-varos").value.trim();
+ let utca = document.getElementById("p-utca").value.trim();
 
- if(!nev || !tel || !cim || !zona) {
-  alert("Kérlek tölts ki minden mezőt és válassz zónát!");
+ if(!vnev || !knev || !tel || !irsz || !varos || !utca) {
+  alert("Kérlek tölts ki minden mezőt!");
   return;
  }
 
- userProfile = { nev: nev, tel: tel, cim: cim, zona: zona };
+ // Telefonszám formázása (+36 formátumra hozva)
+ tel = tel.replace(/ /g, "").replace(/-/g, ""); // szóközök és kötőjelek eltávolítása
+ if(tel.startsWith("06")) {
+  tel = "+36" + tel.substring(2);
+ } else if(tel.startsWith("36")) {
+  tel = "+" + tel;
+ }
+ 
+ if(!tel.startsWith("+36") || tel.length < 11) {
+  alert("Kérlek adj meg egy érvényes magyar telefonszámot!");
+  return;
+ }
+
+ // Automatikus zónabesorolás irányítószám alapján
+ // Ide felveheted a többi péceli környéki kódot is, pl: ["2119", "2145", "2144"].includes(irsz)
+ const pecelZonak = ["2119"]; 
+ let zona = pecelZonak.includes(irsz) ? "Pécel" : "Egyéb";
+
+ userProfile = { 
+  vnev: vnev, 
+  knev: knev, 
+  tel: tel, 
+  irsz: irsz, 
+  varos: varos, 
+  utca: utca, 
+  zona: zona 
+ };
+ 
  localStorage.setItem("frueat_profile", JSON.stringify(userProfile));
- location.reload(); // Újratöltés, hogy betöltsön a fő app
+ location.reload();
 }
 
 function resetProfile() {
@@ -254,59 +305,45 @@ function closeLightbox() {
 // --- ADATOK BETÖLTÉSE ---
 function betoltes() {
  const API = "https://script.google.com/macros/s/AKfycbyOfBTcodDIxMCyrOwLGX5H_upU11Glay-4cv6jnCS5gd0aU2X_kHFTE0YOSfDtPIFKHQ/exec";
- const ORDER_API = "https://script.google.com/macros/s/AKfycbx_9cJfISJNZ7SykOdI83cmrIKXYix-h9Ca8ESbXuWL6WBvPnmSdT9Xh2WIae1TiaX5tA/exec";
 
  fetch(API)
  .then(r=>r.json())
  .then(data => {
 
-  // 1. ZÓNA ALAPÚ SZÖVEGEK KIALAKÍTÁSA
   let deliveryInfo = "";
-  
   if(userProfile.zona === "Pécel") {
-   // Pécel esetén kiszállítás és személyes átvétel is van
    deliveryInfo = `
     <strong>🛵 Kiszállítás:</strong> ${data.kinalat.kiszallitas_ideje}<br>
     <strong>📦 Személyes átvétel:</strong> ${data.kinalat.atvetel_datum} (${data.kinalat.atvetel_tol_ig})
    `;
   } else {
-   // Egyéb zóna esetén csak kiszállítás
    deliveryInfo = `<strong>🛵 Kiszállítás:</strong> ${data.kinalat.kiszallitas_ideje}`;
   }
 
-  // 2. FŐ POSZT MEGJELENÍTÉSE
   document.getElementById("kinalat").innerHTML = `
    <div class="post">
     <b>${data.kinalat.cim}</b><br><br>
     ${data.kinalat.uzenet}<br>
-    
     <div class="info-box">
      <strong>⏱ Rendelési határidő:</strong> ${data.kinalat.hatarido}<br>
      ${deliveryInfo}
     </div>
-
     <img class="post-image" src="${data.kinalat.fokep}" alt="Kínálat">
    </div>
   `;
 
-  // 3. TERMÉKEK MEGJELENÍTÉSE (2 képpel)
   let html = "";
   data.termekek.forEach(t => {
-   // Képek HTML-je, ha léteznek
    let imgHtml = "";
    if(t.kep1) imgHtml += `<img src="${t.kep1}" onclick="openLightbox('${t.kep1}')">`;
    if(t.kep2) imgHtml += `<img src="${t.kep2}" onclick="openLightbox('${t.kep2}')">`;
 
    html += `
     <div class="product">
-     <div class="product-images">
-      ${imgHtml}
-     </div>
+     <div class="product-images">${imgHtml}</div>
      <div class="product-info">
-      <b>${t.nev}</b><br>
-      ${t.ar} ${t.egyseg}
+      <b>${t.nev}</b><br>${t.ar} ${t.egyseg}
      </div>
-
      <div class="product-cart">
       <input id="menny_${t.nev}" type="number" step="0.1" placeholder="kg/db">
       <button onclick="add('${t.nev}')">Kosárba</button>
@@ -314,7 +351,6 @@ function betoltes() {
     </div>
    `; 
   });
-
   document.getElementById("termekek").innerHTML = html;
  });
 }
@@ -345,13 +381,16 @@ function kuldes() {
   return;
  }
 
- // Az adatok már a localStorage-ből jönnek
  const ORDER_API = "https://script.google.com/macros/s/AKfycbx_9cJfISJNZ7SykOdI83cmrIKXYix-h9Ca8ESbXuWL6WBvPnmSdT9Xh2WIae1TiaX5tA/exec";
  
+ // A nevet és a címet itt összefűzve küldjük, hogy a Google Sheet kódodnak kevesebbet kelljen változnia
+ let teljesNev = userProfile.vnev + " " + userProfile.knev;
+ let teljesCim = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
+
  let url = ORDER_API
- + "?nev=" + encodeURIComponent(userProfile.nev)
+ + "?nev=" + encodeURIComponent(teljesNev)
  + "&tel=" + encodeURIComponent(userProfile.tel)
- + "&cim=" + encodeURIComponent(userProfile.cim)
+ + "&cim=" + encodeURIComponent(teljesCim)
  + "&zona=" + encodeURIComponent(userProfile.zona)
  + "&megjegyzes=" + encodeURIComponent(megjegyzes)
  + "&termek=" + encodeURIComponent(lista);
@@ -362,7 +401,7 @@ function kuldes() {
  document.body.appendChild(iframe);
 
  alert("Szuper! Rendelésedet elküldtük!");
- kosar = {}; // Kosár ürítése
+ kosar = {};
  location.reload();
 }
 </script>
