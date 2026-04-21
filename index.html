@@ -6,18 +6,8 @@
     <title>Fru’eat Heaven</title>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            margin: 0;
-            color: #333;
-        }
-
-        .wrapper {
-            max-width: 900px;
-            margin: auto;
-            padding: 10px;
-        }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; color: #333; }
+        .wrapper { max-width: 900px; margin: auto; padding: 10px; }
 
         /* LOGO & HEADER */
         .header { text-align: center; margin: 15px 0; }
@@ -25,16 +15,11 @@
         .greeting { font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #2e7d32; text-align: center; }
 
         /* PROFIL ŰRLAP */
-        #profile-setup {
-            background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;
-        }
+        #profile-setup { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
         #profile-setup h3 { margin-top: 0; color: #2e7d32; }
-        #profile-setup input {
-            width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px;
-        }
+        #profile-setup input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; }
         .half-input { width: 48%; display: inline-block; }
         .half-input:nth-child(odd) { margin-right: 2%; }
-
         #main-app { display: none; }
 
         /* KÍNÁLAT POSZT */
@@ -72,7 +57,7 @@
         .close-lb { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; }
         .reset-link { display: block; text-align: center; margin-top: 20px; color: #d32f2f; font-size: 12px; text-decoration: underline; cursor: pointer; }
 
-        /* HIBA ÜZENET (Ha nincs a zónában) */
+        /* HIBA ÜZENET */
         #out-of-zone { display: none; background: #ffebee; color: #c62828; padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; font-weight: bold; line-height: 1.5; }
     </style>
 </head>
@@ -135,15 +120,13 @@
 
     <script>
         // === FONTOS! IDE ILLESZD BE A LEGÚJABB APPS SCRIPT URL-EDET! ===
-        const API_URL = "https://script.google.com/macros/s/AKfycbx_9cJfISJNZ7SykOdI83cmrIKXYix-h9Ca8ESbXuWL6WBvPnmSdT9Xh2WIae1TiaX5tA/exec"; 
+        const API_URL = "IDE_ILLYESZD_BE_A_GOOGLE_SCRIPT_LINKET"; 
 
-        // --- ADATBÁZIS ÉS KOSÁR ---
         let osszesitettAdatok = {};
         let termekAdatbazis = {};
         let kosar = {}; 
-        let aktualisZonaAdat = null; // A vevő zónájának adatai a sheetből
+        let aktualisZonaAdat = null; 
 
-        // --- IRÁNYÍTÓSZÁM ALAPÚ VÁROS KERESÉS ---
         document.getElementById("p-irsz").addEventListener("input", function() {
             let irsz = this.value.trim();
             if(irsz.length === 4) {
@@ -154,7 +137,6 @@
             }
         });
 
-        // --- PROFIL KEZELÉS ---
         let userProfile = JSON.parse(localStorage.getItem("frueat_profile"));
         if(userProfile) adatokBetoltese();
 
@@ -190,7 +172,6 @@
             return isNaN(d) ? nyers : d.toLocaleString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
         }
 
-        // --- ADATOK BETÖLTÉSE ---
         function adatokBetoltese() {
             document.getElementById("profile-setup").style.display = "none";
             
@@ -199,13 +180,12 @@
             .then(data => {
                 osszesitettAdatok = data;
                 
-                // 1. Zóna ellenőrzése
-                // Megkeressük a zónák fülön (figyelünk az ékezetek eltüntetésére amit a script csinál)
-                aktualisZonaAdat = data.zonak.find(z => z["irányítószám"] == userProfile.irsz);
+                // Zóna ellenőrzése
+                aktualisZonaAdat = data.zonak.find(z => z["iranyitoszam"] == userProfile.irsz);
 
                 if(!aktualisZonaAdat) {
                     document.getElementById("out-of-zone").style.display = "block";
-                    return; // Megállítjuk a betöltést, mert nem szállítunk ide
+                    return; 
                 }
 
                 document.getElementById("main-app").style.display = "block";
@@ -214,12 +194,12 @@
                 document.getElementById("greet-name").innerText = userProfile.knev;
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
                 document.getElementById("show-cim").innerText = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
-                document.getElementById("show-zona").innerText = aktualisZonaAdat["település/kerület"];
+                document.getElementById("show-zona").innerText = aktualisZonaAdat["telepules/kerulet"];
 
-                // 2. Kínálat és Szállítási infók összerakása
+                // Kínálat és Szállítási infók
                 let szallitasSzoveg = "";
-                let dij = aktualisZonaAdat["szállítási_díj_(szám)"];
-                let hatar = aktualisZonaAdat["ingyenes_határ"];
+                let dij = aktualisZonaAdat["szallitasi_dij"];
+                let hatar = aktualisZonaAdat["ingyenes_hatar"];
                 
                 let dijSzoveg = dij > 0 ? `${dij} Ft` : "Ingyenes";
                 if(hatar > 0) dijSzoveg += ` (De ${hatar} Ft felett ingyenes!)`;
@@ -227,8 +207,8 @@
                 szallitasSzoveg += `<strong>🛵 Kiszállítás díja:</strong> ${dijSzoveg}<br>`;
                 szallitasSzoveg += `<strong>⏱ Kiszállítás ideje:</strong> ${data.kinalat.kiszallitas_ideje}<br>`;
 
-                if(aktualisZonaAdat["átvétel_lehetséges?"] === "Igen") {
-                    szallitasSzoveg += `<br><strong>📦 Személyes átvétel (${aktualisZonaAdat["átvételi_pont_címe"]}):</strong><br>`;
+                if(aktualisZonaAdat["atvetel_lehetseges?"] === "Igen") {
+                    szallitasSzoveg += `<br><strong>📦 Személyes átvétel (${aktualisZonaAdat["atveteli_pont_cime"]}):</strong><br>`;
                     szallitasSzoveg += `${data.kinalat.atvetel_datum} (${data.kinalat.atvetel_tol_ig})`;
                 }
 
@@ -244,13 +224,18 @@
                     </div>
                 `;
 
-                // 3. Termékek generálása
+                // Termékek generálása
                 let html = "";
                 data.termekek.forEach(t => {
                     termekAdatbazis[t.nev] = t;
                     let kepek = "";
-                    if(t.kep1) kepek += `<img src="${t.kep1}" onclick="document.getElementById('lb-img').src='${t.kep1}'; document.getElementById('lightbox').style.display='flex'">`;
-                    if(t.kep2) kepek += `<img src="${t.kep2}" onclick="document.getElementById('lb-img').src='${t.kep2}'; document.getElementById('lightbox').style.display='flex'">`;
+                    
+                    // A sheetből a fejléceket a kód kisbetűsíti
+                    let kep1 = t.kep1_url || t.kep1; 
+                    let kep2 = t.kep2_url || t.kep2;
+
+                    if(kep1) kepek += `<img src="${kep1}" onclick="document.getElementById('lb-img').src='${kep1}'; document.getElementById('lightbox').style.display='flex'">`;
+                    if(kep2) kepek += `<img src="${kep2}" onclick="document.getElementById('lb-img').src='${kep2}'; document.getElementById('lightbox').style.display='flex'">`;
                     
                     let min = t.min_mennyiseg > 0 ? `<br><small style="color:red">Min: ${t.min_mennyiseg} ${t.egyseg}</small>` : "";
 
@@ -274,7 +259,6 @@
             });
         }
 
-        // --- KOSÁR MŰVELETEK ÉS SZÁMOLÁS ---
         function addToCart(nev) {
             let inputField = document.getElementById("qty_" + nev);
             let qty = parseFloat(inputField.value);
@@ -286,15 +270,13 @@
                 return;
             }
 
-            // Ha már volt a kosárban, hozzáadjuk az új mennyiséget
             if(kosar[nev]) kosar[nev].qty += qty;
             else kosar[nev] = { qty: qty, ar: t.ar, egyseg: t.egyseg };
 
-            inputField.value = ""; // Mező nullázása
+            inputField.value = ""; 
             frissitKosarUI();
         }
 
-        // --- KOSÁR MEGJELENÍTÉSE ---
         let vegszamlaHUF = 0;
 
         function frissitKosarUI() {
@@ -322,9 +304,8 @@
                 return;
             }
 
-            // Szállítási díj számolás
-            let alapDij = parseInt(aktualisZonaAdat["szállítási_díj_(szám)"]) || 0;
-            let hatar = parseInt(aktualisZonaAdat["ingyenes_határ"]) || 0;
+            let alapDij = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
+            let hatar = parseInt(aktualisZonaAdat["ingyenes_hatar"]) || 0;
             let szallitasiDij = alapDij;
 
             let szallitasSzovegHtml = `${szallitasiDij} Ft`;
@@ -359,7 +340,6 @@
             frissitKosarUI();
         }
 
-        // --- RENDELÉS ELKÜLDÉSE ---
         function kuldes() {
             document.getElementById("btn-submit").innerText = "Küldés folyamatban...";
             document.getElementById("btn-submit").disabled = true;
@@ -377,7 +357,7 @@
                 + "?nev=" + encodeURIComponent(userProfile.vnev + " " + userProfile.knev)
                 + "&tel=" + encodeURIComponent(userProfile.tel)
                 + "&cim=" + encodeURIComponent(teljesCim)
-                + "&zona=" + encodeURIComponent(aktualisZonaAdat["település/kerület"])
+                + "&zona=" + encodeURIComponent(aktualisZonaAdat["telepules/kerulet"])
                 + "&megjegyzes=" + encodeURIComponent(vegsMegjegyzes)
                 + "&termek=" + encodeURIComponent(lista);
 
@@ -390,7 +370,7 @@
                 alert("Köszönjük! A rendelésedet megkaptuk!");
                 kosar = {};
                 location.reload();
-            }, 1500); // Kicsit várunk, hogy biztos átmenjen az adat
+            }, 1500); 
         }
     </script>
 </body>
