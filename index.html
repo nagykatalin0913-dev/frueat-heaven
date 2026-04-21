@@ -12,21 +12,18 @@ body{
  margin:0;
 }
 
-/* CONTAINER */
 .wrapper{
  max-width:900px;
  margin:auto;
  padding:10px;
 }
 
-/* HEADER */
 .header{
  font-size:26px;
  font-weight:bold;
  margin:10px 0;
 }
 
-/* POSZT */
 .post{
  background:white;
  border-radius:12px;
@@ -41,7 +38,6 @@ body{
  margin-top:10px;
 }
 
-/* TERMÉK SOR */
 .product{
  display:flex;
  justify-content:space-between;
@@ -53,12 +49,10 @@ body{
  box-shadow:0 1px 4px rgba(0,0,0,0.1);
 }
 
-/* BAL OLDAL */
 .product-info{
  flex:1;
 }
 
-/* JOBB OLDAL */
 .product-cart{
  width:120px;
  text-align:right;
@@ -70,7 +64,6 @@ input{
  margin-bottom:5px;
 }
 
-/* BUTTON */
 button{
  background:#2e7d32;
  color:white;
@@ -80,7 +73,6 @@ button{
  width:100%;
 }
 
-/* ADATOK */
 .form{
  background:white;
  padding:15px;
@@ -88,7 +80,7 @@ button{
  margin-top:15px;
 }
 
-.form input{
+.form input, .form textarea{
  width:100%;
  margin-bottom:10px;
  padding:8px;
@@ -117,6 +109,7 @@ button{
  <input id="nev" placeholder="Név">
  <input id="tel" placeholder="Telefonszám">
  <input id="cim" placeholder="Cím">
+ <textarea id="megjegyzes" placeholder="Megjegyzés"></textarea>
 
  <button class="submit" onclick="kuldes()">Rendelés elküldése</button>
 </div>
@@ -129,11 +122,12 @@ const API = "https://script.google.com/macros/s/AKfycbyOfBTcodDIxMCyrOwLGX5H_upU
 
 const ORDER_API = "https://script.google.com/macros/s/AKfycbx_9cJfISJNZ7SykOdI83cmrIKXYix-h9Ca8ESbXuWL6WBvPnmSdT9Xh2WIae1TiaX5tA/exec";
 
+let kosar = {};
+
 fetch(API)
 .then(r=>r.json())
 .then(data=>{
 
- // POSZT
  document.getElementById("kinalat").innerHTML=`
   <div class="post">
    <b>${data.kinalat.cim}</b><br><br>
@@ -170,8 +164,7 @@ fetch(API)
 
 });
 
-let kosar = {};
-
+// ➕ kosár
 function add(termek){
  let val = document.getElementById("menny_"+termek).value;
  if(val){
@@ -180,16 +173,34 @@ function add(termek){
  }
 }
 
+// 👤 profil betöltés
+window.onload = function(){
+ let nev = localStorage.getItem("nev");
+ let tel = localStorage.getItem("tel");
+ let cim = localStorage.getItem("cim");
+
+ if(nev) document.getElementById("nev").value = nev;
+ if(tel) document.getElementById("tel").value = tel;
+ if(cim) document.getElementById("cim").value = cim;
+}
+
+// 🚀 rendelés
 function kuldes(){
 
  let nev = document.getElementById("nev").value;
  let tel = document.getElementById("tel").value;
  let cim = document.getElementById("cim").value;
+ let megjegyzes = document.getElementById("megjegyzes").value;
 
  if(!nev || !tel || !cim){
   alert("Tölts ki mindent!");
   return;
  }
+
+ // mentés
+ localStorage.setItem("nev", nev);
+ localStorage.setItem("tel", tel);
+ localStorage.setItem("cim", cim);
 
  let lista = "";
 
@@ -206,7 +217,8 @@ function kuldes(){
  + "?nev=" + encodeURIComponent(nev)
  + "&tel=" + encodeURIComponent(tel)
  + "&cim=" + encodeURIComponent(cim)
- + "&termek=" + encodeURIComponent(lista);
+ + "&termek=" + encodeURIComponent(lista)
+ + "&megjegyzes=" + encodeURIComponent(megjegyzes);
 
  let iframe = document.createElement("iframe");
  iframe.style.display="none";
