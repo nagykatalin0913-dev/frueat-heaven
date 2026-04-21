@@ -104,7 +104,17 @@
                     <i>Még nincs termék a kosaradban.</i>
                 </div>
 
-                <small>Szállítási adataid:</small><br>
+                <div id="szallitas-valaszto" style="display:none; margin-bottom: 15px; padding: 10px; border: 1px solid #c8e6c9; border-radius: 8px; background: #e8f5e9;">
+                    <b style="color: #2e7d32;">Hogyan szeretnéd megkapni?</b><br>
+                    <label style="display:block; margin-top:8px; cursor:pointer;">
+                        <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')"> 🛵 Házhozszállítás
+                    </label>
+                    <label style="display:block; margin-top:8px; cursor:pointer;">
+                        <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')"> 📦 Személyes átvétel (Ingyenes)
+                    </label>
+                </div>
+
+                <small>Szállítási/Számlázási adataid:</small><br>
                 Név: <b id="show-nev"></b><br>
                 Cím: <b id="show-cim"></b><br>
                 Körzet: <b id="show-zona"></b><br><br>
@@ -119,11 +129,22 @@
     </div>
 
     <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwg8e2ecD0RNTBpuHpt1421wK8PJjaoB8wcoQSBfszicNjRTSe2OStuLNjvTv1ZYveUJA/exec";
+        // === FONTOS! IDE ILLESZD BE A LEGÚJABB APPS SCRIPT URL-EDET! ===
+        const API_URL = "https://script.google.com/macros/s/AKfycbwg8e2ecD0RNTBpuHpt1421wK8PJjaoB8wcoQSBfszicNjRTSe2OStuLNjvTv1ZYveUJA/exec"; 
+
         let osszesitettAdatok = {};
         let termekAdatbazis = {};
         let kosar = {}; 
         let aktualisZonaAdat = null; 
+        
+        // Alapértelmezett átvételi mód
+        let atveteliMod = "hazhoz";
+
+        // Segédfüggvény a módváltáshoz
+        function modValtas(mod) {
+            atveteliMod = mod;
+            frissitKosarUI(); // Újraszámolja a végösszeget
+        }
 
         document.getElementById("p-irsz").addEventListener("input", function() {
             let irsz = this.value.trim();
@@ -188,6 +209,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwg8e2ecD0RNTBpuHpt1421
 
                 document.getElementById("main-app").style.display = "block";
                 
+                // Ha lehetséges a személyes átvétel, mutassuk meg a választó rádiógombokat
+                if(aktualisZonaAdat["atvetel_lehetseges?"] && aktualisZonaAdat["atvetel_lehetseges?"].toLowerCase() === "igen") {
+                    document.getElementById("szallitas-valaszto").style.display = "block";
+                }
+
                 // UI Frissítés
                 document.getElementById("greet-name").innerText = userProfile.knev;
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
@@ -228,7 +254,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwg8e2ecD0RNTBpuHpt1421
                     termekAdatbazis[t.nev] = t;
                     let kepek = "";
                     
-                    // A sheetből a fejléceket a kód kisbetűsíti
                     let kep1 = t.kep1_url || t.kep1; 
                     let kep2 = t.kep2_url || t.kep2;
 
@@ -304,20 +329,29 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwg8e2ecD0RNTBpuHpt1421
 
             let alapDij = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
             let hatar = parseInt(aktualisZonaAdat["ingyenes_hatar"]) || 0;
-            let szallitasiDij = alapDij;
+            
+            let szallitasiDij = 0;
+            let szallitasSzovegHtml = "";
 
-            let szallitasSzovegHtml = `${szallitasiDij} Ft`;
-
-            if(hatar > 0 && kosarErtek >= hatar) {
+            // Ellenőrizzük, mit választott a vevő
+            if(atveteliMod === "szemelyes") {
                 szallitasiDij = 0;
-                szallitasSzovegHtml = `<span class="free-delivery">INGYENES!</span>`;
+                szallitasSzovegHtml = `<span class="free-delivery">Személyes átvétel (0 Ft)</span>`;
+            } else {
+                szallitasiDij = alapDij;
+                szallitasSzovegHtml = `${szallitasiDij} Ft`;
+
+                if(hatar > 0 && kosarErtek >= hatar) {
+                    szallitasiDij = 0;
+                    szallitasSzovegHtml = `<span class="free-delivery">INGYENES!</span>`;
+                }
             }
 
             vegszamlaHUF = kosarErtek + szallitasiDij;
 
             html += `
                 <div class="cart-item" style="margin-top:10px; color:#666;">
-                    <span>Kiszállítás díja:</span>
+                    <span>Szállítás / Átvétel:</span>
                     <span>${szallitasSzovegHtml}</span>
                 </div>
                 <div class="cart-total">
@@ -349,7 +383,10 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwg8e2ecD0RNTBpuHpt1421
 
             let megj = document.getElementById("megjegyzes").value;
             let teljesCim = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
-            let vegsMegjegyzes = `Fizetendő összesen: ${vegszamlaHUF} Ft | Vevő megjegyzése: ${megj}`;
+            
+            // Beleírjuk a megjegyzésbe, hogy mit választott
+            let atvetelSzoveg = atveteliMod === "szemelyes" ? "SZEMÉLYES ÁTVÉTEL" : "Házhozszállítás";
+            let vegsMegjegyzes = `[${atvetelSzoveg}] Fizetendő összesen: ${vegszamlaHUF} Ft | Vevő megjegyzése: ${megj}`;
 
             let url = API_URL 
                 + "?nev=" + encodeURIComponent(userProfile.vnev + " " + userProfile.knev)
