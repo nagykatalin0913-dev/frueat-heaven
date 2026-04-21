@@ -5,90 +5,153 @@
 <title>Fru’eat Heaven</title>
 
 <style>
-
-body{
- font-family: Arial;
- background:#f5f5f5;
- margin:0;
+body {
+ font-family: Arial, sans-serif;
+ background: #f5f5f5;
+ margin: 0;
 }
 
-.wrapper{
- max-width:900px;
- margin:auto;
- padding:10px;
+.wrapper {
+ max-width: 900px;
+ margin: auto;
+ padding: 10px;
 }
 
-.header{
- font-size:26px;
- font-weight:bold;
- margin:10px 0;
+/* LOGO & HEADER */
+.header {
+ text-align: center;
+ margin: 15px 0;
+}
+.header img {
+ max-width: 200px; /* Ide jön majd a pofás logód */
+ height: auto;
 }
 
-.post{
- background:white;
- border-radius:12px;
- padding:15px;
- margin-bottom:15px;
- box-shadow:0 2px 6px rgba(0,0,0,0.1);
+/* PROFIL KÉPERNYŐ (Első belépéskor) */
+#profile-setup {
+ background: white;
+ padding: 20px;
+ border-radius: 12px;
+ box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+ text-align: center;
+}
+#profile-setup input, #profile-setup select {
+ width: 90%;
+ padding: 10px;
+ margin: 10px 0;
+ border-radius: 6px;
+ border: 1px solid #ccc;
+}
+#profile-setup button {
+ margin-top: 10px;
 }
 
-.post img{
- width:100%;
- border-radius:10px;
- margin-top:10px;
+/* FŐ ALKALMAZÁS (Rejtve, amíg nincs profil) */
+#main-app {
+ display: none; 
 }
 
-.product{
- display:flex;
- justify-content:space-between;
- align-items:center;
- background:white;
- padding:12px;
- border-radius:10px;
- margin-bottom:10px;
- box-shadow:0 1px 4px rgba(0,0,0,0.1);
+/* POSZT */
+.post {
+ background: white;
+ border-radius: 12px;
+ padding: 15px;
+ margin-bottom: 15px;
+ box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.post-image {
+ width: 100%;
+ border-radius: 10px;
+ margin-top: 10px;
+}
+.info-box {
+ background: #e8f5e9;
+ padding: 10px;
+ border-radius: 8px;
+ margin-top: 10px;
+ font-size: 14px;
 }
 
-.product-info{
- flex:1;
+/* TERMÉK SOR */
+.product {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ background: white;
+ padding: 12px;
+ border-radius: 10px;
+ margin-bottom: 10px;
+ box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+ flex-wrap: wrap;
 }
 
-.product-cart{
- width:120px;
- text-align:right;
+.product-images {
+ width: 100%;
+ display: flex;
+ gap: 10px;
+ margin-bottom: 10px;
+}
+.product-images img {
+ width: 60px;
+ height: 60px;
+ object-fit: cover;
+ border-radius: 8px;
+ cursor: pointer;
+ border: 1px solid #eee;
 }
 
-input{
- width:60px;
- padding:5px;
- margin-bottom:5px;
+.product-info { flex: 1; }
+.product-cart { width: 120px; text-align: right; }
+.product-cart input { width: 60px; padding: 5px; margin-bottom: 5px; text-align: center;}
+
+button {
+ background: #2e7d32;
+ color: white;
+ border: none;
+ padding: 10px;
+ border-radius: 6px;
+ width: 100%;
+ cursor: pointer;
+ font-weight: bold;
 }
 
-button{
- background:#2e7d32;
- color:white;
- border:none;
- padding:6px;
- border-radius:6px;
- width:100%;
+/* RENDELÉSI ŰRLAP */
+.form {
+ background: white;
+ padding: 15px;
+ border-radius: 12px;
+ margin-top: 15px;
 }
-
-.form{
- background:white;
- padding:15px;
- border-radius:12px;
- margin-top:15px;
+.form textarea {
+ width: 95%;
+ padding: 8px;
+ margin-top: 5px;
+ border-radius: 6px;
+ border: 1px solid #ccc;
+ resize: vertical;
 }
+.submit { padding: 12px; font-size: 16px; margin-top: 15px; }
 
-.form input, .form textarea{
- width:100%;
- margin-bottom:10px;
- padding:8px;
+/* KÉP NAGYÍTÓ (Lightbox) */
+#lightbox {
+ display: none;
+ position: fixed;
+ top: 0; left: 0;
+ width: 100%; height: 100%;
+ background: rgba(0,0,0,0.8);
+ z-index: 1000;
+ text-align: center;
 }
-
-.submit{
- padding:12px;
- font-size:16px;
+#lightbox img {
+ max-width: 90%;
+ max-height: 80%;
+ margin-top: 20%;
+ border-radius: 10px;
+}
+#close-lb {
+ position: absolute;
+ top: 20px; right: 20px;
+ color: white; font-size: 30px; font-weight: bold; cursor: pointer;
 }
 
 </style>
@@ -96,139 +159,212 @@ button{
 
 <body>
 
+<div id="lightbox" onclick="closeLightbox()">
+ <span id="close-lb">&times;</span>
+ <img id="lb-img" src="">
+</div>
+
 <div class="wrapper">
 
-<div class="header">Fru’eat Heaven 🍓</div>
+ <div class="header">
+  <img src="https://via.placeholder.com/200x80?text=LOGO+HELYE" alt="Fru'eat Heaven Logo">
+ </div>
 
-<div id="kinalat"></div>
-<div id="termekek"></div>
+ <div id="profile-setup">
+  <h3>Üdvözlünk! 👋</h3>
+  <p>Kérlek, add meg az adataidat, hogy a megfelelő kínálatot láthasd!</p>
+  <input id="p-nev" placeholder="Teljes neved">
+  <input id="p-tel" placeholder="Telefonszám (pl. +36...)">
+  <input id="p-cim" placeholder="Pontos cím">
+  <select id="p-zona">
+   <option value="">-- Válassz szállítási zónát --</option>
+   <option value="Pécel">Pécel és környéke (Kiszállítás + Átvétel)</option>
+   <option value="Egyéb">Egyéb terület (Csak kiszállítás)</option>
+  </select>
+  <button onclick="saveProfile()">Mentés és Tovább</button>
+ </div>
 
-<div class="form">
- <b>Adatok</b><br><br>
+ <div id="main-app">
+  <div id="kinalat"></div>
+  <div id="termekek"></div>
 
- <input id="nev" placeholder="Név">
- <input id="tel" placeholder="Telefonszám">
- <input id="cim" placeholder="Cím">
- <textarea id="megjegyzes" placeholder="Megjegyzés"></textarea>
+  <div class="form">
+   <b>Kosár véglegesítése</b><br>
+   <small>Az adataidat elmentettük, de itt ellenőrizheted.</small><br><br>
+   
+   Vevő: <b id="show-nev"></b><br>
+   Zóna: <b id="show-zona"></b><br><br>
 
- <button class="submit" onclick="kuldes()">Rendelés elküldése</button>
-</div>
+   <label>Megjegyzés a rendeléshez:</label>
+   <textarea id="megjegyzes" rows="3" placeholder="Ide írhatsz egyéni kéréseket..."></textarea>
+
+   <button class="submit" onclick="kuldes()">Rendelés elküldése</button>
+   <br><br>
+   <button onclick="resetProfile()" style="background:#d32f2f; padding:5px; font-size:12px;">Profil módosítása</button>
+  </div>
+ </div>
 
 </div>
 
 <script>
+// --- PROFIL KEZELÉS (localStorage) ---
+let userProfile = JSON.parse(localStorage.getItem("frueat_profile"));
 
-const API = "https://script.google.com/macros/s/AKfycbyOfBTcodDIxMCyrOwLGX5H_upU11Glay-4cv6jnCS5gd0aU2X_kHFTE0YOSfDtPIFKHQ/exec";
+if(userProfile) {
+ // Ha van mentett profil, mutatjuk a fő appot
+ document.getElementById("profile-setup").style.display = "none";
+ document.getElementById("main-app").style.display = "block";
+ document.getElementById("show-nev").innerText = userProfile.nev;
+ document.getElementById("show-zona").innerText = userProfile.zona;
+ betoltes(); // Adatok lekérése a Google Sheetből
+} else {
+ // Ha nincs profil, az űrlap marad látható
+}
 
-const ORDER_API = "https://script.google.com/macros/s/AKfycbx_9cJfISJNZ7SykOdI83cmrIKXYix-h9Ca8ESbXuWL6WBvPnmSdT9Xh2WIae1TiaX5tA/exec";
+function saveProfile() {
+ let nev = document.getElementById("p-nev").value;
+ let tel = document.getElementById("p-tel").value;
+ let cim = document.getElementById("p-cim").value;
+ let zona = document.getElementById("p-zona").value;
 
-let kosar = {};
+ if(!nev || !tel || !cim || !zona) {
+  alert("Kérlek tölts ki minden mezőt és válassz zónát!");
+  return;
+ }
 
-fetch(API)
-.then(r=>r.json())
-.then(data=>{
+ userProfile = { nev: nev, tel: tel, cim: cim, zona: zona };
+ localStorage.setItem("frueat_profile", JSON.stringify(userProfile));
+ location.reload(); // Újratöltés, hogy betöltsön a fő app
+}
 
- document.getElementById("kinalat").innerHTML=`
-  <div class="post">
-   <b>${data.kinalat.cim}</b><br><br>
-   ${data.kinalat.uzenet}<br><br>
+function resetProfile() {
+ localStorage.removeItem("frueat_profile");
+ location.reload();
+}
 
-   <small>
-   Határidő: ${data.kinalat.hatarido}<br>
-   ${data.kinalat.atvetel}
-   </small>
+// --- LIGHTBOX KEZELÉS ---
+function openLightbox(src) {
+ document.getElementById("lb-img").src = src;
+ document.getElementById("lightbox").style.display = "block";
+}
+function closeLightbox() {
+ document.getElementById("lightbox").style.display = "none";
+}
 
-   <img src="https://images.unsplash.com/photo-1567306226416-28f0efdc88ce">
-  </div>
- `;
+// --- ADATOK BETÖLTÉSE ---
+function betoltes() {
+ const API = "https://script.google.com/macros/s/AKfycbyOfBTcodDIxMCyrOwLGX5H_upU11Glay-4cv6jnCS5gd0aU2X_kHFTE0YOSfDtPIFKHQ/exec";
+ const ORDER_API = "https://script.google.com/macros/s/AKfycbx_9cJfISJNZ7SykOdI83cmrIKXYix-h9Ca8ESbXuWL6WBvPnmSdT9Xh2WIae1TiaX5tA/exec";
 
- let html="";
+ fetch(API)
+ .then(r=>r.json())
+ .then(data => {
 
- data.termekek.forEach(t=>{
-  html+=`
-   <div class="product">
-    <div class="product-info">
-     <b>${t.nev}</b><br>
-     ${t.ar} ${t.egyseg}
+  // 1. ZÓNA ALAPÚ SZÖVEGEK KIALAKÍTÁSA
+  let deliveryInfo = "";
+  
+  if(userProfile.zona === "Pécel") {
+   // Pécel esetén kiszállítás és személyes átvétel is van
+   deliveryInfo = `
+    <strong>🛵 Kiszállítás:</strong> ${data.kinalat.kiszallitas_ideje}<br>
+    <strong>📦 Személyes átvétel:</strong> ${data.kinalat.atvetel_datum} (${data.kinalat.atvetel_tol_ig})
+   `;
+  } else {
+   // Egyéb zóna esetén csak kiszállítás
+   deliveryInfo = `<strong>🛵 Kiszállítás:</strong> ${data.kinalat.kiszallitas_ideje}`;
+  }
+
+  // 2. FŐ POSZT MEGJELENÍTÉSE
+  document.getElementById("kinalat").innerHTML = `
+   <div class="post">
+    <b>${data.kinalat.cim}</b><br><br>
+    ${data.kinalat.uzenet}<br>
+    
+    <div class="info-box">
+     <strong>⏱ Rendelési határidő:</strong> ${data.kinalat.hatarido}<br>
+     ${deliveryInfo}
     </div>
 
-    <div class="product-cart">
-     <input id="menny_${t.nev}" placeholder="kg">
-     <button onclick="add('${t.nev}')">Kosár</button>
-    </div>
+    <img class="post-image" src="${data.kinalat.fokep}" alt="Kínálat">
    </div>
   `;
+
+  // 3. TERMÉKEK MEGJELENÍTÉSE (2 képpel)
+  let html = "";
+  data.termekek.forEach(t => {
+   // Képek HTML-je, ha léteznek
+   let imgHtml = "";
+   if(t.kep1) imgHtml += `<img src="${t.kep1}" onclick="openLightbox('${t.kep1}')">`;
+   if(t.kep2) imgHtml += `<img src="${t.kep2}" onclick="openLightbox('${t.kep2}')">`;
+
+   html += `
+    <div class="product">
+     <div class="product-images">
+      ${imgHtml}
+     </div>
+     <div class="product-info">
+      <b>${t.nev}</b><br>
+      ${t.ar} ${t.egyseg}
+     </div>
+
+     <div class="product-cart">
+      <input id="menny_${t.nev}" type="number" step="0.1" placeholder="kg/db">
+      <button onclick="add('${t.nev}')">Kosárba</button>
+     </div>
+    </div>
+   `; 
+  });
+
+  document.getElementById("termekek").innerHTML = html;
  });
+}
 
- document.getElementById("termekek").innerHTML=html;
+// --- KOSÁR ÉS KÜLDÉS ---
+let kosar = {};
 
-});
-
-// ➕ kosár
-function add(termek){
+function add(termek) {
  let val = document.getElementById("menny_"+termek).value;
- if(val){
+ if(val && val > 0) {
   kosar[termek] = val;
-  alert(termek + " hozzáadva");
+  alert(termek + " a kosárban!");
+ } else {
+  alert("Adj meg érvényes mennyiséget!");
  }
 }
 
-// 👤 profil betöltés
-window.onload = function(){
- let nev = localStorage.getItem("nev");
- let tel = localStorage.getItem("tel");
- let cim = localStorage.getItem("cim");
-
- if(nev) document.getElementById("nev").value = nev;
- if(tel) document.getElementById("tel").value = tel;
- if(cim) document.getElementById("cim").value = cim;
-}
-
-// 🚀 rendelés
-function kuldes(){
-
- let nev = document.getElementById("nev").value;
- let tel = document.getElementById("tel").value;
- let cim = document.getElementById("cim").value;
+function kuldes() {
  let megjegyzes = document.getElementById("megjegyzes").value;
-
- if(!nev || !tel || !cim){
-  alert("Tölts ki mindent!");
-  return;
- }
-
- // mentés
- localStorage.setItem("nev", nev);
- localStorage.setItem("tel", tel);
- localStorage.setItem("cim", cim);
-
  let lista = "";
 
- for(let t in kosar){
-  lista += t + ":" + kosar[t] + ", ";
+ for(let t in kosar) {
+  lista += t + ": " + kosar[t] + ", ";
  }
 
- if(!lista){
-  alert("Nincs termék!");
+ if(!lista) {
+  alert("A kosarad üres!");
   return;
  }
 
+ // Az adatok már a localStorage-ből jönnek
+ const ORDER_API = "https://script.google.com/macros/s/AKfycbx_9cJfISJNZ7SykOdI83cmrIKXYix-h9Ca8ESbXuWL6WBvPnmSdT9Xh2WIae1TiaX5tA/exec";
+ 
  let url = ORDER_API
- + "?nev=" + encodeURIComponent(nev)
- + "&tel=" + encodeURIComponent(tel)
- + "&cim=" + encodeURIComponent(cim)
- + "&termek=" + encodeURIComponent(lista)
- + "&megjegyzes=" + encodeURIComponent(megjegyzes);
+ + "?nev=" + encodeURIComponent(userProfile.nev)
+ + "&tel=" + encodeURIComponent(userProfile.tel)
+ + "&cim=" + encodeURIComponent(userProfile.cim)
+ + "&zona=" + encodeURIComponent(userProfile.zona)
+ + "&megjegyzes=" + encodeURIComponent(megjegyzes)
+ + "&termek=" + encodeURIComponent(lista);
 
  let iframe = document.createElement("iframe");
  iframe.style.display="none";
  iframe.src=url;
  document.body.appendChild(iframe);
 
- alert("Rendelés elküldve!");
+ alert("Szuper! Rendelésedet elküldtük!");
+ kosar = {}; // Kosár ürítése
  location.reload();
 }
-
 </script>
 
 </body>
