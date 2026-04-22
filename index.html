@@ -580,9 +580,7 @@
                 atveteliMod = "hazhoz"; // alap mindig házhozszállítás
 
                 const alapDijInfo = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
-                const hatarInfo = parseInt(aktualisZonaAdat["ingyenes_hatar"]) || 0;
-                let dijCimke = alapDijInfo > 0 ? `${alapDijInfo} Ft` : "Ingyenes";
-                if(hatarInfo > 0) dijCimke += ` <small style="color:var(--green-dark)">(${hatarInfo} Ft felett ingyenes)</small>`;
+                let dijCimke = `${alapDijInfo} Ft`;
                 const atveteli_pont = aktualisZonaAdat["atveteli_pont_cime"] || "";
 
                 if(atvetelIgen) {
@@ -614,11 +612,8 @@
                 document.getElementById("show-zona").innerText = aktualisZonaAdat["telepules/kerulet"];
 
                 let szallitasSzoveg = "";
-                let dij = aktualisZonaAdat["szallitasi_dij"];
-                let hatar = aktualisZonaAdat["ingyenes_hatar"];
-                
-                let dijSzoveg = dij > 0 ? `${dij} Ft` : "Ingyenes";
-                if(hatar > 0) dijSzoveg += ` <em style="color:var(--green-dark)">(${hatar} Ft felett ingyenes!)</em>`;
+                let dij = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
+                let dijSzoveg = `${dij} Ft`;
 
                 szallitasSzoveg += `<strong>🛵 Kiszállítás díja:</strong> ${dijSzoveg}<br>`;
                 szallitasSzoveg += `<strong>⏱ Kiszállítás ideje:</strong> ${data.kinalat.kiszallitas_ideje}<br>`;
@@ -715,7 +710,6 @@
             }
 
             let alapDij = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
-            let hatar = parseInt(aktualisZonaAdat["ingyenes_hatar"]) || 0;
             let szallitasiDij = 0;
             let szallitasSzovegHtml = "";
 
@@ -725,10 +719,6 @@
             } else {
                 szallitasiDij = alapDij;
                 szallitasSzovegHtml = `${szallitasiDij} Ft`;
-                if(hatar > 0 && kosarErtek >= hatar) {
-                    szallitasiDij = 0;
-                    szallitasSzovegHtml = `<span class="free-delivery">🎉 INGYENES!</span>`;
-                }
             }
 
             vegszamlaHUF = kosarErtek + szallitasiDij;
