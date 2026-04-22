@@ -581,14 +581,18 @@
 
                 document.getElementById("main-app").style.display = "block";
 
-                const atvetelIgen = aktualisZonaAdat["atvetel_lehetseges?"] && 
-                                   aktualisZonaAdat["atvetel_lehetseges?"].toString().toLowerCase().trim() === "igen";
-                if(atvetelIgen) {
-                    document.getElementById("szallitas-valaszto").style.display = "block";
-                } else {
-                    document.getElementById("szallitas-valaszto").style.display = "none";
-                    atveteliMod = "hazhoz";
-                }
+                const atveteliMezo = (aktualisZonaAdat["atvetel_lehetseges?"] || "").toString().toLowerCase().trim();
+const atvetelIgen = atveteliMezo === "igen";
+
+if (atvetelIgen) {
+    document.getElementById("szallitas-valaszto").style.display = "block";
+} else {
+    document.getElementById("szallitas-valaszto").style.display = "none";
+    atveteliMod = "hazhoz"; 
+    // Itt beállítjuk a rádiógombot is alaphelyzetbe
+    const hazhozRadio = document.querySelector('input[name="atvetel"][value="hazhoz"]');
+    if(hazhozRadio) hazhozRadio.checked = true;
+}
 
                 document.getElementById("greet-name").innerText = userProfile.knev;
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
@@ -716,10 +720,10 @@
             vegszamlaHUF = kosarErtek + szallitasiDij;
 
             html += `
-                <div class="cart-item" style="margin-top:10px; color:#777; font-size:14px;">
-                    <span>Szállítás / Átvétel:</span>
-                    <span>${szallitasSzovegHtml}</span>
-                </div>
+    <div class="cart-item" style="margin-top:10px; color:#777; font-size:14px;">
+        <span>${atveteliMod === 'hazhoz' ? '🛵 Kiszállítás díja:' : '📦 Átvétel módja:'}</span>
+        <span>${szallitasSzovegHtml}</span>
+    </div>
                 <div class="cart-total">
                     <span>Fizetendő összesen:</span>
                     <span style="color:var(--green);">${vegszamlaHUF} Ft</span>
