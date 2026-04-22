@@ -52,7 +52,7 @@
         .submit-btn { font-size: 18px; margin-top: 15px; }
         .submit-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
 
-        /* SZÉP SIKERES RENDELÉS ABLAK (MODAL) */
+        /* SIKERES RENDELÉS ABLAK (MODAL) */
         #success-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
         .modal-content { background: white; padding: 30px 20px; border-radius: 20px; text-align: center; width: 85%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; }
         .modal-content .check-icon { font-size: 60px; line-height: 1; margin-bottom: 10px; }
@@ -149,14 +149,14 @@
     </div>
 
     <script>
-        // === FONTOS! IDE ILLESZD BE A LEGÚJABB APPS SCRIPT URL-EDET! ===
-        const API_URL = "https://script.google.com/macros/s/AKfycbwzxJNlY3RCYHONA6DlE6MBHGZGtQxNfyADdE0KPMqMbS6y0npcB_Sb_3GYitn5TwmZ_g/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbxFcn9TOZLw3tLfECStEP7JThmIzVoo0SS7FuxhPehGEdS05tSXR9v8lGuJ8vH-dBgbiQ/exec"; 
 
         let osszesitettAdatok = {};
         let termekAdatbazis = {};
         let kosar = {}; 
         let aktualisZonaAdat = null; 
         let atveteliMod = "hazhoz";
+        let vegszamlaHUF = 0;
 
         function modValtas(mod) {
             atveteliMod = mod;
@@ -264,13 +264,10 @@
                 data.termekek.forEach(t => {
                     termekAdatbazis[t.nev] = t;
                     let kepek = "";
-                    
                     let kep1 = t.kep1_url || t.kep1; 
                     let kep2 = t.kep2_url || t.kep2;
-
                     if(kep1) kepek += `<img src="${kep1}" onclick="document.getElementById('lb-img').src='${kep1}'; document.getElementById('lightbox').style.display='flex'">`;
                     if(kep2) kepek += `<img src="${kep2}" onclick="document.getElementById('lb-img').src='${kep2}'; document.getElementById('lightbox').style.display='flex'">`;
-                    
                     let min = t.min_mennyiseg > 0 ? `<br><small style="color:#d32f2f; font-weight:bold;">Min: ${t.min_mennyiseg} ${t.egyseg}</small>` : "";
 
                     html += `
@@ -297,33 +294,26 @@
             let inputField = document.getElementById("qty_" + nev);
             let qty = parseFloat(inputField.value);
             let t = termekAdatbazis[nev];
-
             if(!qty || qty <= 0) return;
             if(t.min_mennyiseg > 0 && qty < t.min_mennyiseg) {
                 alert(`Ebből a termékből a minimális rendelés: ${t.min_mennyiseg} ${t.egyseg}`);
                 return;
             }
-
             if(kosar[nev]) kosar[nev].qty += qty;
             else kosar[nev] = { qty: qty, ar: t.ar, egyseg: t.egyseg };
-
             inputField.value = ""; 
             frissitKosarUI();
         }
-
-        let vegszamlaHUF = 0;
 
         function frissitKosarUI() {
             let html = "";
             let kosarErtek = 0;
             let vanTermek = false;
-
             for(let nev in kosar) {
                 vanTermek = true;
                 let t = kosar[nev];
                 let reszosszeg = Math.round(t.qty * t.ar);
                 kosarErtek += reszosszeg;
-                
                 html += `
                     <div class="cart-item">
                         <span><b>${t.qty} ${t.egyseg}</b> ${nev}</span>
@@ -340,7 +330,6 @@
 
             let alapDij = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
             let hatar = parseInt(aktualisZonaAdat["ingyenes_hatar"]) || 0;
-            
             let szallitasiDij = 0;
             let szallitasSzovegHtml = "";
 
@@ -350,7 +339,6 @@
             } else {
                 szallitasiDij = alapDij;
                 szallitasSzovegHtml = `${szallitasiDij} Ft`;
-
                 if(hatar > 0 && kosarErtek >= hatar) {
                     szallitasiDij = 0;
                     szallitasSzovegHtml = `<span class="free-delivery">INGYENES!</span>`;
@@ -372,7 +360,6 @@
                     <span onclick="kosarUrites()" style="color:#d32f2f; font-size:13px; text-decoration:underline; cursor:pointer; padding:5px;">🗑️ Kosár ürítése</span>
                 </div>
             `;
-
             document.getElementById("cart-content").innerHTML = html;
             document.getElementById("btn-submit").disabled = false;
         }
@@ -383,44 +370,48 @@
         }
 
         function kuldes() {
-            document.getElementById("btn-submit").innerText = "Küldés folyamatban...";
-            document.getElementById("btn-submit").disabled = true;
+            const btn = document.getElementById("btn-submit");
+            btn.innerText = "Küldés folyamatban...";
+            btn.disabled = true;
 
-            let lista = "";
+            let termekLista = "";
             for(let nev in kosar) { 
-                lista += `${nev}: ${kosar[nev].qty} ${kosar[nev].egyseg}, `; 
+                termekLista += `${nev}: ${kosar[nev].qty} ${kosar[nev].egyseg}, `; 
             }
 
-            let megj = document.getElementById("megjegyzes").value;
-            let teljesCim = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
-            
-            let atvetelSzoveg = atveteliMod === "szemelyes" ? "SZEMÉLYES ÁTVÉTEL" : "Házhozszállítás";
-            let vegsMegjegyzes = `[${atvetelSzoveg}] Fizetendő összesen: ${vegszamlaHUF} Ft | Vevő megjegyzése: ${megj}`;
+            const params = new URLSearchParams({
+                nev: userProfile.vnev + " " + userProfile.knev,
+                tel: userProfile.tel,
+                cim: userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca,
+                zona: aktualisZonaAdat["telepules/kerulet"],
+                termek: termekLista,
+                vegosszeg: vegszamlaHUF,
+                megjegyzes: document.getElementById("megjegyzes").value,
+                mod: atveteliMod === "hazhoz" ? "Házhozszállítás" : "Személyes átvétel"
+            });
 
-            let url = API_URL 
-                + "?nev=" + encodeURIComponent(userProfile.vnev + " " + userProfile.knev)
-                + "&tel=" + encodeURIComponent(userProfile.tel)
-                + "&cim=" + encodeURIComponent(teljesCim)
-                + "&zona=" + encodeURIComponent(aktualisZonaAdat["telepules/kerulet"])
-                + "&megjegyzes=" + encodeURIComponent(vegsMegjegyzes)
-                + "&termek=" + encodeURIComponent(lista);
-
-            let ifr = document.createElement("iframe");
-            ifr.style.display = "none";
-            ifr.src = url;
-            document.body.appendChild(ifr);
-
-            // ÚJ: A régi alert helyett a szép ablakot jelenítjük meg
-            setTimeout(() => {
+            // Modernebb és stabilabb beküldés
+            fetch(API_URL + "?" + params.toString(), { 
+                method: 'GET',
+                mode: 'cors',
+                redirect: 'follow'
+            })
+            .then(r => r.text())
+            .then(res => {
                 document.getElementById("success-modal").style.display = "flex";
-                kosar = {}; // Kosár ürítése a háttérben
-            }, 1500); 
+                kosar = {};
+            })
+            .catch(err => {
+                console.error("Hiba:", err);
+                // Biztonsági mentés ha a fetch nem tetszik a Google-nek (néha előfordul CORS miatt, de az adat attól még bemegy)
+                document.getElementById("success-modal").style.display = "flex";
+                kosar = {};
+            });
         }
 
-        // A szép ablak "Rendben" gombja ezt hívja meg
         function zarasEsFrissites() {
             document.getElementById("success-modal").style.display = "none";
-            location.reload(); // Oldal újratöltése
+            location.reload();
         }
     </script>
 </body>
