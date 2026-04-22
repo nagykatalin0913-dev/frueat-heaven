@@ -555,6 +555,22 @@
             return isNaN(d) ? nyers : d.toLocaleString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
         }
 
+        // Rugalmas kulcskeresés: megtalálja a zóna adat mezőt akkor is ha a Sheets fejléc kicsit eltér
+        function zonaErtek(obj, kulcsReszlet) {
+            // Pontos egyezés először
+            if (obj[kulcsReszlet] !== undefined) return obj[kulcsReszlet];
+            // Normalizált keresés: kisbetű, ékezet nélkül, szóköz->alulvonás
+            const norm = s => s.toLowerCase().replace(/\s+/g, '_')
+                .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
+                .replace(/ó/g,'o').replace(/ö/g,'o').replace(/ő/g,'o')
+                .replace(/ú/g,'u').replace(/ü/g,'u').replace(/ű/g,'u');
+            const k = norm(kulcsReszlet);
+            for (let key of Object.keys(obj)) {
+                if (norm(key).includes(k) || k.includes(norm(key))) return obj[key];
+            }
+            return "";
+        }
+
         function adatokBetoltese() {
             document.getElementById("profile-setup").style.display = "none";
             
@@ -562,7 +578,10 @@
             .then(r => r.json())
             .then(data => {
                 osszesitettAdatok = data;
-                aktualisZonaAdat = data.zonak.find(z => z["iranyitoszam"] == userProfile.irsz);
+                aktualisZonaAdat = data.zonak.find(z => String(z["iranyitoszam"]).trim() == String(userProfile.irsz).trim());
+
+                // DEBUG: zóna kulcsok logolása (fejlesztéshez hasznos)
+                if(aktualisZonaAdat) console.log("Zóna adat:", JSON.stringify(aktualisZonaAdat));
 
                 if(!aktualisZonaAdat) {
                     document.getElementById("out-of-zone").style.display = "block";
@@ -571,17 +590,21 @@
 
                 document.getElementById("main-app").style.display = "block";
 
-                const atvetelIgen = aktualisZonaAdat["atvetel_lehetseges?"] && 
-                                   aktualisZonaAdat["atvetel_lehetseges?"].toString().toLowerCase().trim() === "igen";
+                // Zóna mezők rugalmas kiolvasása
+                const atvetelIgenErtek = zonaErtek(aktualisZonaAdat, "atvetel_lehetseges");
+                const atvetelIgen = atvetelIgenErtek.toString().toLowerCase().trim() === "igen";
+                const alapDijInfo = parseInt(zonaErtek(aktualisZonaAdat, "szallitasi_dij")) || 0;
+                const hatarErtek = zonaErtek(aktualisZonaAdat, "ingyenes_hatar");
+                const ingyenesHatar = hatarErtek !== "" && hatarErtek !== null ? parseInt(hatarErtek) || 0 : 0;
+                const atveteli_pont = zonaErtek(aktualisZonaAdat, "atveteli_pont_cime") || "";
 
                 // A szállítás-választó panel mindig megjelenik
                 const valasztoEl = document.getElementById("szallitas-valaszto");
                 valasztoEl.style.display = "block";
                 atveteliMod = "hazhoz"; // alap mindig házhozszállítás
 
-                const alapDijInfo = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
                 let dijCimke = `${alapDijInfo} Ft`;
-                const atveteli_pont = aktualisZonaAdat["atveteli_pont_cime"] || "";
+                if(ingyenesHatar > 0) dijCimke += ` <small style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes)</small>`;
 
                 if(atvetelIgen) {
                     // Két opció: házhozszállítás + személyes átvétel
@@ -609,17 +632,18 @@
                 document.getElementById("greet-name").innerText = userProfile.knev;
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
                 document.getElementById("show-cim").innerText = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
-                document.getElementById("show-zona").innerText = aktualisZonaAdat["telepules/kerulet"];
+                document.getElementById("show-zona").innerText = zonaErtek(aktualisZonaAdat, "telepules") || zonaErtek(aktualisZonaAdat, "kerulet") || "";
 
                 let szallitasSzoveg = "";
-                let dij = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
+                let dij = alapDijInfo;
                 let dijSzoveg = `${dij} Ft`;
+                if(ingyenesHatar > 0) dijSzoveg += ` <em style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes!)</em>`;
 
                 szallitasSzoveg += `<strong>🛵 Kiszállítás díja:</strong> ${dijSzoveg}<br>`;
                 szallitasSzoveg += `<strong>⏱ Kiszállítás ideje:</strong> ${data.kinalat.kiszallitas_ideje}<br>`;
 
                 if(atvetelIgen) {
-                    szallitasSzoveg += `<br><strong>📦 Személyes átvétel (${aktualisZonaAdat["atveteli_pont_cime"]}):</strong><br>`;
+                    szallitasSzoveg += `<br><strong>📦 Személyes átvétel (${atveteli_pont}):</strong><br>`;
                     szallitasSzoveg += `${data.kinalat.atvetel_datum} (${data.kinalat.atvetel_tol_ig})`;
                 }
 
@@ -709,7 +733,9 @@
                 return;
             }
 
-            let alapDij = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
+            let alapDij = parseInt(zonaErtek(aktualisZonaAdat, "szallitasi_dij")) || 0;
+            const hatarRaw = zonaErtek(aktualisZonaAdat, "ingyenes_hatar");
+            const ingyenesHatar = (hatarRaw !== "" && hatarRaw !== null) ? parseInt(hatarRaw) || 0 : 0;
             let szallitasiDij = 0;
             let szallitasSzovegHtml = "";
 
@@ -719,6 +745,11 @@
             } else {
                 szallitasiDij = alapDij;
                 szallitasSzovegHtml = `${szallitasiDij} Ft`;
+                // Csak akkor ingyenes ha az adott zónánál van megadva ingyenes határ ÉS a kosár eléri azt
+                if(ingyenesHatar > 0 && kosarErtek >= ingyenesHatar) {
+                    szallitasiDij = 0;
+                    szallitasSzovegHtml = `<span class="free-delivery">🎉 INGYENES! (${ingyenesHatar} Ft felett)</span>`;
+                }
             }
 
             vegszamlaHUF = kosarErtek + szallitasiDij;
