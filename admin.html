@@ -8,32 +8,20 @@
         :root { --primary: #2e7d32; --secondary: #1976d2; --waze: #33ccff; }
         body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 10px; color: #333; }
         .header { background: var(--primary); color: white; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
-        
-        /* Üzemmód választó */
         .mode-selector { display: flex; gap: 10px; margin-bottom: 15px; }
         .mode-btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .mode-btn.active { background: var(--primary); color: white; }
-
         .search-box { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 15px; box-sizing: border-box; }
-        
-        .order-card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; border-left: 8px solid #ccc; transition: 0.3s; }
-        .order-card.next-delivery { border-left-color: var(--secondary); transform: scale(1.02); box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2); }
-        .order-card.next-delivery::before { content: "NÁLUK JÁRSZ MOST:"; display: block; font-size: 10px; color: var(--secondary); font-weight: bold; margin-bottom: 5px; }
-
+        .order-card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; border-left: 8px solid #ccc; position: relative; }
+        .order-card.next-delivery { border-left-color: var(--secondary); border-width: 8px; background: #f0f7ff; }
         .customer-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .zone-tag { font-size: 11px; background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; }
-
+        .zone-tag { font-size: 11px; background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; font-weight: bold; }
         .item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
-        .weight-input { width: 50px; padding: 4px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-weight: bold; }
-        
         .total-price { text-align: right; font-size: 18px; font-weight: bold; margin: 15px 0; color: var(--primary); }
-        
         .nav-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .nav-btn { padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; color: white; font-weight: bold; font-size: 14px; }
-        
-        .finish-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; margin-top: 10px; cursor: pointer; }
-        
-        .loading { text-align: center; padding: 50px; color: #666; }
+        .finish-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        .loading { text-align: center; padding: 50px; color: #666; font-style: italic; }
     </style>
 </head>
 <body>
@@ -49,7 +37,7 @@
 
 <input type="text" id="searchInput" class="search-box" placeholder="Név vagy cím keresése..." onkeyup="render()">
 
-<div id="main-list"><div class="loading">Adatok szinkronizálása...</div></div>
+<div id="main-list"><div class="loading">Adatok betöltése a táblázatból...</div></div>
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbz0j45jl2Erh-JMcJ-5S89RVabJrPsDwnqSzDTYQ-XI5sSje0U26_91dHpTI_ZZpXcI7w/exec"; 
@@ -58,11 +46,17 @@
 
     async function fetchData() {
         try {
-            const response = await fetch(API_URL + "?admin=true");
-            orders = await response.json();
-            render();
+            // A redirect: "follow" kulcsfontosságú a Google Scriptnél!
+            const response = await fetch(API_URL + "?admin=true", { redirect: "follow" });
+            const data = await response.json();
+            
+            if (data) {
+                orders = data;
+                render();
+            }
         } catch (e) {
-            document.getElementById('main-list').innerHTML = "Hiba az adatok lekérésekor.";
+            console.error("Hiba:", e);
+            document.getElementById('main-list').innerHTML = `<div class="loading" style="color:red;">Hiba az adatok lekérésekor!<br><small>${e.message}</small></div>`;
         }
     }
 
@@ -78,88 +72,99 @@
         const search = document.getElementById('searchInput').value.toLowerCase();
         list.innerHTML = "";
 
-        // Szűrés
+        if (orders.length === 0) {
+            list.innerHTML = '<div class="loading">Nincs aktív rendelés a táblázatban.</div>';
+            return;
+        }
+
+        // Szűrés a kereső alapján
         let filtered = orders.filter(o => 
-            o.nev.toLowerCase().includes(search) || o.cim.toLowerCase().includes(search)
+            (o.nev && o.nev.toLowerCase().includes(search)) || 
+            (o.cim && o.cim.toLowerCase().includes(search))
         );
 
-        // LOGIKUS SORREND: 
-        // 1. Zóna szerint (Irányítószám/Város - ahogy a Zonak fülön van)
-        // 2. Utca szerint
+        // Sorbarendezés kiszállításnál (Zóna, majd Cím)
         if (currentMode === 'szallitas') {
             filtered.sort((a, b) => {
-                if (a.zona !== b.zona) return a.zona.localeCompare(b.zona);
-                return a.cim.localeCompare(b.cim);
+                let az = String(a.zona || "");
+                let bz = String(b.zona || "");
+                if (az !== bz) return az.localeCompare(bz);
+                return String(a.cim || "").localeCompare(String(b.cim || ""));
             });
         }
 
         filtered.forEach((o, index) => {
             const card = document.createElement('div');
-            // Kiszállítás módban a legfelső kártyát kiemeljük, mint aktuális úticél
             card.className = `order-card ${currentMode === 'szallitas' && index === 0 ? 'next-delivery' : ''}`;
             
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.cim)}`;
-            const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(o.cim)}&navigate=yes`;
+            // Tiszta cím a navigációhoz
+            const cleanAddress = o.cim ? o.cim.replace(/\r?\n|\r/g, " ") : "";
+            const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(cleanAddress)}`;
+            const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(cleanAddress)}&navigate=yes`;
 
             card.innerHTML = `
                 <div class="customer-header">
                     <div>
-                        <div style="font-weight:bold; font-size:16px;">${o.nev}</div>
-                        <div style="font-size:13px; color:#666;">${o.cim}</div>
+                        <div style="font-weight:bold; font-size:16px;">${o.nev || "Névtelen"}</div>
+                        <div style="font-size:13px; color:#666;">${o.cim || "Nincs cím"}</div>
                     </div>
-                    <span class="zone-tag">${o.zona}</span>
+                    <span class="zone-tag">${o.zona || "Helyszíni"}</span>
                 </div>
 
-                <div style="margin-top:10px;">
-                    ${renderItems(o.termek, o.rowId)}
+                <div style="margin-top:10px; border-top:1px solid #eee;">
+                    ${renderItems(o.termek || "")}
                 </div>
 
-                <div class="total-price">Fizetendő: ${o.vegosszeg || '...'} Ft</div>
+                <div class="total-price">${o.vegosszeg || "0"} Ft</div>
 
                 <div class="nav-group">
                     <a href="${mapsUrl}" target="_blank" class="nav-btn" style="background:var(--secondary)">Google Maps</a>
                     <a href="${wazeUrl}" target="_blank" class="nav-btn" style="background:var(--waze)">Waze</a>
                 </div>
 
-                <button class="finish-btn" onclick="completeOrder(${o.rowId})">
-                    ${currentMode === 'atvetel' ? 'ÁTADVA ÉS FIZETVE' : 'MEGÉRKEZTEM / KISZÁLLÍTVA'}
+                <button class="finish-btn" onclick="completeOrder(${o.rowid})">
+                    ${currentMode === 'atvetel' ? '✓ ÁTADVA ÉS FIZETVE' : '✓ KISZÁLLÍTVA'}
                 </button>
             `;
             list.appendChild(card);
         });
     }
 
-    function renderItems(termekStr, rowId) {
-        // "Alma: 2kg, Eper: 1kg" formátum darabolása
+    function renderItems(termekStr) {
+        if (!termekStr) return "Nincs termék";
         return termekStr.split(',').map(t => {
-            const p = t.split(':');
-            const nev = p[0].trim();
-            const suly = p[1] ? p[1].trim() : "";
-            return `
-                <div class="item-row">
-                    <span>${nev}</span>
-                    <div>
-                        <input type="text" value="${suly}" class="weight-input" onchange="updateWeight(${rowId}, this.value)">
-                    </div>
-                </div>
-            `;
+            if (!t.trim()) return "";
+            return `<div class="item-row"><span>${t.trim()}</span></div>`;
         }).join('');
     }
 
     async function completeOrder(rowId) {
         if(!confirm("Lezárod a rendelést?")) return;
-        const resp = await fetch(`${API_URL}?update=true&rowId=${rowId}&newStatus=Kiszállítva`);
-        if(await resp.text() === "ok") {
-            // Frissítés: az adott rendelés kikerül a listából
-            orders = orders.filter(o => o.rowId !== rowId);
-            render();
+        
+        const btn = event.target;
+        btn.innerText = "Mentés...";
+        btn.disabled = true;
+
+        try {
+            const resp = await fetch(`${API_URL}?update=true&rowId=${rowId}&newStatus=Kiszállítva`, { redirect: "follow" });
+            const result = await resp.text();
+            if(result.trim() === "ok") {
+                orders = orders.filter(o => o.rowid !== rowId);
+                render();
+            } else {
+                alert("Hiba történt a mentés során!");
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert("Hiba az internetkapcsolatban!");
+            btn.disabled = false;
         }
     }
 
-    // Alapértelmezett betöltés
+    // Első betöltés
     fetchData();
-    // Automatikus frissítés 2 percenként
-    setInterval(fetchData, 120000);
+    // Automatikus frissítés 1 percenként
+    setInterval(fetchData, 60000);
 </script>
 
 </body>
