@@ -466,17 +466,7 @@
                     <i style="color:#999;">Még nincs termék a kosaradban.</i>
                 </div>
 
-                <div id="szallitas-valaszto">
-                    <b>Hogyan szeretnéd megkapni?</b>
-                    <label class="radio-option">
-                        <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')">
-                        🛵 Házhozszállítás
-                    </label>
-                    <label class="radio-option">
-                        <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')">
-                        📦 Személyes átvétel (Ingyenes)
-                    </label>
-                </div>
+                <div id="szallitas-valaszto"></div>
 
                 <small style="color:#888; font-weight:600;">Szállítási adataid:</small>
                 <div class="address-block">
@@ -581,18 +571,42 @@
 
                 document.getElementById("main-app").style.display = "block";
 
-                const atveteliMezo = (aktualisZonaAdat["atvetel_lehetseges?"] || "").toString().toLowerCase().trim();
-const atvetelIgen = atveteliMezo === "igen";
+                const atvetelIgen = aktualisZonaAdat["atvetel_lehetseges?"] && 
+                                   aktualisZonaAdat["atvetel_lehetseges?"].toString().toLowerCase().trim() === "igen";
 
-if (atvetelIgen) {
-    document.getElementById("szallitas-valaszto").style.display = "block";
-} else {
-    document.getElementById("szallitas-valaszto").style.display = "none";
-    atveteliMod = "hazhoz"; 
-    // Itt beállítjuk a rádiógombot is alaphelyzetbe
-    const hazhozRadio = document.querySelector('input[name="atvetel"][value="hazhoz"]');
-    if(hazhozRadio) hazhozRadio.checked = true;
-}
+                // A szállítás-választó panel mindig megjelenik
+                const valasztoEl = document.getElementById("szallitas-valaszto");
+                valasztoEl.style.display = "block";
+                atveteliMod = "hazhoz"; // alap mindig házhozszállítás
+
+                const alapDijInfo = parseInt(aktualisZonaAdat["szallitasi_dij"]) || 0;
+                const hatarInfo = parseInt(aktualisZonaAdat["ingyenes_hatar"]) || 0;
+                let dijCimke = alapDijInfo > 0 ? `${alapDijInfo} Ft` : "Ingyenes";
+                if(hatarInfo > 0) dijCimke += ` <small style="color:var(--green-dark)">(${hatarInfo} Ft felett ingyenes)</small>`;
+                const atveteli_pont = aktualisZonaAdat["atveteli_pont_cime"] || "";
+
+                if(atvetelIgen) {
+                    // Két opció: házhozszállítás + személyes átvétel
+                    valasztoEl.innerHTML = `
+                        <b>Hogyan szeretnéd megkapni?</b>
+                        <label class="radio-option">
+                            <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')">
+                            🛵 Házhozszállítás – ${dijCimke}
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')">
+                            📦 Személyes átvétel – Ingyenes${atveteli_pont ? ` <small style="color:#666">(${atveteli_pont})</small>` : ''}
+                        </label>
+                    `;
+                } else {
+                    // Csak házhozszállítás, info megjelenítve
+                    valasztoEl.innerHTML = `
+                        <b>Szállítás módja</b>
+                        <div class="radio-option" style="cursor:default; background:#f0f0f0; border-color:#e0e0e0;">
+                            🛵 Házhozszállítás – ${dijCimke}
+                        </div>
+                    `;
+                }
 
                 document.getElementById("greet-name").innerText = userProfile.knev;
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
@@ -720,10 +734,10 @@ if (atvetelIgen) {
             vegszamlaHUF = kosarErtek + szallitasiDij;
 
             html += `
-    <div class="cart-item" style="margin-top:10px; color:#777; font-size:14px;">
-        <span>${atveteliMod === 'hazhoz' ? '🛵 Kiszállítás díja:' : '📦 Átvétel módja:'}</span>
-        <span>${szallitasSzovegHtml}</span>
-    </div>
+                <div class="cart-item" style="margin-top:10px; color:#777; font-size:14px;">
+                    <span>Szállítás / Átvétel:</span>
+                    <span>${szallitasSzovegHtml}</span>
+                </div>
                 <div class="cart-total">
                     <span>Fizetendő összesen:</span>
                     <span style="color:var(--green);">${vegszamlaHUF} Ft</span>
