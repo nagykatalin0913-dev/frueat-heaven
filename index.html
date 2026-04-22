@@ -4,70 +4,402 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fru'eat Heaven</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; color: #333; padding-bottom: 30px; }
-        .wrapper { max-width: 600px; margin: auto; padding: 15px; }
+        :root {
+            --green: #2e7d32;
+            --green-light: #e8f5e9;
+            --green-mid: #4caf50;
+            --green-dark: #1b5e20;
+            --red: #d32f2f;
+            --yellow: #fff9c4;
+            --shadow: 0 4px 16px rgba(46,125,50,0.10);
+            --radius: 18px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #f0f4f1;
+            margin: 0;
+            color: #333;
+            padding-bottom: 40px;
+        }
+        .wrapper { max-width: 600px; margin: auto; padding: 14px; }
 
-        /* LOGO & HEADER */
-        .header { text-align: center; margin: 10px 0 20px 0; }
-        .header img { max-width: 200px; height: auto; }
-        .greeting { font-size: 22px; font-weight: bold; margin-bottom: 15px; color: #2e7d32; text-align: center; }
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin: 16px 0 20px 0;
+            padding: 10px 0;
+        }
+        .header img { max-width: 210px; height: auto; }
 
-        /* PROFIL ŰRLAP */
-        #profile-setup { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; }
-        #profile-setup h3 { margin-top: 0; color: #2e7d32; font-size: 20px; }
-        #profile-setup input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-size: 16px; background:#fafafa; }
-        .half-input { width: 48%; display: inline-block; }
-        .half-input:nth-child(odd) { margin-right: 2%; }
+        /* KÖSZÖNTŐ */
+        .greeting {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--green-dark);
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        /* PROFIL PANEL */
+        #profile-setup {
+            background: white;
+            padding: 28px 22px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        #profile-setup h3 {
+            margin: 0 0 6px 0;
+            font-family: 'Playfair Display', serif;
+            color: var(--green);
+            font-size: 22px;
+        }
+        #profile-setup p { color: #777; font-size: 14px; margin-bottom: 18px; }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .input-grid .full { grid-column: 1 / -1; }
+        #profile-setup input {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #e0e0e0;
+            font-size: 15px;
+            font-family: 'Nunito', sans-serif;
+            background: #fafafa;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        #profile-setup input:focus { border-color: var(--green); background: #fff; }
         #main-app { display: none; }
 
+        /* AKTUÁLIS RENDELÉS PANEL (rendelés után jelenik meg) */
+        #aktualis-rendeles {
+            display: none;
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+            color: white;
+            padding: 18px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 18px;
+            box-shadow: 0 6px 20px rgba(46,125,50,0.25);
+        }
+        #aktualis-rendeles h4 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-family: 'Playfair Display', serif;
+            opacity: 0.95;
+        }
+        .ar-items { font-size: 13px; opacity: 0.9; line-height: 1.8; }
+        .ar-total { font-size: 18px; font-weight: 800; margin-top: 10px; letter-spacing: 0.3px; }
+        .ar-status {
+            display: inline-block;
+            background: rgba(255,255,255,0.25);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 8px;
+            font-weight: 700;
+        }
+
         /* KÍNÁLAT POSZT */
-        .post { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .post-image { width: 100%; border-radius: 10px; margin-top: 15px; display: block; }
-        .info-box { background: #e8f5e9; padding: 12px; border-radius: 10px; margin-top: 15px; font-size: 14px; line-height: 1.5; border-left: 4px solid #2e7d32; }
+        .post {
+            background: white;
+            border-radius: var(--radius);
+            padding: 18px 16px 14px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+        .post-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            color: var(--green-dark);
+            margin-bottom: 10px;
+        }
+        .post-text {
+            font-size: 15px;
+            line-height: 1.65;
+            color: #444;
+            text-align: justify;
+        }
+        .post-image {
+            width: 100%;
+            border-radius: 12px;
+            margin-top: 14px;
+            display: block;
+        }
+        .info-box {
+            background: var(--green-light);
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-top: 14px;
+            font-size: 14px;
+            line-height: 1.8;
+            border-left: 4px solid var(--green);
+            color: #333;
+        }
+        .info-box strong { color: var(--green-dark); }
 
         /* TERMÉKEK */
-        .product { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .product-top { display: flex; justify-content: space-between; align-items: center; }
-        .product-images { display: flex; gap: 10px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .product-images img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 1px solid #eee; flex-shrink: 0; }
-        .product-info { flex: 1; }
-        .product-info b { font-size: 18px; }
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            color: var(--green-dark);
+            margin: 22px 0 12px;
+            padding-left: 4px;
+        }
+        .product {
+            background: white;
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 14px;
+            box-shadow: var(--shadow);
+        }
+        .product-images {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+        .product-images img {
+            width: 82px;
+            height: 82px;
+            object-fit: cover;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid #f0f0f0;
+            flex-shrink: 0;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+        .product-images img:hover { transform: scale(1.05); border-color: var(--green-mid); }
+        .product-top { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
+        .product-info b { font-size: 17px; display: block; margin-bottom: 2px; }
+        .product-price { color: #555; font-size: 15px; }
+        .product-min { color: var(--red); font-size: 13px; font-weight: 700; margin-top: 3px; }
         .product-cart { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
-        .product-cart input { width: 60px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; text-align: center; font-size:16px; background:#fafafa;}
-        
-        button { background: #2e7d32; color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.2s; width: 100%; box-shadow: 0 4px 6px rgba(46,125,50,0.2); }
-        button:active { transform: scale(0.98); background: #1b5e20; }
-        .btn-small { width: auto; padding: 10px 15px; }
+        .product-cart input {
+            width: 68px;
+            padding: 10px 8px;
+            border-radius: 10px;
+            border: 1.5px solid #ddd;
+            text-align: center;
+            font-size: 16px;
+            font-family: 'Nunito', sans-serif;
+            background: #fafafa;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .product-cart input:focus { border-color: var(--green); }
+
+        /* GOMBOK */
+        .btn {
+            background: var(--green);
+            color: white;
+            border: none;
+            padding: 13px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            font-family: 'Nunito', sans-serif;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 3px 8px rgba(46,125,50,0.2);
+            width: 100%;
+        }
+        .btn:hover { background: var(--green-mid); }
+        .btn:active { transform: scale(0.97); background: var(--green-dark); }
+        .btn:disabled { background: #b0bec5; cursor: not-allowed; box-shadow: none; }
+        .btn-small { width: auto; padding: 10px 16px; font-size: 14px; }
+        .btn-submit { font-size: 17px; padding: 16px; margin-top: 14px; }
 
         /* KOSÁR ÉS RENDELÉS PANEL */
-        .form { background: white; padding: 20px; border-radius: 15px; margin-top: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .cart-summary { background: #fafafa; border: 1px dashed #ccc; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        .cart-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px;}
-        .cart-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-top: 12px; border-top: 2px solid #ddd; padding-top: 12px;}
-        .free-delivery { color: #2e7d32; font-weight: bold; }
-        
-        .form textarea { width: 100%; padding: 12px; margin-top: 10px; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; font-family: inherit; font-size:15px; background:#fafafa; resize: none; }
-        .submit-btn { font-size: 18px; margin-top: 15px; }
-        .submit-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+        .form {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-top: 20px;
+            box-shadow: var(--shadow);
+        }
+        .form-section-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--green-dark);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .cart-summary {
+            background: #f8faf8;
+            border: 1.5px dashed #c8e6c9;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 15px;
+            align-items: center;
+        }
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 800;
+            font-size: 19px;
+            margin-top: 12px;
+            border-top: 2px solid #e8f5e9;
+            padding-top: 12px;
+        }
+        .free-delivery { color: var(--green); font-weight: 700; }
 
-        /* SIKERES RENDELÉS ABLAK (MODAL) */
-        #success-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
-        .modal-content { background: white; padding: 30px 20px; border-radius: 20px; text-align: center; width: 85%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out; }
-        .modal-content .check-icon { font-size: 60px; line-height: 1; margin-bottom: 10px; }
-        .modal-content h3 { margin: 0 0 10px 0; color: #2e7d32; font-size: 22px; }
-        .modal-content p { color: #666; margin: 0 0 20px 0; font-size: 15px; line-height: 1.4; }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        /* SZÁLLÍTÁS VÁLASZTÓ */
+        #szallitas-valaszto {
+            display: none;
+            margin-bottom: 18px;
+            padding: 16px;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 14px;
+            background: var(--green-light);
+        }
+        #szallitas-valaszto b {
+            color: var(--green-dark);
+            display: block;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1.5px solid transparent;
+            transition: all 0.18s;
+        }
+        .radio-option input { width: 18px; height: 18px; margin-right: 10px; accent-color: var(--green); }
+        .radio-option:last-child { margin-bottom: 0; }
+
+        /* CÍM BLOKK */
+        .address-block {
+            background: #f5f5f5;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin: 8px 0 16px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .address-block b { color: var(--green-dark); }
+
+        textarea {
+            width: 100%;
+            padding: 13px;
+            border-radius: 12px;
+            border: 1.5px solid #e0e0e0;
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            background: #fafafa;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        textarea:focus { border-color: var(--green); background: #fff; }
+
+        .reset-link {
+            display: block;
+            text-align: center;
+            margin-top: 18px;
+            color: var(--red);
+            font-size: 13px;
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 8px;
+            font-weight: 600;
+        }
+
+        /* MODÁL */
+        #success-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: white;
+            padding: 36px 24px 28px;
+            border-radius: 24px;
+            text-align: center;
+            width: 88%;
+            max-width: 360px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-icon { font-size: 64px; line-height: 1; margin-bottom: 12px; }
+        .modal-content h3 {
+            margin: 0 0 10px;
+            font-family: 'Playfair Display', serif;
+            color: var(--green);
+            font-size: 24px;
+        }
+        .modal-content p { color: #666; margin: 0 0 22px; font-size: 15px; line-height: 1.5; }
+        @keyframes popIn {
+            0% { transform: scale(0.75); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
         /* LIGHTBOX */
-        #lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
-        #lightbox img { max-width: 95%; max-height: 90%; border-radius: 10px; }
-        .close-lb { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; }
-        .reset-link { display: block; text-align: center; margin-top: 20px; color: #d32f2f; font-size: 13px; text-decoration: underline; cursor: pointer; padding: 10px; }
+        #lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+        #lightbox img { max-width: 96%; max-height: 88%; border-radius: 12px; }
+        .close-lb { position: absolute; top: 20px; right: 26px; color: white; font-size: 38px; font-weight: 300; }
 
-        /* HIBA ÜZENET */
-        #out-of-zone { display: none; background: #ffebee; color: #c62828; padding: 20px; border-radius: 15px; text-align: center; margin-top: 20px; font-weight: bold; line-height: 1.5; }
+        /* HIBA */
+        #out-of-zone {
+            display: none;
+            background: #ffebee;
+            color: #c62828;
+            padding: 22px;
+            border-radius: var(--radius);
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 700;
+            line-height: 1.6;
+        }
+        #out-of-zone button {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 14px;
+            width: auto;
+        }
     </style>
 </head>
 
@@ -79,71 +411,85 @@
 
     <div id="success-modal">
         <div class="modal-content">
-            <div class="check-icon">✅</div>
+            <div class="modal-icon">✅</div>
             <h3>Sikeres rendelés!</h3>
-            <p>Nagyon köszönjük! A rendelésedet megkaptuk, hamarosan készítjük is össze.</p>
-            <button onclick="zarasEsFrissites()">Rendben</button>
+            <p>Nagyon köszönjük! Rendelésedet megkaptuk, hamarosan összekészítjük!</p>
+            <button class="btn" onclick="zarasEsFrissites()">Rendben</button>
         </div>
     </div>
 
     <div class="wrapper">
         <div class="header">
-            <img src="https://via.placeholder.com/220x100?text=Fru%27eat+Heaven+Logo" alt="Fru'eat Heaven Logo">
+            <img src="https://via.placeholder.com/220x80?text=Fru%27eat+Heaven" alt="Fru'eat Heaven Logo">
+        </div>
+
+        <!-- AKTUÁLIS RENDELÉS (rendelés után jelenik meg) -->
+        <div id="aktualis-rendeles">
+            <h4>📦 Aktuális rendelésed</h4>
+            <div class="ar-items" id="ar-termekek"></div>
+            <div class="ar-total" id="ar-total"></div>
+            <div class="ar-status">Folyamatban</div>
         </div>
 
         <div id="profile-setup">
             <h3>Üdvözlünk nálunk! 👋</h3>
-            <p style="color:#666; font-size:14px; margin-bottom:20px;">Kérlek, add meg az adataidat a böngészéshez!</p>
-            
-            <input id="p-vnev" class="half-input" placeholder="Vezetéknév">
-            <input id="p-knev" class="half-input" placeholder="Keresztnév">
-            <input id="p-tel" type="tel" placeholder="Telefonszám (pl. 0630...)">
-            <input id="p-irsz" class="half-input" type="number" placeholder="Irányítószám">
-            <input id="p-varos" class="half-input" placeholder="Település">
-            <input id="p-utca" placeholder="Utca, házszám, emelet/ajtó">
-            
-            <button onclick="saveProfile()" style="margin-top:10px;">Mentés és Tovább</button>
+            <p>Kérlek, add meg az adataidat a kínálat megjelenítéséhez!</p>
+
+            <div class="input-grid">
+                <input id="p-vnev" placeholder="Vezetéknév">
+                <input id="p-knev" placeholder="Keresztnév">
+                <input id="p-tel" type="tel" class="full" placeholder="Telefonszám (pl. 0630...)">
+                <input id="p-irsz" type="number" placeholder="Irányítószám">
+                <input id="p-varos" placeholder="Település">
+                <input id="p-utca" class="full" placeholder="Utca, házszám, emelet/ajtó">
+            </div>
+
+            <button class="btn" onclick="saveProfile()">Mentés és Tovább →</button>
         </div>
 
         <div id="out-of-zone">
-            Sajnos a megadott irányítószámra jelenleg nem vállalunk kiszállítást. 😔<br><br>
-            <button onclick="resetProfile()" style="background:#c62828; margin-top:15px;">Adatok módosítása</button>
+            Sajnos a megadott irányítószámra jelenleg nem vállalunk kiszállítást. 😔<br>
+            <button onclick="resetProfile()">Adatok módosítása</button>
         </div>
 
         <div id="main-app">
             <div class="greeting">Hello <span id="greet-name"></span>! 🍓</div>
 
             <div id="kinalat-poszt"></div>
+
+            <div class="section-title">🛒 Aktuális kínálat</div>
             <div id="termek-lista"></div>
 
             <div class="form">
-                <b style="font-size: 18px;">Kosár tartalma 🛒</b>
-                <div class="cart-summary" id="cart-content" style="margin-top: 15px;">
-                    <i style="color:#888;">Még nincs termék a kosaradban.</i>
+                <div class="form-section-title">🛒 Kosár tartalma</div>
+                <div class="cart-summary" id="cart-content">
+                    <i style="color:#999;">Még nincs termék a kosaradban.</i>
                 </div>
 
-                <div id="szallitas-valaszto" style="display:none; margin-bottom: 20px; padding: 15px; border: 1px solid #c8e6c9; border-radius: 12px; background: #e8f5e9;">
-                    <b style="color: #2e7d32; display:block; margin-bottom:10px;">Hogyan szeretnéd megkapni?</b>
-                    <label style="display:flex; align-items:center; margin-bottom:12px; cursor:pointer; font-size:16px;">
-                        <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')" style="width:20px; height:20px; margin-right:10px;"> 🛵 Házhozszállítás
+                <div id="szallitas-valaszto">
+                    <b>Hogyan szeretnéd megkapni?</b>
+                    <label class="radio-option">
+                        <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')">
+                        🛵 Házhozszállítás
                     </label>
-                    <label style="display:flex; align-items:center; cursor:pointer; font-size:16px;">
-                        <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')" style="width:20px; height:20px; margin-right:10px;"> 📦 Személyes átvétel (Ingyenes)
+                    <label class="radio-option">
+                        <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')">
+                        📦 Személyes átvétel (Ingyenes)
                     </label>
                 </div>
 
-                <small style="color:#666;">Szállítási/Számlázási adataid:</small><br>
-                <div style="background:#f9f9f9; padding:10px; border-radius:8px; margin-top:5px; font-size:14px; line-height:1.4;">
+                <small style="color:#888; font-weight:600;">Szállítási adataid:</small>
+                <div class="address-block">
                     Név: <b id="show-nev"></b><br>
                     Cím: <b id="show-cim"></b><br>
                     Körzet: <b id="show-zona"></b>
-                </div><br>
+                </div>
 
-                <label style="font-weight:bold; font-size:14px;">Megjegyzés (pl. kapukód):</label>
+                <label style="font-weight:700; font-size:14px; color:#555;">Megjegyzés (pl. kapukód):</label>
                 <textarea id="megjegyzes" rows="3" placeholder="Írj ide, ha van különleges kérésed..."></textarea>
 
-                <button id="btn-submit" class="submit-btn" onclick="kuldes()" disabled>Rendelés elküldése</button>
-                <span class="reset-link" onclick="resetProfile()">Adatok megváltoztatása</span>
+                <button id="btn-submit" class="btn btn-submit" onclick="kuldes()" disabled>Rendelés elküldése 🍊</button>
+                <span class="reset-link" onclick="resetProfile()">⚠ Adatok megváltoztatása</span>
             </div>
         </div>
     </div>
@@ -157,6 +503,17 @@
         let aktualisZonaAdat = null; 
         let atveteliMod = "hazhoz";
         let vegszamlaHUF = 0;
+
+        // Tárolt rendelés betöltése
+        const taroltRendeles = JSON.parse(localStorage.getItem("frueat_aktualis_rendeles"));
+        if (taroltRendeles) {
+            const arEl = document.getElementById("aktualis-rendeles");
+            const termekEl = document.getElementById("ar-termekek");
+            const totalEl = document.getElementById("ar-total");
+            termekEl.innerHTML = taroltRendeles.termekek.split(',').map(t => `• ${t.trim()}`).join('<br>');
+            totalEl.innerHTML = `Fizetendő: ${taroltRendeles.vegosszeg} Ft`;
+            arEl.style.display = "block";
+        }
 
         function modValtas(mod) {
             atveteliMod = mod;
@@ -224,7 +581,6 @@
 
                 document.getElementById("main-app").style.display = "block";
 
-                // VÁLASZTÓPANEL MEGJELENÍTÉSE
                 const atvetelIgen = aktualisZonaAdat["atvetel_lehetseges?"] && 
                                    aktualisZonaAdat["atvetel_lehetseges?"].toString().toLowerCase().trim() === "igen";
                 if(atvetelIgen) {
@@ -244,7 +600,7 @@
                 let hatar = aktualisZonaAdat["ingyenes_hatar"];
                 
                 let dijSzoveg = dij > 0 ? `${dij} Ft` : "Ingyenes";
-                if(hatar > 0) dijSzoveg += ` (De ${hatar} Ft felett ingyenes!)`;
+                if(hatar > 0) dijSzoveg += ` <em style="color:var(--green-dark)">(${hatar} Ft felett ingyenes!)</em>`;
 
                 szallitasSzoveg += `<strong>🛵 Kiszállítás díja:</strong> ${dijSzoveg}<br>`;
                 szallitasSzoveg += `<strong>⏱ Kiszállítás ideje:</strong> ${data.kinalat.kiszallitas_ideje}<br>`;
@@ -256,8 +612,8 @@
 
                 document.getElementById("kinalat-poszt").innerHTML = `
                     <div class="post">
-                        <b style="font-size:18px;">${data.kinalat.cim}</b><br><br>
-                        ${data.kinalat.uzenet}
+                        <div class="post-title">${data.kinalat.cim}</div>
+                        <div class="post-text">${data.kinalat.uzenet}</div>
                         <div class="info-box">
                             <strong>⏳ Rendelési határidő:</strong> ${formatDatum(data.kinalat.hatarido)}<br><br>
                             ${szallitasSzoveg}
@@ -274,25 +630,31 @@
                     let kep2 = t.kep2_url || t.kep2;
                     if(kep1) kepek += `<img src="${kep1}" onclick="document.getElementById('lb-img').src='${kep1}'; document.getElementById('lightbox').style.display='flex'">`;
                     if(kep2) kepek += `<img src="${kep2}" onclick="document.getElementById('lb-img').src='${kep2}'; document.getElementById('lightbox').style.display='flex'">`;
-                    let min = t.min_mennyiseg > 0 ? `<br><small style="color:#d32f2f; font-weight:bold;">Min: ${t.min_mennyiseg} ${t.egyseg}</small>` : "";
+
+                    let min = t.min_mennyiseg > 0 ? `<div class="product-min">Min: ${t.min_mennyiseg} ${t.egyseg}</div>` : "";
 
                     html += `
                         <div class="product">
-                            <div class="product-images">${kepek}</div>
+                            ${kepek ? `<div class="product-images">${kepek}</div>` : ''}
                             <div class="product-top">
                                 <div class="product-info">
-                                    <b>${t.nev}</b><br>
-                                    <span style="color:#666; font-size:15px;">${t.ar} Ft / ${t.egyseg}</span>${min}
+                                    <b>${t.nev}</b>
+                                    <div class="product-price">${t.ar} Ft / ${t.egyseg}</div>
+                                    ${min}
                                 </div>
-                                <div class="product-cart">
-                                    <input id="qty_${t.nev}" type="number" step="0.1" placeholder="0">
-                                    <button class="btn-small" onclick="addToCart('${t.nev}')">Kosárba</button>
-                                </div>
+                            </div>
+                            <div class="product-cart">
+                                <input id="qty_${t.nev}" type="number" step="0.1" placeholder="0" min="0">
+                                <button class="btn btn-small" onclick="addToCart('${t.nev}')">+ Kosárba</button>
                             </div>
                         </div>
                     `;
                 });
                 document.getElementById("termek-lista").innerHTML = html;
+            })
+            .catch(e => {
+                document.getElementById("profile-setup").style.display = "block";
+                alert("Hiba az adatok betöltésekor. Kérlek próbáld újra!");
             });
         }
 
@@ -323,13 +685,13 @@
                 html += `
                     <div class="cart-item">
                         <span><b>${t.qty} ${t.egyseg}</b> ${nev}</span>
-                        <span>${reszosszeg} Ft</span>
+                        <span style="font-weight:700;">${reszosszeg} Ft</span>
                     </div>
                 `;
             }
 
             if(!vanTermek) {
-                document.getElementById("cart-content").innerHTML = "<i style='color:#888;'>Még nincs termék a kosaradban.</i>";
+                document.getElementById("cart-content").innerHTML = "<i style='color:#999;'>Még nincs termék a kosaradban.</i>";
                 document.getElementById("btn-submit").disabled = true;
                 return;
             }
@@ -347,23 +709,23 @@
                 szallitasSzovegHtml = `${szallitasiDij} Ft`;
                 if(hatar > 0 && kosarErtek >= hatar) {
                     szallitasiDij = 0;
-                    szallitasSzovegHtml = `<span class="free-delivery">INGYENES!</span>`;
+                    szallitasSzovegHtml = `<span class="free-delivery">🎉 INGYENES!</span>`;
                 }
             }
 
             vegszamlaHUF = kosarErtek + szallitasiDij;
 
             html += `
-                <div class="cart-item" style="margin-top:10px; color:#666;">
+                <div class="cart-item" style="margin-top:10px; color:#777; font-size:14px;">
                     <span>Szállítás / Átvétel:</span>
                     <span>${szallitasSzovegHtml}</span>
                 </div>
                 <div class="cart-total">
                     <span>Fizetendő összesen:</span>
-                    <span style="color:#2e7d32; font-size:20px;">${vegszamlaHUF} Ft</span>
+                    <span style="color:var(--green);">${vegszamlaHUF} Ft</span>
                 </div>
-                <div style="text-align:right; margin-top:15px;">
-                    <span onclick="kosarUrites()" style="color:#d32f2f; font-size:13px; text-decoration:underline; cursor:pointer; padding:5px;">🗑️ Kosár ürítése</span>
+                <div style="text-align:right; margin-top:12px;">
+                    <span onclick="kosarUrites()" style="color:var(--red); font-size:13px; text-decoration:underline; cursor:pointer; padding:5px; font-weight:600;">🗑️ Kosár ürítése</span>
                 </div>
             `;
             document.getElementById("cart-content").innerHTML = html;
@@ -384,6 +746,13 @@
             for(let nev in kosar) { 
                 termekLista += `${nev}: ${kosar[nev].qty} ${kosar[nev].egyseg}, `; 
             }
+            termekLista = termekLista.replace(/, $/, '');
+
+            // Elmentjük a rendelést localStorage-ba a megjelenítéshez
+            localStorage.setItem("frueat_aktualis_rendeles", JSON.stringify({
+                termekek: termekLista,
+                vegosszeg: vegszamlaHUF
+            }));
 
             const params = new URLSearchParams({
                 nev: userProfile.vnev + " " + userProfile.knev,
