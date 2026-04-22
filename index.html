@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fru’eat Heaven</title>
+    <title>Fru'eat Heaven</title>
 
     <style>
         body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; color: #333; padding-bottom: 30px; }
@@ -223,9 +223,15 @@
                 }
 
                 document.getElementById("main-app").style.display = "block";
-                
-                if(aktualisZonaAdat["atvetel_lehetseges?"] && aktualisZonaAdat["atvetel_lehetseges?"].toLowerCase() === "igen") {
+
+                // VÁLASZTÓPANEL MEGJELENÍTÉSE
+                const atvetelIgen = aktualisZonaAdat["atvetel_lehetseges?"] && 
+                                   aktualisZonaAdat["atvetel_lehetseges?"].toString().toLowerCase().trim() === "igen";
+                if(atvetelIgen) {
                     document.getElementById("szallitas-valaszto").style.display = "block";
+                } else {
+                    document.getElementById("szallitas-valaszto").style.display = "none";
+                    atveteliMod = "hazhoz";
                 }
 
                 document.getElementById("greet-name").innerText = userProfile.knev;
@@ -243,7 +249,7 @@
                 szallitasSzoveg += `<strong>🛵 Kiszállítás díja:</strong> ${dijSzoveg}<br>`;
                 szallitasSzoveg += `<strong>⏱ Kiszállítás ideje:</strong> ${data.kinalat.kiszallitas_ideje}<br>`;
 
-                if(aktualisZonaAdat["atvetel_lehetseges?"] === "Igen") {
+                if(atvetelIgen) {
                     szallitasSzoveg += `<br><strong>📦 Személyes átvétel (${aktualisZonaAdat["atveteli_pont_cime"]}):</strong><br>`;
                     szallitasSzoveg += `${data.kinalat.atvetel_datum} (${data.kinalat.atvetel_tol_ig})`;
                 }
@@ -390,7 +396,6 @@
                 mod: atveteliMod === "hazhoz" ? "Házhozszállítás" : "Személyes átvétel"
             });
 
-            // Modernebb és stabilabb beküldés
             fetch(API_URL + "?" + params.toString(), { 
                 method: 'GET',
                 mode: 'cors',
@@ -403,7 +408,6 @@
             })
             .catch(err => {
                 console.error("Hiba:", err);
-                // Biztonsági mentés ha a fetch nem tetszik a Google-nek (néha előfordul CORS miatt, de az adat attól még bemegy)
                 document.getElementById("success-modal").style.display = "flex";
                 kosar = {};
             });
