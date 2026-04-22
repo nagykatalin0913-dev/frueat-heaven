@@ -3,33 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fru’eat Heaven - Logisztikai Admin</title>
+    <title>Fru'eat Heaven – Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2e7d32; --secondary: #1976d2; --waze: #33ccff; }
-        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 10px; color: #333; }
-        .header { background: var(--primary); color: white; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
-        .mode-selector { display: flex; gap: 10px; margin-bottom: 15px; }
-        .mode-btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .mode-btn.active { background: var(--primary); color: white; }
-        .search-box { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 15px; box-sizing: border-box; }
-        .order-card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; border-left: 8px solid #ccc; position: relative; }
-        .order-card.next-delivery { border-left-color: var(--secondary); border-width: 8px; background: #f0f7ff; }
-        .customer-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .zone-tag { font-size: 11px; background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; font-weight: bold; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
-        .weight-input { width: 70px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-weight: bold; background: #fffef0; }
-        .total-price { text-align: right; font-size: 18px; font-weight: bold; margin: 15px 0; color: var(--primary); }
-        .nav-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .nav-btn { padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; color: white; font-weight: bold; font-size: 14px; }
-        .finish-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; margin-top: 15px; cursor: pointer; }
-        .loading { text-align: center; padding: 50px; color: #666; font-style: italic; }
-        .comment-box { background: #fffde7; padding: 8px; border-radius: 6px; border: 1px solid #fff59d; margin-top: 8px; font-size: 13px; color: #555; }
+        :root {
+            --green: #2e7d32;
+            --green-light: #e8f5e9;
+            --green-mid: #43a047;
+            --green-dark: #1b5e20;
+            --blue: #1565c0;
+            --blue-light: #e3f0ff;
+            --waze: #00bfdf;
+            --red: #c62828;
+            --yellow: #fff8e1;
+            --shadow: 0 3px 14px rgba(0,0,0,0.09);
+            --radius: 16px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #f0f4f1;
+            margin: 0;
+            padding: 12px;
+            color: #333;
+            padding-bottom: 40px;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+            color: white;
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 16px rgba(46,125,50,0.3);
+        }
+        .header h2 {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header small { opacity: 0.8; font-size: 12px; }
+
+        /* MÓD VÁLASZTÓ */
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .mode-btn {
+            padding: 14px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            font-family: 'Nunito', sans-serif;
+            cursor: pointer;
+            background: white;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: var(--green);
+            color: white;
+            border-color: var(--green);
+            box-shadow: 0 3px 10px rgba(46,125,50,0.25);
+        }
+
+        /* SZŰRŐK */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .filter-chip {
+            padding: 7px 14px;
+            border-radius: 20px;
+            border: 1.5px solid #ccc;
+            background: white;
+            font-size: 13px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .filter-chip.active {
+            background: var(--green);
+            color: white;
+            border-color: var(--green);
+        }
+
+        /* KERESŐ */
+        .search-box {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: 12px;
+            border: 1.5px solid #e0e0e0;
+            margin-bottom: 12px;
+            font-size: 15px;
+            font-family: 'Nunito', sans-serif;
+            background: white;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-box:focus { border-color: var(--green); }
+
+        /* ÖSSZESÍTŐ SÁV */
+        .summary-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--green-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+        }
+        .summary-count {
+            background: var(--green);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        /* KÁRTYÁK */
+        .order-card {
+            background: white;
+            padding: 16px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 14px;
+            border-left: 6px solid #e0e0e0;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .order-card.active-card {
+            border-left-color: var(--blue);
+            background: #f7faff;
+            box-shadow: 0 4px 20px rgba(21,101,192,0.15);
+        }
+        .order-card.next-card {
+            border-left-color: var(--green-mid);
+        }
+
+        /* KÁRTYA FEJLÉC */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .card-name {
+            font-weight: 800;
+            font-size: 17px;
+            color: #222;
+        }
+        .card-address {
+            font-size: 13px;
+            color: #777;
+            margin-top: 2px;
+        }
+        .zone-tag {
+            font-size: 11px;
+            background: var(--green-light);
+            color: var(--green-dark);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 800;
+            text-transform: uppercase;
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+        .phone-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--blue);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 4px;
+            padding: 5px 12px;
+            background: var(--blue-light);
+            border-radius: 20px;
+        }
+        .phone-link:hover { background: #cfe3ff; }
+
+        /* MEGJEGYZÉS */
+        .comment-box {
+            background: var(--yellow);
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #5d4037;
+            margin: 8px 0;
+        }
+
+        /* TERMÉKEK */
+        .items-table { width: 100%; margin: 12px 0 6px; border-collapse: collapse; }
+        .items-table th {
+            font-size: 11px;
+            color: #999;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 6px;
+            text-align: left;
+            border-bottom: 1.5px solid #f0f0f0;
+        }
+        .items-table th:last-child,
+        .items-table td:last-child { text-align: right; }
+        .item-row td {
+            padding: 8px 6px;
+            font-size: 14px;
+            border-bottom: 1px solid #f5f5f5;
+            vertical-align: middle;
+        }
+        .item-name { font-weight: 600; }
+        .weight-input {
+            width: 72px;
+            padding: 6px 8px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'Nunito', sans-serif;
+            background: #fffef5;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .weight-input:focus { border-color: var(--green); }
+        .item-unit { font-size: 12px; color: #999; }
+        .item-subtotal { font-weight: 700; color: #444; }
+
+        .delivery-fee-row td {
+            font-size: 14px;
+            color: #777;
+            padding: 6px 6px;
+            font-style: italic;
+        }
+
+        .total-row {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--green-dark);
+            text-align: right;
+            padding: 12px 6px 8px;
+            border-top: 2px solid #e8f5e9;
+            display: block;
+        }
+
+        /* NAVIGÁCIÓ GOMBOK */
+        .nav-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .nav-btn {
+            padding: 11px 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            text-align: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'Nunito', sans-serif;
+            display: block;
+            transition: opacity 0.15s;
+        }
+        .nav-btn:hover { opacity: 0.88; }
+        .nav-btn.gmaps { background: var(--blue); }
+        .nav-btn.waze { background: var(--waze); }
+
+        /* LEZÁRÁS GOMB */
+        .finish-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: var(--green);
+            color: white;
+            font-weight: 800;
+            font-size: 16px;
+            font-family: 'Nunito', sans-serif;
+            margin-top: 14px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(46,125,50,0.25);
+            transition: background 0.2s, transform 0.1s;
+        }
+        .finish-btn:hover { background: var(--green-mid); }
+        .finish-btn:active { transform: scale(0.97); }
+        .finish-btn:disabled { background: #b0bec5; cursor: not-allowed; box-shadow: none; }
+
+        /* TÖLTŐ */
+        .loading {
+            text-align: center;
+            padding: 50px 20px;
+            color: #999;
+            font-style: italic;
+            font-size: 16px;
+        }
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 4px solid #e0e0e0;
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ÁTVÉTEL HELYE SZŰRŐ */
+        #atvetel-pont-szuro {
+            display: none;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h2>Fru’eat Admin</h2>
+    <h2>🍊 Fru'eat Admin</h2>
+    <small id="last-update">Adatok betöltése...</small>
 </div>
 
 <div class="mode-selector">
@@ -37,88 +348,185 @@
     <button id="btn-szallitas" class="mode-btn" onclick="setMode('szallitas')">🚚 Kiszállítás</button>
 </div>
 
-<input type="text" id="searchInput" class="search-box" placeholder="Név vagy cím keresése..." onkeyup="render()">
+<!-- Kiszállítás szűrők: zóna és nap -->
+<div id="szallitas-szurok" style="display:none;">
+    <div class="filters" id="zona-chips"></div>
+    <div class="filters" id="nap-chips"></div>
+</div>
 
-<div id="main-list"><div class="loading">Adatok betöltése a táblázatból...</div></div>
+<!-- Átvétel szűrők: átvételi pont -->
+<div id="atvetel-pont-szuro" class="filters"></div>
+
+<input type="text" id="searchInput" class="search-box" placeholder="🔍 Név vagy cím keresése..." oninput="render()">
+
+<div class="summary-bar">
+    <span id="summary-text">Betöltés...</span>
+    <span class="summary-count" id="summary-count">0</span>
+</div>
+
+<div id="main-list">
+    <div class="loading">
+        <div class="loading-spinner"></div>
+        Adatok betöltése a táblázatból...
+    </div>
+</div>
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxIO4li7hICNwg7Uw0VejGUKGsbKqTVaCRHpaekOfVBJ17f5l551MSFHUDLSAvHnJ6osQ/exec"; 
     let orders = [];
     let currentMode = 'atvetel';
+    let activeCardId = null;
+    let zonaFilter = 'mind';
+    let napFilter = 'mind';
+    let pontFilter = 'mind';
 
     async function fetchData() {
         try {
             const response = await fetch(API_URL + "?admin=true", { redirect: "follow" });
             const data = await response.json();
-            if (data) { orders = data; render(); }
+            if (data) {
+                orders = data;
+                document.getElementById('last-update').innerText = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
+                buildFilterChips();
+                render();
+            }
         } catch (e) {
             console.error("Hiba:", e);
-            document.getElementById('main-list').innerHTML = `<div class="loading" style="color:red;">Hiba az adatok lekérésekor!</div>`;
+            document.getElementById('main-list').innerHTML = `<div class="loading" style="color:#c62828;">Hiba az adatok lekérésekor!<br><small>${e.message}</small></div>`;
         }
     }
 
+    function buildFilterChips() {
+        // Zóna chipek kiszállításhoz
+        const zonak = [...new Set(orders.filter(o => String(o.atvetel_mod||'').toLowerCase().includes('házhoz')).map(o => o.zona).filter(Boolean))];
+        const zonaEl = document.getElementById('zona-chips');
+        zonaEl.innerHTML = ['mind', ...zonak].map(z => `
+            <div class="filter-chip ${zonaFilter === z ? 'active' : ''}" onclick="setZona('${z}')">
+                ${z === 'mind' ? '📍 Összes zóna' : z}
+            </div>
+        `).join('');
+
+        // Nap chipek kiszállításhoz (datum mező alapján)
+        const napok = [...new Set(orders.filter(o => String(o.atvetel_mod||'').toLowerCase().includes('házhoz')).map(o => {
+            if(!o.datum) return null;
+            const d = new Date(o.datum);
+            return isNaN(d) ? null : d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' });
+        }).filter(Boolean))];
+        const napEl = document.getElementById('nap-chips');
+        napEl.innerHTML = ['mind', ...napok].map(n => `
+            <div class="filter-chip ${napFilter === n ? 'active' : ''}" onclick="setNap('${n}')">
+                ${n === 'mind' ? '📅 Összes nap' : n}
+            </div>
+        `).join('');
+
+        // Átvételi pont chipek
+        const pontok = [...new Set(orders.filter(o => String(o.atvetel_mod||'').toLowerCase().includes('személyes')).map(o => o.zona).filter(Boolean))];
+        const pontEl = document.getElementById('atvetel-pont-szuro');
+        pontEl.innerHTML = ['mind', ...pontok].map(p => `
+            <div class="filter-chip ${pontFilter === p ? 'active' : ''}" onclick="setPont('${p}')">
+                ${p === 'mind' ? '📦 Összes hely' : p}
+            </div>
+        `).join('');
+    }
+
+    function setZona(z) { zonaFilter = z; buildFilterChips(); render(); }
+    function setNap(n) { napFilter = n; buildFilterChips(); render(); }
+    function setPont(p) { pontFilter = p; buildFilterChips(); render(); }
+
     function setMode(mode) {
         currentMode = mode;
+        activeCardId = null;
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-' + mode).classList.add('active');
+
+        document.getElementById('szallitas-szurok').style.display = mode === 'szallitas' ? 'block' : 'none';
+        const pontSzuro = document.getElementById('atvetel-pont-szuro');
+        pontSzuro.style.display = mode === 'atvetel' ? 'flex' : 'none';
+
+        buildFilterChips();
         render();
     }
 
     function render() {
         const list = document.getElementById('main-list');
         const search = document.getElementById('searchInput').value.toLowerCase();
-        list.innerHTML = "";
 
-        if (orders.length === 0) {
-            list.innerHTML = '<div class="loading">Nincs aktív rendelés.</div>';
-            return;
-        }
-
-        // Szűrés üzemmód (Átvétel/Szállítás) és keresés alapján
         let filtered = orders.filter(o => {
-            const matchesSearch = (o.nev && o.nev.toLowerCase().includes(search)) || (o.cim && o.cim.toLowerCase().includes(search));
-            const mod = String(o.atvetel_mod || "").toLowerCase();
-            
+            const matchSearch = (o.nev||'').toLowerCase().includes(search) || (o.cim||'').toLowerCase().includes(search);
+            const mod = String(o.atvetel_mod || '').toLowerCase();
             if (currentMode === 'atvetel') {
-                return matchesSearch && mod.includes("személyes");
+                const matchMod = mod.includes('személyes');
+                const matchPont = pontFilter === 'mind' || (o.zona||'') === pontFilter;
+                return matchSearch && matchMod && matchPont;
             } else {
-                return matchesSearch && mod.includes("házhoz");
+                const matchMod = mod.includes('házhoz');
+                const matchZona = zonaFilter === 'mind' || (o.zona||'') === zonaFilter;
+                const matchNap = napFilter === 'mind' || (() => {
+                    if(!o.datum) return false;
+                    const d = new Date(o.datum);
+                    const napStr = isNaN(d) ? null : d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' });
+                    return napStr === napFilter;
+                })();
+                return matchSearch && matchMod && matchZona && matchNap;
             }
         });
 
+        // Kiszállításnál zóna alapján sorbarendezés
         if (currentMode === 'szallitas') {
-            filtered.sort((a, b) => String(a.zona || "").localeCompare(String(b.zona || "")));
+            filtered.sort((a, b) => String(a.zona||'').localeCompare(String(b.zona||'')));
+        }
+
+        const count = filtered.length;
+        document.getElementById('summary-count').innerText = count;
+        document.getElementById('summary-text').innerText = currentMode === 'atvetel'
+            ? `Személyes átvétel`
+            : `Kiszállítandó rendelés`;
+
+        list.innerHTML = '';
+
+        if (count === 0) {
+            list.innerHTML = '<div class="loading">Nincs megjelenítendő rendelés.</div>';
+            return;
+        }
+
+        // Ha nincs aktív kártya, az első legyen alapból az
+        if (!activeCardId || !filtered.find(o => o.rowid === activeCardId)) {
+            activeCardId = filtered[0].rowid;
         }
 
         filtered.forEach((o, index) => {
+            const isActive = o.rowid === activeCardId;
+            const isFirst = index === 0;
             const card = document.createElement('div');
-            card.className = `order-card ${currentMode === 'szallitas' && index === 0 ? 'next-delivery' : ''}`;
-            
-            const cleanAddress = o.cim ? o.cim.replace(/\r?\n|\r/g, " ") : "";
+            card.className = `order-card ${isActive ? 'active-card' : (isFirst ? 'next-card' : '')}`;
+            card.onclick = () => { activeCardId = o.rowid; render(); };
+
+            const cleanAddress = (o.cim || '').replace(/\r?\n|\r/g, " ");
             const termekAdat = o.termek || o.termekek || "";
+            const tel = o.telefon || o.tel || '';
 
             card.innerHTML = `
-                <div class="customer-header">
+                <div class="card-header">
                     <div>
-                        <div style="font-weight:bold; font-size:16px;">${o.nev || "Névtelen"}</div>
-                        <div style="font-size:13px; color:#666;">${o.cim || "Nincs cím"}</div>
-                        ${o.megjegyzes ? `<div class="comment-box"><b>Megjegyzés:</b> ${o.megjegyzes}</div>` : ''}
+                        <div class="card-name">${o.nev || 'Névtelen'}</div>
+                        <div class="card-address">${o.cim || 'Nincs cím'}</div>
+                        ${tel ? `<a href="tel:${tel}" class="phone-link" onclick="event.stopPropagation()">📞 ${tel}</a>` : ''}
                     </div>
-                    <span class="zone-tag">${o.zona || "Pécel"}</span>
+                    <span class="zone-tag">${o.zona || 'Pécel'}</span>
                 </div>
 
-                <div style="margin-top:10px; border-top:1px solid #eee;">
-                    ${renderItems(termekAdat, o.rowid)}
-                </div>
+                ${o.megjegyzes ? `<div class="comment-box">💬 <b>Megjegyzés:</b> ${o.megjegyzes}</div>` : ''}
 
-                <div class="total-price">${o.vegosszeg || "..." } Ft</div>
+                ${renderItemsTable(termekAdat, o.rowid, o)}
 
-                <div class="nav-group">
-                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanAddress)}" target="_blank" class="nav-btn" style="background:var(--secondary)">Google Maps</a>
-                    <a href="waze://?q=${encodeURIComponent(cleanAddress)}&navigate=yes" class="nav-btn" style="background:var(--waze)">Waze</a>
-                </div>
+                ${currentMode === 'szallitas' ? `
+                    <div class="nav-group" onclick="event.stopPropagation()">
+                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanAddress)}" target="_blank" class="nav-btn gmaps">🗺 Google Maps</a>
+                        <a href="waze://?q=${encodeURIComponent(cleanAddress)}&navigate=yes" class="nav-btn waze">🔵 Waze</a>
+                    </div>
+                ` : ''}
 
-                <button class="finish-btn" onclick="completeOrder(${o.rowid})">
+                <button class="finish-btn" onclick="event.stopPropagation(); completeOrder(${o.rowid})">
                     ${currentMode === 'atvetel' ? '✓ ÁTADVA ÉS FIZETVE' : '✓ KISZÁLLÍTVA'}
                 </button>
             `;
@@ -126,54 +534,96 @@
         });
     }
 
-    function renderItems(termekStr, rowid) {
-        if (!termekStr || termekStr === "") return "<div class='loading'>Nincs termék adat</div>";
-        const items = termekStr.split(',').filter(t => t.trim() !== "");
-        return items.map(t => {
+    function renderItemsTable(termekStr, rowid, order) {
+        if (!termekStr || termekStr.trim() === '') return '<div style="color:#bbb; font-size:14px; padding:10px 0;">Nincs termék adat</div>';
+
+        const items = termekStr.split(',').map(t => t.trim()).filter(Boolean);
+        
+        // Szállítási díj
+        const szallDij = parseInt(order.szallitasi_dij || 0);
+        let vegosszeg = 0;
+
+        const rows = items.map(t => {
             const parts = t.split(':');
             const nev = parts[0].trim();
-            const suly = parts[1] ? parts[1].trim() : "";
+            const suly = parts[1] ? parts[1].trim() : '';
+            // Egységár és darab kiszámolása
+            const [mennyiseg, ...egysegParts] = suly.split(' ');
+            const qty = parseFloat(mennyiseg) || 0;
+            // Egységár keresése a termék nevéből (ha van)
+            // Alap: qty alapú számítás, ha van ár
             return `
-                <div class="item-row">
-                    <span>${nev}</span>
-                    <input type="text" value="${suly}" class="weight-input" 
-                        onchange="updateOrderData(${rowid}, '${nev}', this.value)">
-                </div>
+                <tr class="item-row">
+                    <td class="item-name">${nev}</td>
+                    <td>
+                        <input type="text" value="${suly}" class="weight-input"
+                            onchange="updateOrderData(${rowid}, '${nev.replace(/'/g,"\\'")}', this.value)"
+                            onclick="event.stopPropagation()">
+                    </td>
+                </tr>
             `;
         }).join('');
+
+        // Végösszeg az order adatból
+        const vegossz = order.vegosszeg;
+
+        return `
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Termék</th>
+                        <th>Mennyiség</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+            ${szallDij > 0 ? `
+                <table style="width:100%;"><tr class="delivery-fee-row">
+                    <td>🛵 Szállítási díj:</td>
+                    <td style="text-align:right;">${szallDij} Ft</td>
+                </tr></table>
+            ` : ''}
+            <div class="total-row">💰 Fizetendő: ${vegossz ? vegossz + ' Ft' : '–'}</div>
+        `;
     }
 
     async function updateOrderData(rowid, termekNev, ujSuly) {
         const order = orders.find(o => o.rowid === rowid);
-        const regiTermekek = (order.termek || order.termekek || "").split(',');
+        if (!order) return;
+        const regiTermekek = (order.termek || order.termekek || '').split(',');
         const frissitettTermekek = regiTermekek.map(t => {
-            if (t.includes(termekNev)) return `${termekNev}: ${ujSuly}`;
+            if (t.trim().startsWith(termekNev)) return `${termekNev}: ${ujSuly}`;
             return t;
         }).join(', ');
 
+        if (order.termek !== undefined) order.termek = frissitettTermekek;
+        if (order.termekek !== undefined) order.termekek = frissitettTermekek;
+
         const url = `${API_URL}?update=true&rowId=${rowid}&newItems=${encodeURIComponent(frissitettTermekek)}`;
-        await fetch(url, { redirect: "follow" });
-        
-        if(order.termek) order.termek = frissitettTermekek;
-        if(order.termekek) order.termekek = frissitettTermekek;
+        try {
+            await fetch(url, { redirect: "follow" });
+        } catch(e) { console.error("Update hiba:", e); }
     }
 
     async function completeOrder(rowId) {
-        if(!confirm("Lezárod a rendelést?")) return;
-        const btn = event.target;
-        btn.innerText = "Mentés...";
-        btn.disabled = true;
+        if (!confirm('Lezárod a rendelést?')) return;
+        const btns = document.querySelectorAll('.finish-btn');
+        btns.forEach(b => { if(b.onclick && b.onclick.toString().includes(rowId)) { b.innerText = 'Mentés...'; b.disabled = true; } });
 
         try {
-            const resp = await fetch(`${API_URL}?update=true&rowId=${rowId}&newStatus=Kiszállítva`, { redirect: "follow" });
+            const newStatus = currentMode === 'atvetel' ? 'Átvéve' : 'Kiszállítva';
+            const resp = await fetch(`${API_URL}?update=true&rowId=${rowId}&newStatus=${encodeURIComponent(newStatus)}`, { redirect: "follow" });
             const result = await resp.text();
-            if(result.trim() === "ok") {
+            if (result.trim() === 'ok') {
                 orders = orders.filter(o => o.rowid !== rowId);
+                activeCardId = null;
+                buildFilterChips();
                 render();
+            } else {
+                alert('Hiba a mentésnél, kérlek próbáld újra!');
             }
         } catch (e) {
-            alert("Hiba történt!");
-            btn.disabled = false;
+            alert('Hálózati hiba! Próbáld újra.');
         }
     }
 
