@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fru’eat Heaven - Admin</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #1976d2;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg-color); 
+            margin: 0; 
+            padding: 10px; 
+            color: #333;
+        }
+
+        .header { 
+            background: var(--primary-color); 
+            color: white; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h2 { margin: 0; font-size: 22px; }
+
+        .search-container {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            margin-bottom: 20px;
+        }
+
+        .search-box { 
+            width: 100%; 
+            padding: 15px; 
+            border-radius: 10px; 
+            border: 2px solid var(--primary-color); 
+            box-sizing: border-box;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .order-card { 
+            background: var(--card-bg); 
+            padding: 18px; 
+            border-radius: 15px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            margin-bottom: 15px; 
+            border-left: 6px solid var(--primary-color);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .customer-name { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .status-badge {
+            background: #fff9c4;
+            color: #f57f17;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .info-row span { margin-right: 8px; }
+
+        .items-box { 
+            background: #f8f9fa; 
+            padding: 12px; 
+            border-radius: 10px; 
+            margin: 12px 0;
+            border: 1px dashed #ccc;
+            font-size: 14px;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-nav { background: var(--secondary-color); color: white; }
+        .btn-call { background: #4caf50; color: white; }
+
+        .loader {
+            text-align: center;
+            padding: 40px;
+            font-style: italic;
+            color: #666;
+        }
+
+        @media (max-width: 400px) {
+            .btn-group { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>Fru’eat Heaven Admin 🚚</h2>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-box" placeholder="Név vagy utca keresése..." onkeyup="filterOrders()">
+    </div>
+
+    <div id="order-list">
+        <div class="loader">Rendelések szinkronizálása a Google Táblázattal...</div>
+    </div>
+
+    <script>
+        // IDE ILLESZD BE A GOOGLE APPS SCRIPT URL-EDET
+        const API_URL = "IDE_MÁSOLD_AZ_ÚJ_URL-EDET"; 
+
+        let allOrders = [];
+
+        async function loadOrders() {
+            try {
+                const response = await fetch(API_URL + "?admin=true");
+                allOrders = await response.json();
+                renderOrders(allOrders);
+            } catch (e) {
+                document.getElementById('order-list').innerHTML = 
+                    `<div class="order-card" style="border-left-color: red;">
+                        Hiba történt a betöltéskor. Ellenőrizd az URL-t és a jogosultságokat!
+                    </div>`;
+            }
+        }
+
+        function renderOrders(orders) {
+            const container = document.getElementById('order-list');
+            container.innerHTML = "";
+
+            if (orders.length === 0) {
+                container.innerHTML = "<p style='text-align:center; padding:20px;'>Nincs folyamatban lévő kiszállítás.</p>";
+                return;
+            }
+
+            // A legfrissebb rendelések kerüljenek előre
+            orders.reverse().forEach(order => {
+                const card = document.createElement('div');
+                card.className = 'order-card';
+                
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.cim)}`;
+                const telUrl = `tel:${order.tel}`;
+
+                card.innerHTML = `
+                    <div class="order-header">
+                        <p class="customer-name">${order.nev}</p>
+                        <span class="status-badge">${order.statusz || 'Aktív'}</span>
+                    </div>
+                    
+                    <div class="info-row">📍 <span>${order.cim}</span></div>
+                    <div class="info-row">🏙️ <span>${order.zona}</span></div>
+                    
+                    <div class="items-box">
+                        <strong>Rendelt tételek:</strong><br>
+                        ${order.termek.replace(/,/g, '<br>')}
+                    </div>
+
+                    ${order.megjegyzes ? `<div class="info-row">💬 <small>${order.megjegyzes}</small></div>` : ''}
+
+                    <div class="btn-group">
+                        <a href="${telUrl}" class="btn btn-call">📞 Hívás</a>
+                        <a href="${mapsUrl}" target="_blank" class="btn btn-nav">🗺️ Navigáció</a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterOrders() {
+            const val = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allOrders.filter(o => 
+                o.nev.toLowerCase().includes(val) || 
+                o.cim.toLowerCase().includes(val)
+            );
+            renderOrders(filtered);
+        }
+
+        // Első betöltés
+        loadOrders();
+        
+        // Automatikus frissítés 2 percenként
+        setInterval(loadOrders, 120000);
+    </script>
+</body>
+</html>
