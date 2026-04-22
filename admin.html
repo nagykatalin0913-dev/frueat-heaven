@@ -23,6 +23,7 @@
         .nav-btn { padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; color: white; font-weight: bold; font-size: 14px; }
         .finish-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; margin-top: 15px; cursor: pointer; }
         .loading { text-align: center; padding: 50px; color: #666; font-style: italic; }
+        .comment-box { background: #fffde7; padding: 8px; border-radius: 6px; border: 1px solid #fff59d; margin-top: 8px; font-size: 13px; color: #555; }
     </style>
 </head>
 <body>
@@ -41,7 +42,7 @@
 <div id="main-list"><div class="loading">Adatok betöltése a táblázatból...</div></div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwzxJNlY3RCYHONA6DlE6MBHGZGtQxNfyADdE0KPMqMbS6y0npcB_Sb_3GYitn5TwmZ_g/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbxFcn9TOZLw3tLfECStEP7JThmIzVoo0SS7FuxhPehGEdS05tSXR9v8lGuJ8vH-dBgbiQ/exec"; 
     let orders = [];
     let currentMode = 'atvetel';
 
@@ -73,9 +74,17 @@
             return;
         }
 
-        let filtered = orders.filter(o => 
-            (o.nev && o.nev.toLowerCase().includes(search)) || (o.cim && o.cim.toLowerCase().includes(search))
-        );
+        // Szűrés üzemmód (Átvétel/Szállítás) és keresés alapján
+        let filtered = orders.filter(o => {
+            const matchesSearch = (o.nev && o.nev.toLowerCase().includes(search)) || (o.cim && o.cim.toLowerCase().includes(search));
+            const mod = String(o.atvetel_mod || "").toLowerCase();
+            
+            if (currentMode === 'atvetel') {
+                return matchesSearch && mod.includes("személyes");
+            } else {
+                return matchesSearch && mod.includes("házhoz");
+            }
+        });
 
         if (currentMode === 'szallitas') {
             filtered.sort((a, b) => String(a.zona || "").localeCompare(String(b.zona || "")));
@@ -93,6 +102,7 @@
                     <div>
                         <div style="font-weight:bold; font-size:16px;">${o.nev || "Névtelen"}</div>
                         <div style="font-size:13px; color:#666;">${o.cim || "Nincs cím"}</div>
+                        ${o.megjegyzes ? `<div class="comment-box"><b>Megjegyzés:</b> ${o.megjegyzes}</div>` : ''}
                     </div>
                     <span class="zone-tag">${o.zona || "Pécel"}</span>
                 </div>
@@ -101,7 +111,7 @@
                     ${renderItems(termekAdat, o.rowid)}
                 </div>
 
-                <div class="total-price">${o.vegosszeg || "..."} Ft</div>
+                <div class="total-price">${o.vegosszeg || "..." } Ft</div>
 
                 <div class="nav-group">
                     <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanAddress)}" target="_blank" class="nav-btn" style="background:var(--secondary)">Google Maps</a>
@@ -118,15 +128,11 @@
 
     function renderItems(termekStr, rowid) {
         if (!termekStr || termekStr === "") return "<div class='loading'>Nincs termék adat</div>";
-        
-        // Darabolás vessző mentén (pl: "Eper: 1 kg, Alma: 2 kg")
         const items = termekStr.split(',').filter(t => t.trim() !== "");
-        
         return items.map(t => {
             const parts = t.split(':');
             const nev = parts[0].trim();
             const suly = parts[1] ? parts[1].trim() : "";
-            
             return `
                 <div class="item-row">
                     <span>${nev}</span>
@@ -138,21 +144,16 @@
     }
 
     async function updateOrderData(rowid, termekNev, ujSuly) {
-        // Megkeressük a rendelést a memóriában
         const order = orders.find(o => o.rowid === rowid);
         const regiTermekek = (order.termek || order.termekek || "").split(',');
-        
-        // Frissítjük a konkrét termék súlyát a listában
         const frissitettTermekek = regiTermekek.map(t => {
             if (t.includes(termekNev)) return `${termekNev}: ${ujSuly}`;
             return t;
         }).join(', ');
 
-        // Elküldjük a Google-nek
         const url = `${API_URL}?update=true&rowId=${rowid}&newItems=${encodeURIComponent(frissitettTermekek)}`;
         await fetch(url, { redirect: "follow" });
         
-        // Frissítjük helyben is a biztonság kedvéért
         if(order.termek) order.termek = frissitettTermekek;
         if(order.termekek) order.termekek = frissitettTermekek;
     }
