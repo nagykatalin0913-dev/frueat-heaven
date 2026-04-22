@@ -2,230 +2,165 @@
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fru’eat Heaven - Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fru’eat Heaven - Logisztikai Admin</title>
     <style>
-        :root {
-            --primary-color: #2e7d32;
-            --secondary-color: #1976d2;
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-        }
+        :root { --primary: #2e7d32; --secondary: #1976d2; --waze: #33ccff; }
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 10px; color: #333; }
+        .header { background: var(--primary); color: white; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
+        
+        /* Üzemmód választó */
+        .mode-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+        .mode-btn { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .mode-btn.active { background: var(--primary); color: white; }
 
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: var(--bg-color); 
-            margin: 0; 
-            padding: 10px; 
-            color: #333;
-        }
+        .search-box { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 15px; box-sizing: border-box; }
+        
+        .order-card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 15px; border-left: 8px solid #ccc; transition: 0.3s; }
+        .order-card.next-delivery { border-left-color: var(--secondary); transform: scale(1.02); box-shadow: 0 4px 12px rgba(25, 118, 210, 0.2); }
+        .order-card.next-delivery::before { content: "NÁLUK JÁRSZ MOST:"; display: block; font-size: 10px; color: var(--secondary); font-weight: bold; margin-bottom: 5px; }
 
-        .header { 
-            background: var(--primary-color); 
-            color: white; 
-            padding: 15px; 
-            border-radius: 12px; 
-            margin-bottom: 20px; 
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        .customer-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .zone-tag { font-size: 11px; background: #e8f5e9; color: #2e7d32; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; }
 
-        .header h2 { margin: 0; font-size: 22px; }
-
-        .search-container {
-            position: sticky;
-            top: 10px;
-            z-index: 100;
-            margin-bottom: 20px;
-        }
-
-        .search-box { 
-            width: 100%; 
-            padding: 15px; 
-            border-radius: 10px; 
-            border: 2px solid var(--primary-color); 
-            box-sizing: border-box;
-            font-size: 16px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .order-card { 
-            background: var(--card-bg); 
-            padding: 18px; 
-            border-radius: 15px; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
-            margin-bottom: 15px; 
-            border-left: 6px solid var(--primary-color);
-        }
-
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .customer-name { 
-            font-size: 18px; 
-            font-weight: bold; 
-            color: var(--primary-color);
-            margin: 0;
-        }
-
-        .status-badge {
-            background: #fff9c4;
-            color: #f57f17;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .info-row {
-            display: flex;
-            align-items: center;
-            margin: 8px 0;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .info-row span { margin-right: 8px; }
-
-        .items-box { 
-            background: #f8f9fa; 
-            padding: 12px; 
-            border-radius: 10px; 
-            margin: 12px 0;
-            border: 1px dashed #ccc;
-            font-size: 14px;
-        }
-
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn {
-            padding: 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            text-align: center;
-            font-weight: bold;
-            font-size: 14px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-nav { background: var(--secondary-color); color: white; }
-        .btn-call { background: #4caf50; color: white; }
-
-        .loader {
-            text-align: center;
-            padding: 40px;
-            font-style: italic;
-            color: #666;
-        }
-
-        @media (max-width: 400px) {
-            .btn-group { grid-template-columns: 1fr; }
-        }
+        .item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .weight-input { width: 50px; padding: 4px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-weight: bold; }
+        
+        .total-price { text-align: right; font-size: 18px; font-weight: bold; margin: 15px 0; color: var(--primary); }
+        
+        .nav-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .nav-btn { padding: 12px; border-radius: 8px; text-decoration: none; text-align: center; color: white; font-weight: bold; font-size: 14px; }
+        
+        .finish-btn { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        
+        .loading { text-align: center; padding: 50px; color: #666; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>Fru’eat Heaven Admin 🚚</h2>
-    </div>
+<div class="header">
+    <h2>Fru’eat Admin</h2>
+</div>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" class="search-box" placeholder="Név vagy utca keresése..." onkeyup="filterOrders()">
-    </div>
+<div class="mode-selector">
+    <button id="btn-atvetel" class="mode-btn active" onclick="setMode('atvetel')">🏠 Átvétel</button>
+    <button id="btn-szallitas" class="mode-btn" onclick="setMode('szallitas')">🚚 Kiszállítás</button>
+</div>
 
-    <div id="order-list">
-        <div class="loader">Rendelések szinkronizálása a Google Táblázattal...</div>
-    </div>
+<input type="text" id="searchInput" class="search-box" placeholder="Név vagy cím keresése..." onkeyup="render()">
 
-    <script>
-        // IDE ILLESZD BE A GOOGLE APPS SCRIPT URL-EDET
-        const API_URL = "https://script.google.com/macros/s/AKfycbwidVdnL5mH0h0jnEHm7nJjD9Y6jht6EEcZdwzvlQrC85IxR8phAuMg0Frj3VCyr-J9lA/exec"; 
+<div id="main-list"><div class="loading">Adatok szinkronizálása...</div></div>
 
-        let allOrders = [];
+<script>
+    const API_URL = "IDE_MÁSOLD_AZ_URL-EDET"; 
+    let orders = [];
+    let currentMode = 'atvetel';
 
-        async function loadOrders() {
-            try {
-                const response = await fetch(API_URL + "?admin=true");
-                allOrders = await response.json();
-                renderOrders(allOrders);
-            } catch (e) {
-                document.getElementById('order-list').innerHTML = 
-                    `<div class="order-card" style="border-left-color: red;">
-                        Hiba történt a betöltéskor. Ellenőrizd az URL-t és a jogosultságokat!
-                    </div>`;
-            }
+    async function fetchData() {
+        try {
+            const response = await fetch(API_URL + "?admin=true");
+            orders = await response.json();
+            render();
+        } catch (e) {
+            document.getElementById('main-list').innerHTML = "Hiba az adatok lekérésekor.";
         }
+    }
 
-        function renderOrders(orders) {
-            const container = document.getElementById('order-list');
-            container.innerHTML = "";
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('btn-atvetel').classList.toggle('active', mode === 'atvetel');
+        document.getElementById('btn-szallitas').classList.toggle('active', mode === 'szallitas');
+        render();
+    }
 
-            if (orders.length === 0) {
-                container.innerHTML = "<p style='text-align:center; padding:20px;'>Nincs folyamatban lévő kiszállítás.</p>";
-                return;
-            }
+    function render() {
+        const list = document.getElementById('main-list');
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        list.innerHTML = "";
 
-            // A legfrissebb rendelések kerüljenek előre
-            orders.reverse().forEach(order => {
-                const card = document.createElement('div');
-                card.className = 'order-card';
-                
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.cim)}`;
-                const telUrl = `tel:${order.tel}`;
+        // Szűrés
+        let filtered = orders.filter(o => 
+            o.nev.toLowerCase().includes(search) || o.cim.toLowerCase().includes(search)
+        );
 
-                card.innerHTML = `
-                    <div class="order-header">
-                        <p class="customer-name">${order.nev}</p>
-                        <span class="status-badge">${order.statusz || 'Aktív'}</span>
-                    </div>
-                    
-                    <div class="info-row">📍 <span>${order.cim}</span></div>
-                    <div class="info-row">🏙️ <span>${order.zona}</span></div>
-                    
-                    <div class="items-box">
-                        <strong>Rendelt tételek:</strong><br>
-                        ${order.termek.replace(/,/g, '<br>')}
-                    </div>
-
-                    ${order.megjegyzes ? `<div class="info-row">💬 <small>${order.megjegyzes}</small></div>` : ''}
-
-                    <div class="btn-group">
-                        <a href="${telUrl}" class="btn btn-call">📞 Hívás</a>
-                        <a href="${mapsUrl}" target="_blank" class="btn btn-nav">🗺️ Navigáció</a>
-                    </div>
-                `;
-                container.appendChild(card);
+        // LOGIKUS SORREND: 
+        // 1. Zóna szerint (Irányítószám/Város - ahogy a Zonak fülön van)
+        // 2. Utca szerint
+        if (currentMode === 'szallitas') {
+            filtered.sort((a, b) => {
+                if (a.zona !== b.zona) return a.zona.localeCompare(b.zona);
+                return a.cim.localeCompare(b.cim);
             });
         }
 
-        function filterOrders() {
-            const val = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allOrders.filter(o => 
-                o.nev.toLowerCase().includes(val) || 
-                o.cim.toLowerCase().includes(val)
-            );
-            renderOrders(filtered);
-        }
+        filtered.forEach((o, index) => {
+            const card = document.createElement('div');
+            // Kiszállítás módban a legfelső kártyát kiemeljük, mint aktuális úticél
+            card.className = `order-card ${currentMode === 'szallitas' && index === 0 ? 'next-delivery' : ''}`;
+            
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.cim)}`;
+            const wazeUrl = `https://waze.com/ul?q=${encodeURIComponent(o.cim)}&navigate=yes`;
 
-        // Első betöltés
-        loadOrders();
-        
-        // Automatikus frissítés 2 percenként
-        setInterval(loadOrders, 120000);
-    </script>
+            card.innerHTML = `
+                <div class="customer-header">
+                    <div>
+                        <div style="font-weight:bold; font-size:16px;">${o.nev}</div>
+                        <div style="font-size:13px; color:#666;">${o.cim}</div>
+                    </div>
+                    <span class="zone-tag">${o.zona}</span>
+                </div>
+
+                <div style="margin-top:10px;">
+                    ${renderItems(o.termek, o.rowId)}
+                </div>
+
+                <div class="total-price">Fizetendő: ${o.vegosszeg || '...'} Ft</div>
+
+                <div class="nav-group">
+                    <a href="${mapsUrl}" target="_blank" class="nav-btn" style="background:var(--secondary)">Google Maps</a>
+                    <a href="${wazeUrl}" target="_blank" class="nav-btn" style="background:var(--waze)">Waze</a>
+                </div>
+
+                <button class="finish-btn" onclick="completeOrder(${o.rowId})">
+                    ${currentMode === 'atvetel' ? 'ÁTADVA ÉS FIZETVE' : 'MEGÉRKEZTEM / KISZÁLLÍTVA'}
+                </button>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function renderItems(termekStr, rowId) {
+        // "Alma: 2kg, Eper: 1kg" formátum darabolása
+        return termekStr.split(',').map(t => {
+            const p = t.split(':');
+            const nev = p[0].trim();
+            const suly = p[1] ? p[1].trim() : "";
+            return `
+                <div class="item-row">
+                    <span>${nev}</span>
+                    <div>
+                        <input type="text" value="${suly}" class="weight-input" onchange="updateWeight(${rowId}, this.value)">
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function completeOrder(rowId) {
+        if(!confirm("Lezárod a rendelést?")) return;
+        const resp = await fetch(`${API_URL}?update=true&rowId=${rowId}&newStatus=Kiszállítva`);
+        if(await resp.text() === "ok") {
+            // Frissítés: az adott rendelés kikerül a listából
+            orders = orders.filter(o => o.rowId !== rowId);
+            render();
+        }
+    }
+
+    // Alapértelmezett betöltés
+    fetchData();
+    // Automatikus frissítés 2 percenként
+    setInterval(fetchData, 120000);
+</script>
+
 </body>
 </html>
