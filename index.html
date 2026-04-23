@@ -33,7 +33,7 @@
             margin: 16px 0 20px 0;
             padding: 10px 0;
         }
-        .header img { max-width: 210px; height: auto; }
+        .header img { max-width: 94%; width: 94%; height: auto; display: block; margin: 0 auto; }
 
         /* KÖSZÖNTŐ */
         .greeting {
@@ -648,24 +648,46 @@
                 // A kinalat mostantól tömb (minden sor egy kínálat)
                 const kinalatTomb = Array.isArray(data.kinalat) ? data.kinalat : [data.kinalat];
 
+                // Dátum parser: kezeli a "2026.04.24." és ISO formátumokat is
+                function parseDatum(str) {
+                    if(!str) return null;
+                    const s = str.toString().trim().replace(/\.$/,''); // trailing pont eltávolítása
+                    // "2026.04.24" vagy "2026.04.24." formátum
+                    const m = s.match(/^(\d{4})[\.\-\/](\d{1,2})[\.\-\/](\d{1,2})/);
+                    if(m) return new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
+                    const d = new Date(s);
+                    return isNaN(d) ? null : d;
+                }
+
+                // Zóna normalizálás: ékezetek és extra karakterek nélkül hasonlít
+                function normZona(s) {
+                    return s.toString().toLowerCase()
+                        .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
+                        .replace(/ó/g,'o').replace(/ö/g,'o').replace(/ő/g,'o')
+                        .replace(/ú/g,'u').replace(/ü/g,'u').replace(/ű/g,'u')
+                        .replace(/[^a-z0-9]/g,'');
+                }
+
                 // Szűrés: csak az adott zónának szóló, és még nem múlt el a kiszállítási dátuma
                 const sajatKinalatok = kinalatTomb.filter(k => {
-                    // Zóna egyezés: ha üres, mindenkinek szól, ha van értéke, csak annak
+                    // Zóna egyezés: ha üres, mindenkinek szól
                     const kZona = (k.zona || "").toString().trim();
-                    const zonaEgyezik = kZona === "" || kZona.toLowerCase() === zonaAzonosito.toLowerCase();
+                    const zonaEgyezik = kZona === "" || normZona(kZona) === normZona(zonaAzonosito);
 
                     // Dátum: a kiszállítás dátuma nem lehet múltbeli (ma vagy jövő OK)
-                    const kDatum = k.datum ? new Date(k.datum) : null;
+                    const kDatum = parseDatum(k.datum);
                     if(kDatum) kDatum.setHours(0,0,0,0);
                     const datumOK = !kDatum || kDatum >= ma;
+
+                    console.log("Kínálat szűrés:", kZona, "->", normZona(kZona), "vs", normZona(zonaAzonosito), "zona:", zonaEgyezik, "| datum:", k.datum, "->", kDatum, "ok:", datumOK);
 
                     return zonaEgyezik && datumOK;
                 });
 
                 // Rendezés: legközelebbi dátum először, majd csak az ELSŐ kínálat
                 sajatKinalatok.sort((a, b) => {
-                    const da = a.datum ? new Date(a.datum) : new Date("9999-12-31");
-                    const db = b.datum ? new Date(b.datum) : new Date("9999-12-31");
+                    const da = parseDatum(a.datum) || new Date("9999-12-31");
+                    const db = parseDatum(b.datum) || new Date("9999-12-31");
                     return da - db;
                 });
                 // Csak a legközelebbi kínálatot mutatjuk
@@ -695,9 +717,9 @@
                 let megjelenitetTermekNevek = new Set(); // duplikátum-szűrő
 
                 megjelenitekKinalat.forEach((k, kIdx) => {
-                    const hatarido = k.hatarido ? new Date(k.hatarido) : null;
+                    const hatarido = parseDatum(k.hatarido);
                     const hatarlejart = hatarido && hatarido < new Date();
-                    const kDatum = k.datum ? new Date(k.datum) : null;
+                    const kDatum = parseDatum(k.datum);
 
                     let szallitasSzoveg = `<strong>🛵 Kiszállítás díja:</strong> ${alapDijInfo} Ft`;
                     if(ingyenesHatar > 0) szallitasSzoveg += ` <em style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes!)</em>`;
