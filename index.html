@@ -608,33 +608,12 @@
                 const atveteli_pont = zonaErtek(aktualisZonaAdat, "atveteli_pont_cime") || "";
                 const zonaAzonosito = zonaErtek(aktualisZonaAdat, "telepules/kerulet").toString().trim();
 
-                // Szállítás-választó panel felépítése
+                // Szállítás-választó panel – a kinalat betöltése után épül fel
+                // (itt csak az elem referenciát és az alapértéket állítjuk)
                 const valasztoEl = document.getElementById("szallitas-valaszto");
                 valasztoEl.style.display = "block";
-                atveteliMod = "hazhoz";
                 let dijCimke = `${alapDijInfo} Ft`;
                 if(ingyenesHatar > 0) dijCimke += ` <small style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes)</small>`;
-
-                if(atvetelIgen) {
-                    valasztoEl.innerHTML = `
-                        <b>Hogyan szeretnéd megkapni?</b>
-                        <label class="radio-option">
-                            <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')">
-                            🛵 Házhozszállítás – ${dijCimke}
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')">
-                            📦 Személyes átvétel – Ingyenes${atveteli_pont ? ` <small style="color:#666">(${atveteli_pont})</small>` : ''}
-                        </label>
-                    `;
-                } else {
-                    valasztoEl.innerHTML = `
-                        <b>Szállítás módja</b>
-                        <div class="radio-option" style="cursor:default; background:#f0f0f0; border-color:#e0e0e0;">
-                            🛵 Házhozszállítás – ${dijCimke}
-                        </div>
-                    `;
-                }
 
                 document.getElementById("greet-name").innerText = userProfile.knev;
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
@@ -721,25 +700,79 @@
                     const hatarlejart = hatarido && hatarido < new Date();
                     const kDatum = parseDatum(k.datum);
 
-                    let szallitasSzoveg = `<strong>🛵 Kiszállítás díja:</strong> ${alapDijInfo} Ft`;
-                    if(ingyenesHatar > 0) szallitasSzoveg += ` <em style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes!)</em>`;
-                    szallitasSzoveg += `<br><strong>⏱ Kiszállítás ideje:</strong> ${k.kiszallitas_ideje || ""}`;
-                    if(atvetelIgen) {
-                        szallitasSzoveg += `<br><br><strong>📦 Személyes átvétel (${atveteli_pont}):</strong><br>`;
-                        szallitasSzoveg += `${k.atvetel_datum || ""} ${k.atvetel_tol_ig ? "("+k.atvetel_tol_ig+")" : ""}`;
+                    // Van-e házhozszállítás? (kiszallitas_ideje nem üres)
+                    const kiszallitasIdeje = (zonaErtek(k, "kiszallitas_ideje") || "").toString().trim();
+                    const vanKiszallitas = kiszallitasIdeje !== "";
+
+                    // Van-e személyes átvétel? (atvetelIgen a zónából + atvetel_datum a kínálatból)
+                    const atvetelDatum = (zonaErtek(k, "atvetel_datum") || "").toString().trim();
+                    const atvetelTolIg = (zonaErtek(k, "atvetel_tol_ig") || "").toString().trim();
+                    const vanAtvetel = atvetelIgen && atvetelDatum !== "";
+
+                    // Szállítás-választó panel felépítése (az első kínálatnál)
+                    if(kIdx === 0) {
+                        if(vanKiszallitas && vanAtvetel) {
+                            // Mindkét lehetőség
+                            atveteliMod = "hazhoz";
+                            valasztoEl.innerHTML = `
+                                <b>Hogyan szeretnéd megkapni?</b>
+                                <label class="radio-option">
+                                    <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')">
+                                    🛵 Házhozszállítás – ${dijCimke}
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')">
+                                    📦 Személyes átvétel – Ingyenes${atveteli_pont ? ` <small style="color:#666">(${atveteli_pont})</small>` : ''}
+                                </label>
+                            `;
+                        } else if(vanKiszallitas && !vanAtvetel) {
+                            // Csak házhozszállítás
+                            atveteliMod = "hazhoz";
+                            valasztoEl.innerHTML = `
+                                <b>Szállítás módja</b>
+                                <div class="radio-option" style="cursor:default; background:#f0f0f0; border-color:#e0e0e0;">
+                                    🛵 Házhozszállítás – ${dijCimke}
+                                </div>
+                            `;
+                        } else if(!vanKiszallitas && vanAtvetel) {
+                            // Csak személyes átvétel
+                            atveteliMod = "szemelyes";
+                            valasztoEl.innerHTML = `
+                                <b>Szállítás módja</b>
+                                <div class="radio-option" style="cursor:default; background:var(--green-light); border-color:var(--green);">
+                                    📦 Személyes átvétel – Ingyenes${atveteli_pont ? ` <small style="color:#666">(${atveteli_pont})</small>` : ''}
+                                </div>
+                            `;
+                        } else {
+                            // Egyik sem (pl. nincs még adat)
+                            atveteliMod = "hazhoz";
+                            valasztoEl.innerHTML = "";
+                        }
                     }
-                    if(kDatum) {
-                        szallitasSzoveg += `<br><strong>📅 Kiszállítás napja:</strong> ${kDatum.toLocaleDateString('hu-HU', {month:'long', day:'numeric', weekday:'long'})}`;
+
+                    // Info-box szöveg összeállítása
+                    let szallitasSzoveg = "";
+                    if(vanKiszallitas) {
+                        szallitasSzoveg += `<strong>🛵 Kiszállítás:</strong> ${kiszallitasIdeje}`;
+                        if(ingyenesHatar > 0) szallitasSzoveg += ` <em style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes!)</em>`;
+                        szallitasSzoveg += ` – <strong>${alapDijInfo} Ft</strong>`;
                     }
+                    if(vanAtvetel) {
+                        if(szallitasSzoveg) szallitasSzoveg += "<br>";
+                        szallitasSzoveg += `<strong>📦 Személyes átvétel${atveteli_pont ? " (" + atveteli_pont + ")" : ""}:</strong> ${atvetelDatum}${atvetelTolIg ? " " + atvetelTolIg : ""}`;
+                    }
+
+                    // Kínálat cím és szöveg
+                    const kCim = (zonaErtek(k, "cim") || "").toString().trim();
 
                     posztHtml += `
                         <div class="post" style="${kIdx > 0 ? 'margin-top:16px;' : ''}">
-                            <div class="post-title">${k.uzenet ? '' : 'Aktuális kínálat'}</div>
-                            ${k.uzenet ? `<div class="post-text">${k.uzenet.replace(/\n/g, '<br>')}</div>` : ''}
+                            ${kCim ? `<div class="post-title">${kCim}</div>` : ''}
+                            ${k.uzenet ? `<div class="post-text">${k.uzenet.toString().replace(/\n/g, '<br>')}</div>` : ''}
                             <div class="info-box">
                                 ${hatarido ? `<strong>⏳ Rendelési határidő:</strong> ${formatDatum(k.hatarido)}<br>` : ''}
                                 ${hatarlejart ? '<span style="color:var(--red);font-weight:800;">⛔ A rendelési határidő lejárt</span><br>' : ''}
-                                <br>${szallitasSzoveg}
+                                ${szallitasSzoveg ? "<br>" + szallitasSzoveg : ''}
                             </div>
                             ${k.fokep ? `<img class="post-image" src="${k.fokep}">` : ''}
                         </div>
