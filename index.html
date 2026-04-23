@@ -260,7 +260,7 @@
 
         /* SZÁLLÍTÁS VÁLASZTÓ */
         #szallitas-valaszto {
-            display: none;
+            display: block;
             margin-bottom: 18px;
             padding: 16px;
             border: 1.5px solid #c8e6c9;
@@ -610,6 +610,7 @@
 
                 // Szállítás-választó panel felépítése
                 const valasztoEl = document.getElementById("szallitas-valaszto");
+                valasztoEl.style.display = "block";
                 atveteliMod = "hazhoz";
                 let dijCimke = `${alapDijInfo} Ft`;
                 if(ingyenesHatar > 0) dijCimke += ` <small style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes)</small>`;
