@@ -607,7 +607,7 @@
                 const hatarErtek = zonaErtek(aktualisZonaAdat, "ingyenes_hatar");
                 const ingyenesHatar = (hatarErtek !== "" && hatarErtek !== null) ? parseInt(hatarErtek) || 0 : 0;
                 const atveteli_pont = zonaErtek(aktualisZonaAdat, "atveteli_pont_cime") || "";
-                const zonaAzonosito = zonaErtek(aktualisZonaAdat, "telepules").toString().trim();
+                const zonaAzonosito = zonaErtek(aktualisZonaAdat, "telepules/kerulet").toString().trim();
 
                 // Szállítás-választó panel felépítése
                 const valasztoEl = document.getElementById("szallitas-valaszto");
