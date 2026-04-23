@@ -569,18 +569,17 @@
             return isNaN(d) ? nyers : d.toLocaleString('hu-HU', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
         }
 
-        // Rugalmas kulcskeresés: megtalálja a zóna adat mezőt akkor is ha a Sheets fejléc kicsit eltér
+                // Rugalmas kulcskeresés: szóköz, ékezet, kérdőjel, alulvonás mind irreleváns
         function zonaErtek(obj, kulcsReszlet) {
-            // Pontos egyezés először
-            if (obj[kulcsReszlet] !== undefined) return obj[kulcsReszlet];
-            // Normalizált keresés: kisbetű, ékezet nélkül, szóköz->alulvonás
-            const norm = s => s.toLowerCase().replace(/\s+/g, '_')
+            const norm = s => s.toString().toLowerCase()
                 .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
                 .replace(/ó/g,'o').replace(/ö/g,'o').replace(/ő/g,'o')
-                .replace(/ú/g,'u').replace(/ü/g,'u').replace(/ű/g,'u');
+                .replace(/ú/g,'u').replace(/ü/g,'u').replace(/ű/g,'u')
+                .replace(/[^a-z0-9]/g, '');
             const k = norm(kulcsReszlet);
+            // Csak pontos normalizált egyezés (prefix egyezés félreviheti a mezőket!)
             for (let key of Object.keys(obj)) {
-                if (norm(key).includes(k) || k.includes(norm(key))) return obj[key];
+                if (norm(key) === k) return obj[key];
             }
             return "";
         }
