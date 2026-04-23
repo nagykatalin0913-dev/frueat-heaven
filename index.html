@@ -387,6 +387,20 @@
             font-weight: 700;
             line-height: 1.6;
         }
+        .product-closed {
+            opacity: 0.6;
+            background: #f9f9f9;
+        }
+        .rendeles-lezarult {
+            color: var(--red);
+            font-weight: 800;
+            font-size: 13px;
+            margin-top: 6px;
+            padding: 5px 10px;
+            background: #ffebee;
+            border-radius: 8px;
+            display: inline-block;
+        }
         #out-of-zone button {
             background: var(--red);
             color: white;
@@ -420,7 +434,7 @@
 
     <div class="wrapper">
         <div class="header">
-            <img src="https://via.placeholder.com/220x80?text=Fru%27eat+Heaven" alt="Fru'eat Heaven Logo">
+            <img src="Frueatheaven_kepek/frueatheavenlogo.jpg" alt="Fru'eat Heaven Logo">
         </div>
 
         <!-- AKTUÁLIS RENDELÉS (rendelés után jelenik meg) -->
@@ -580,34 +594,28 @@
                 osszesitettAdatok = data;
                 aktualisZonaAdat = data.zonak.find(z => String(z["iranyitoszam"]).trim() == String(userProfile.irsz).trim());
 
-                // DEBUG: zóna kulcsok logolása (fejlesztéshez hasznos)
-                if(aktualisZonaAdat) console.log("Zóna adat:", JSON.stringify(aktualisZonaAdat));
-
                 if(!aktualisZonaAdat) {
                     document.getElementById("out-of-zone").style.display = "block";
-                    return; 
+                    return;
                 }
 
                 document.getElementById("main-app").style.display = "block";
 
-                // Zóna mezők rugalmas kiolvasása
-                const atvetelIgenErtek = zonaErtek(aktualisZonaAdat, "atvetel_lehetseges");
-                const atvetelIgen = atvetelIgenErtek.toString().toLowerCase().trim() === "igen";
+                // Zóna adatok kiolvasása
+                const atvetelIgen = zonaErtek(aktualisZonaAdat, "atvetel_lehetseges").toString().toLowerCase().trim() === "igen";
                 const alapDijInfo = parseInt(zonaErtek(aktualisZonaAdat, "szallitasi_dij")) || 0;
                 const hatarErtek = zonaErtek(aktualisZonaAdat, "ingyenes_hatar");
-                const ingyenesHatar = hatarErtek !== "" && hatarErtek !== null ? parseInt(hatarErtek) || 0 : 0;
+                const ingyenesHatar = (hatarErtek !== "" && hatarErtek !== null) ? parseInt(hatarErtek) || 0 : 0;
                 const atveteli_pont = zonaErtek(aktualisZonaAdat, "atveteli_pont_cime") || "";
+                const zonaAzonosito = zonaErtek(aktualisZonaAdat, "telepules").toString().trim();
 
-                // A szállítás-választó panel mindig megjelenik
+                // Szállítás-választó panel felépítése
                 const valasztoEl = document.getElementById("szallitas-valaszto");
-                valasztoEl.style.display = "block";
-                atveteliMod = "hazhoz"; // alap mindig házhozszállítás
-
+                atveteliMod = "hazhoz";
                 let dijCimke = `${alapDijInfo} Ft`;
                 if(ingyenesHatar > 0) dijCimke += ` <small style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes)</small>`;
 
                 if(atvetelIgen) {
-                    // Két opció: házhozszállítás + személyes átvétel
                     valasztoEl.innerHTML = `
                         <b>Hogyan szeretnéd megkapni?</b>
                         <label class="radio-option">
@@ -620,7 +628,6 @@
                         </label>
                     `;
                 } else {
-                    // Csak házhozszállítás, info megjelenítve
                     valasztoEl.innerHTML = `
                         <b>Szállítás módja</b>
                         <div class="radio-option" style="cursor:default; background:#f0f0f0; border-color:#e0e0e0;">
@@ -632,64 +639,156 @@
                 document.getElementById("greet-name").innerText = userProfile.knev;
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
                 document.getElementById("show-cim").innerText = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
-                document.getElementById("show-zona").innerText = zonaErtek(aktualisZonaAdat, "telepules") || zonaErtek(aktualisZonaAdat, "kerulet") || "";
+                document.getElementById("show-zona").innerText = zonaAzonosito;
 
-                let szallitasSzoveg = "";
-                let dij = alapDijInfo;
-                let dijSzoveg = `${dij} Ft`;
-                if(ingyenesHatar > 0) dijSzoveg += ` <em style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes!)</em>`;
+                // ── ÚJ LOGIKA: Kínálat szűrése zóna + dátum alapján ──
+                const ma = new Date();
+                ma.setHours(0,0,0,0);
 
-                szallitasSzoveg += `<strong>🛵 Kiszállítás díja:</strong> ${dijSzoveg}<br>`;
-                szallitasSzoveg += `<strong>⏱ Kiszállítás ideje:</strong> ${data.kinalat.kiszallitas_ideje}<br>`;
+                // A kinalat mostantól tömb (minden sor egy kínálat)
+                const kinalatTomb = Array.isArray(data.kinalat) ? data.kinalat : [data.kinalat];
 
-                if(atvetelIgen) {
-                    szallitasSzoveg += `<br><strong>📦 Személyes átvétel (${atveteli_pont}):</strong><br>`;
-                    szallitasSzoveg += `${data.kinalat.atvetel_datum} (${data.kinalat.atvetel_tol_ig})`;
+                // Szűrés: csak az adott zónának szóló, és még nem múlt el a kiszállítási dátuma
+                const sajatKinalatok = kinalatTomb.filter(k => {
+                    // Zóna egyezés: ha üres, mindenkinek szól, ha van értéke, csak annak
+                    const kZona = (k.zona || "").toString().trim();
+                    const zonaEgyezik = kZona === "" || kZona.toLowerCase() === zonaAzonosito.toLowerCase();
+
+                    // Dátum: a kiszállítás dátuma nem lehet múltbeli (ma vagy jövő OK)
+                    const kDatum = k.datum ? new Date(k.datum) : null;
+                    if(kDatum) kDatum.setHours(0,0,0,0);
+                    const datumOK = !kDatum || kDatum >= ma;
+
+                    return zonaEgyezik && datumOK;
+                });
+
+                // Rendezés: legközelebbi dátum először, majd csak az ELSŐ kínálat
+                sajatKinalatok.sort((a, b) => {
+                    const da = a.datum ? new Date(a.datum) : new Date("9999-12-31");
+                    const db = b.datum ? new Date(b.datum) : new Date("9999-12-31");
+                    return da - db;
+                });
+                // Csak a legközelebbi kínálatot mutatjuk
+                const megjelenitekKinalat = sajatKinalatok.slice(0, 1);
+
+                if(sajatKinalatok.length === 0) {
+                    document.getElementById("kinalat-poszt").innerHTML = `
+                        <div class="post" style="text-align:center; color:#999; padding:30px;">
+                            <div style="font-size:40px;">🍊</div>
+                            <div style="margin-top:10px; font-size:16px;">Jelenleg nincs aktív kínálat a körzetedben.<br>Hamarosan visszatérünk!</div>
+                        </div>`;
+                    document.getElementById("termek-lista").innerHTML = "";
+                    document.getElementById("btn-submit").disabled = true;
+                    return;
                 }
 
-                document.getElementById("kinalat-poszt").innerHTML = `
-                    <div class="post">
-                        <div class="post-title">${data.kinalat.cim}</div>
-                        <div class="post-text">${data.kinalat.uzenet}</div>
-                        <div class="info-box">
-                            <strong>⏳ Rendelési határidő:</strong> ${formatDatum(data.kinalat.hatarido)}<br><br>
-                            ${szallitasSzoveg}
-                        </div>
-                        ${data.kinalat.fokep ? `<img class="post-image" src="${data.kinalat.fokep}">` : ''}
-                    </div>
-                `;
-
-                let html = "";
-                data.termekek.forEach(t => {
+                // Termék ID → termék objektum szótár felépítése
+                // Termék ID az 'id' oszlopból, vagy fallback: sor indexe (1-től)
+                data.termekek.forEach((t, idx) => {
+                    t._id = parseInt(t.id || t["id"]) || (idx + 1);
                     termekAdatbazis[t.nev] = t;
+                    termekAdatbazis[t._id] = t; // ID alapján is elérhető
+                });
+
+                // Kínálatok megjelenítése (mind egymás után, ha több is van)
+                let posztHtml = "";
+                let megjelenitetTermekNevek = new Set(); // duplikátum-szűrő
+
+                megjelenitekKinalat.forEach((k, kIdx) => {
+                    const hatarido = k.hatarido ? new Date(k.hatarido) : null;
+                    const hatarlejart = hatarido && hatarido < new Date();
+                    const kDatum = k.datum ? new Date(k.datum) : null;
+
+                    let szallitasSzoveg = `<strong>🛵 Kiszállítás díja:</strong> ${alapDijInfo} Ft`;
+                    if(ingyenesHatar > 0) szallitasSzoveg += ` <em style="color:var(--green-dark)">(${ingyenesHatar} Ft felett ingyenes!)</em>`;
+                    szallitasSzoveg += `<br><strong>⏱ Kiszállítás ideje:</strong> ${k.kiszallitas_ideje || ""}`;
+                    if(atvetelIgen) {
+                        szallitasSzoveg += `<br><br><strong>📦 Személyes átvétel (${atveteli_pont}):</strong><br>`;
+                        szallitasSzoveg += `${k.atvetel_datum || ""} ${k.atvetel_tol_ig ? "("+k.atvetel_tol_ig+")" : ""}`;
+                    }
+                    if(kDatum) {
+                        szallitasSzoveg += `<br><strong>📅 Kiszállítás napja:</strong> ${kDatum.toLocaleDateString('hu-HU', {month:'long', day:'numeric', weekday:'long'})}`;
+                    }
+
+                    posztHtml += `
+                        <div class="post" style="${kIdx > 0 ? 'margin-top:16px;' : ''}">
+                            <div class="post-title">${k.uzenet ? '' : 'Aktuális kínálat'}</div>
+                            ${k.uzenet ? `<div class="post-text">${k.uzenet.replace(/\n/g, '<br>')}</div>` : ''}
+                            <div class="info-box">
+                                ${hatarido ? `<strong>⏳ Rendelési határidő:</strong> ${formatDatum(k.hatarido)}<br>` : ''}
+                                ${hatarlejart ? '<span style="color:var(--red);font-weight:800;">⛔ A rendelési határidő lejárt</span><br>' : ''}
+                                <br>${szallitasSzoveg}
+                            </div>
+                            ${k.fokep ? `<img class="post-image" src="${k.fokep}">` : ''}
+                        </div>
+                    `;
+
+                    // Termékek kigyűjtése az ID-k alapján
+                    const termekIdkStr = (k.termek_idk || k["termek_idk"] || "").toString();
+                    const termekIdkLista = termekIdkStr.split(",").map(s => s.trim()).filter(Boolean);
+                    termekIdkLista.forEach(id => {
+                        const t = termekAdatbazis[parseInt(id)] || termekAdatbazis[id];
+                        if(t && t.nev) megjelenitetTermekNevek.add(t.nev);
+                    });
+                });
+
+                document.getElementById("kinalat-poszt").innerHTML = posztHtml;
+
+                // Ha egyetlen kínálatban sincs termek_idk megadva, mutasson mindent
+                if(megjelenitetTermekNevek.size === 0) {
+                    data.termekek.forEach(t => megjelenitetTermekNevek.add(t.nev));
+                }
+
+                // Termékek renderelése
+                let html = "";
+                megjelenitetTermekNevek.forEach(nev => {
+                    const t = termekAdatbazis[nev];
+                    if(!t) return;
+
                     let kepek = "";
-                    let kep1 = t.kep1_url || t.kep1; 
-                    let kep2 = t.kep2_url || t.kep2;
+                    let kep1 = t.kep1_url || t["kep1_url"] || t.kep1;
+                    let kep2 = t.kep2_url || t["kep2_url"] || t.kep2;
                     if(kep1) kepek += `<img src="${kep1}" onclick="document.getElementById('lb-img').src='${kep1}'; document.getElementById('lightbox').style.display='flex'">`;
                     if(kep2) kepek += `<img src="${kep2}" onclick="document.getElementById('lb-img').src='${kep2}'; document.getElementById('lightbox').style.display='flex'">`;
 
-                    let min = t.min_mennyiseg > 0 ? `<div class="product-min">Min: ${t.min_mennyiseg} ${t.egyseg}</div>` : "";
+                    const min = t.min_mennyiseg > 0 ? `<div class="product-min">Min: ${t.min_mennyiseg} ${t.egyseg}</div>` : "";
+                    const safeNev = t.nev.replace(/'/g, "\\'");
+
+                    // Rendelési határidő lejártának ellenőrzése (ha bármely kínálatnál lejárt)
+                    // Csak akkor tiltjuk le ha MINDEN ide tartozó kínálat határideje lejárt
+                    const termekKinalatai = megjelenitekKinalat.filter(k => {
+                        const idStr = (k.termek_idk || "").toString();
+                        const t_id = t._id;
+                        return idStr.split(",").map(s => parseInt(s.trim())).includes(t_id);
+                    });
+                    const mindenHataridoLejart = termekKinalatai.length > 0 && termekKinalatai.every(k => {
+                        const h = k.hatarido ? new Date(k.hatarido) : null;
+                        return h && h < new Date();
+                    });
 
                     html += `
-                        <div class="product">
+                        <div class="product ${mindenHataridoLejart ? 'product-closed' : ''}">
                             ${kepek ? `<div class="product-images">${kepek}</div>` : ''}
                             <div class="product-top">
                                 <div class="product-info">
                                     <b>${t.nev}</b>
                                     <div class="product-price">${t.ar} Ft / ${t.egyseg}</div>
                                     ${min}
+                                    ${mindenHataridoLejart ? '<div class="rendeles-lezarult">A rendelés lezárult</div>' : ''}
                                 </div>
                             </div>
+                            ${!mindenHataridoLejart ? `
                             <div class="product-cart">
                                 <input id="qty_${t.nev}" type="number" step="0.1" placeholder="0" min="0">
-                                <button class="btn btn-small" onclick="addToCart('${t.nev}')">+ Kosárba</button>
-                            </div>
+                                <button class="btn btn-small" onclick="addToCart('${safeNev}')">+ Kosárba</button>
+                            </div>` : ''}
                         </div>
                     `;
                 });
-                document.getElementById("termek-lista").innerHTML = html;
+                document.getElementById("termek-lista").innerHTML = html || '<div style="color:#999;padding:16px;text-align:center;">Nincsenek megjeleníthető termékek.</div>';
             })
             .catch(e => {
+                console.error("Hiba:", e);
                 document.getElementById("profile-setup").style.display = "block";
                 alert("Hiba az adatok betöltésekor. Kérlek próbáld újra!");
             });
@@ -797,7 +896,7 @@
                 nev: userProfile.vnev + " " + userProfile.knev,
                 tel: userProfile.tel,
                 cim: userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca,
-                zona: aktualisZonaAdat["telepules/kerulet"],
+                zona: zonaErtek(aktualisZonaAdat, "telepules"),
                 termek: termekLista,
                 vegosszeg: vegszamlaHUF,
                 megjegyzes: document.getElementById("megjegyzes").value,
