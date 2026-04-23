@@ -77,17 +77,16 @@
         #profile-setup input:focus { border-color: var(--green); background: #fff; }
         #main-app { display: none; }
 
-        /* AKTUÁLIS RENDELÉS PANEL (rendelés után jelenik meg) */
-        #aktualis-rendeles {
-            display: none;
+        /* AKTUÁLIS RENDELÉSEK PANEL */
+        .ar-card {
             background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
             color: white;
             padding: 18px 20px;
             border-radius: var(--radius);
-            margin-bottom: 18px;
+            margin-bottom: 12px;
             box-shadow: 0 6px 20px rgba(46,125,50,0.25);
         }
-        #aktualis-rendeles h4 {
+        .ar-card h4 {
             margin: 0 0 10px 0;
             font-size: 16px;
             font-family: 'Playfair Display', serif;
@@ -95,6 +94,14 @@
         }
         .ar-items { font-size: 13px; opacity: 0.9; line-height: 1.8; }
         .ar-total { font-size: 18px; font-weight: 800; margin-top: 10px; letter-spacing: 0.3px; }
+        .ar-atvetel {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.25);
+            line-height: 1.6;
+        }
         .ar-status {
             display: inline-block;
             background: rgba(255,255,255,0.25);
@@ -437,13 +444,8 @@
             <img src="Frueatheaven_kepek/frueatheavenlogo.jpg" alt="Fru'eat Heaven Logo">
         </div>
 
-        <!-- AKTUÁLIS RENDELÉS (rendelés után jelenik meg) -->
-        <div id="aktualis-rendeles">
-            <h4>📦 Aktuális rendelésed</h4>
-            <div class="ar-items" id="ar-termekek"></div>
-            <div class="ar-total" id="ar-total"></div>
-            <div class="ar-status">Folyamatban</div>
-        </div>
+        <!-- AKTUÁLIS RENDELÉSEK (rendelés után jelenik meg, több is lehet) -->
+        <div id="aktualis-rendeles-container"></div>
 
         <div id="profile-setup">
             <h3>Üdvözlünk nálunk! 👋</h3>
@@ -508,17 +510,64 @@
         let zonaAzonosito = "";  // globális, a kuldes() is eléri
         let atveteliMod = "hazhoz";
         let vegszamlaHUF = 0;
+        let aktualisSzallitasInfo = {}; // kiszállítási/átvételi adatok a mentéshez
 
-        // Tárolt rendelés betöltése
-        const taroltRendeles = JSON.parse(localStorage.getItem("frueat_aktualis_rendeles"));
-        if (taroltRendeles) {
-            const arEl = document.getElementById("aktualis-rendeles");
-            const termekEl = document.getElementById("ar-termekek");
-            const totalEl = document.getElementById("ar-total");
-            termekEl.innerHTML = taroltRendeles.termekek.split(',').map(t => `• ${t.trim()}`).join('<br>');
-            totalEl.innerHTML = `Fizetendő: ${taroltRendeles.vegosszeg} Ft`;
-            arEl.style.display = "block";
+        // Régi formátum migrálása (egyszeri)
+        const regiRendeles = localStorage.getItem("frueat_aktualis_rendeles");
+        if(regiRendeles) {
+            try {
+                const r = JSON.parse(regiRendeles);
+                const meglevo = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
+                if(r && r.termekek && !meglevo.find(x => x.termekek === r.termekek)) {
+                    meglevo.push({ termekek: r.termekek, vegosszeg: r.vegosszeg, atvetelInfo: "", datum: "" });
+                    localStorage.setItem("frueat_rendelesek", JSON.stringify(meglevo));
+                }
+            } catch(e) {}
+            localStorage.removeItem("frueat_aktualis_rendeles");
         }
+
+        // Tárolt rendelések betöltése (tömb - több rendelés is lehet)
+        function renderAktualisRendelesek() {
+            const container = document.getElementById("aktualis-rendeles-container");
+            const tarolt = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
+            if(!tarolt || tarolt.length === 0) { container.innerHTML = ""; return; }
+            container.innerHTML = tarolt.map((r, idx) => {
+                const termekSorok = r.termekek.split(',').map(t => `• ${t.trim()}`).join('<br>');
+                const atvetelInfo = r.atvetelInfo ? `<div class="ar-atvetel">${r.atvetelInfo}</div>` : '';
+                return `
+                    <div class="ar-card">
+                        <h4>📦 Aktuális rendelésed${tarolt.length > 1 ? ' (' + (idx+1) + '/' + tarolt.length + ')' : ''}</h4>
+                        <div class="ar-items">${termekSorok}</div>
+                        <div class="ar-total">Fizetendő: ${r.vegosszeg} Ft</div>
+                        ${atvetelInfo}
+                        <div class="ar-status">Folyamatban</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        renderAktualisRendelesek();
+
+        // Rendelések szinkronizálása a sheet-tel (lezárt rendelések eltávolítása)
+        // Ezt a telefon/telszám alapján azonosítjuk
+        async function szinkronizalRendelesek() {
+            const profil = JSON.parse(localStorage.getItem("frueat_profile"));
+            if(!profil || !profil.tel) return;
+            try {
+                const resp = await fetch(API_URL + "?admin=true", { redirect: "follow" });
+                const aktiv = await resp.json();
+                const aktivTelok = aktiv
+                    .filter(r => (r.statusz || "").toLowerCase().includes("aktív"))
+                    .map(r => (r.telefon || "").replace(/\s+/g,'').replace(/-/g,''));
+                const sajatTel = profil.tel.replace(/\s+/g,'').replace(/-/g,'');
+                const sajatAktiv = aktivTelok.some(t => t === sajatTel || t.endsWith(sajatTel.slice(-9)) || sajatTel.endsWith(t.slice(-9)));
+                if(!sajatAktiv) {
+                    // Ha nincs aktív rendelés a sheet-ben, töröljük a local storage-t
+                    localStorage.removeItem("frueat_rendelesek");
+                    renderAktualisRendelesek();
+                }
+            } catch(e) { /* ha nem sikerül, marad ahogy van */ }
+        }
+        szinkronizalRendelesek();
 
         function modValtas(mod) {
             atveteliMod = mod;
@@ -711,6 +760,16 @@
                     const vanAtvetel = atvetelIgen && atvetelDatum !== "";
 
                     // Szállítás-választó panel felépítése (az első kínálatnál)
+                    // Szállítási infó globális tárolása (mentéshez)
+                    if(kIdx === 0) {
+                        aktualisSzallitasInfo = {
+                            kiszallitasIdeje: kiszallitasIdeje,
+                            atvetelPont: atveteli_pont,
+                            atvetelDatum: atvetelDatum,
+                            atvetelTolIg: atvetelTolIg
+                        };
+                    }
+
                     if(kIdx === 0) {
                         if(vanKiszallitas && vanAtvetel) {
                             // Mindkét lehetőség
@@ -962,10 +1021,21 @@
             .then(res => {
                 // Csak sikeres "ok" válasz esetén mentjük és mutatjuk a modalt
                 if(res.trim() === "ok") {
-                    localStorage.setItem("frueat_aktualis_rendeles", JSON.stringify({
-                        termekek: termekLista,
-                        vegosszeg: vegszamlaHUF
-                    }));
+                    // Kiszállítási/átvételi infó összeállítása a megjelenítéshez
+                    let atvetelInfo = "";
+                    if(atveteliMod === "szemelyes") {
+                        atvetelInfo = "📦 Személyes átvétel";
+                        if(aktualisSzallitasInfo && aktualisSzallitasInfo.atvetelPont) atvetelInfo += " – " + aktualisSzallitasInfo.atvetelPont;
+                        if(aktualisSzallitasInfo && aktualisSzallitasInfo.atvetelDatum) atvetelInfo += "<br>" + aktualisSzallitasInfo.atvetelDatum;
+                        if(aktualisSzallitasInfo && aktualisSzallitasInfo.atvetelTolIg) atvetelInfo += " " + aktualisSzallitasInfo.atvetelTolIg;
+                    } else {
+                        atvetelInfo = "🛵 Házhozszállítás";
+                        if(aktualisSzallitasInfo && aktualisSzallitasInfo.kiszallitasIdeje) atvetelInfo += "<br>" + aktualisSzallitasInfo.kiszallitasIdeje;
+                    }
+                    // Tömbbe adjuk hozzá (nem felülírjuk)
+                    const meglevo = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
+                    meglevo.push({ termekek: termekLista, vegosszeg: vegszamlaHUF, atvetelInfo: atvetelInfo, datum: new Date().toISOString() });
+                    localStorage.setItem("frueat_rendelesek", JSON.stringify(meglevo));
                     kosar = {};
                     document.getElementById("success-modal").style.display = "flex";
                 } else {
@@ -985,7 +1055,11 @@
 
         function zarasEsFrissites() {
             document.getElementById("success-modal").style.display = "none";
-            location.reload();
+            renderAktualisRendelesek();
+            // Kosár és termék beviteli mezők ürítése
+            kosar = {};
+            document.querySelectorAll('.product-cart input').forEach(el => el.value = "");
+            frissitKosarUI();
         }
     </script>
 </body>
