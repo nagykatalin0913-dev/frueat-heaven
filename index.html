@@ -671,7 +671,7 @@
                 // Szűrés: csak az adott zónának szóló, és még nem múlt el a kiszállítási dátuma
                 const sajatKinalatok = kinalatTomb.filter(k => {
                     // Zóna egyezés: ha üres, mindenkinek szól
-                    const kZona = (k.zona || "").toString().trim();
+                    const kZona = zonaErtek(k, "zona").toString().trim();
                     const zonaEgyezik = kZona === "" || normZona(kZona) === normZona(zonaAzonosito);
 
                     // Dátum: a kiszállítás dátuma nem lehet múltbeli (ma vagy jövő OK)
