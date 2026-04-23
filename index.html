@@ -504,7 +504,8 @@
         let osszesitettAdatok = {};
         let termekAdatbazis = {};
         let kosar = {}; 
-        let aktualisZonaAdat = null; 
+        let aktualisZonaAdat = null;
+        let zonaAzonosito = "";  // globális, a kuldes() is eléri
         let atveteliMod = "hazhoz";
         let vegszamlaHUF = 0;
 
@@ -606,7 +607,7 @@
                 const hatarErtek = zonaErtek(aktualisZonaAdat, "ingyenes_hatar");
                 const ingyenesHatar = (hatarErtek !== "" && hatarErtek !== null) ? parseInt(hatarErtek) || 0 : 0;
                 const atveteli_pont = zonaErtek(aktualisZonaAdat, "atveteli_pont_cime") || "";
-                const zonaAzonosito = zonaErtek(aktualisZonaAdat, "telepules/kerulet").toString().trim();
+                zonaAzonosito = zonaErtek(aktualisZonaAdat, "telepules/kerulet").toString().trim();
 
                 // Szállítás-választó panel – a kinalat betöltése után épül fel
                 // (itt csak az elem referenciát és az alapértéket állítjuk)
@@ -941,17 +942,11 @@
             }
             termekLista = termekLista.replace(/, $/, '');
 
-            // Elmentjük a rendelést localStorage-ba a megjelenítéshez
-            localStorage.setItem("frueat_aktualis_rendeles", JSON.stringify({
-                termekek: termekLista,
-                vegosszeg: vegszamlaHUF
-            }));
-
             const params = new URLSearchParams({
                 nev: userProfile.vnev + " " + userProfile.knev,
                 tel: userProfile.tel,
                 cim: userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca,
-                zona: zonaErtek(aktualisZonaAdat, "telepules"),
+                zona: zonaAzonosito,
                 termek: termekLista,
                 vegosszeg: vegszamlaHUF,
                 megjegyzes: document.getElementById("megjegyzes").value,
@@ -965,13 +960,26 @@
             })
             .then(r => r.text())
             .then(res => {
-                document.getElementById("success-modal").style.display = "flex";
-                kosar = {};
+                // Csak sikeres "ok" válasz esetén mentjük és mutatjuk a modalt
+                if(res.trim() === "ok") {
+                    localStorage.setItem("frueat_aktualis_rendeles", JSON.stringify({
+                        termekek: termekLista,
+                        vegosszeg: vegszamlaHUF
+                    }));
+                    kosar = {};
+                    document.getElementById("success-modal").style.display = "flex";
+                } else {
+                    console.error("Váratlan válasz:", res);
+                    btn.innerText = "Rendelés elküldése 🍊";
+                    btn.disabled = false;
+                    alert("Hiba a rendelés rögzítésekor. Kérlek próbáld újra!");
+                }
             })
             .catch(err => {
                 console.error("Hiba:", err);
-                document.getElementById("success-modal").style.display = "flex";
-                kosar = {};
+                btn.innerText = "Rendelés elküldése 🍊";
+                btn.disabled = false;
+                alert("Hálózati hiba! Kérlek ellenőrizd a kapcsolatot és próbáld újra.");
             });
         }
 
