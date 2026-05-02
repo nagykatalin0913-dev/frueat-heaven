@@ -375,7 +375,7 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxZkGsYWnhKTzukAqBc9rT3qRHBnmVf7igotuE96fnV44YrSGScquaRevnFzpfYbnsq3A/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbyApENBRkTF0bGrOj1JeiPAW5HnPWBf7fs6pQi5jUqpRAwcbhHSuY-TP6cMNkj7_ZyKOQ/exec"; 
     let orders = [];
     let termekek = {}; // nev -> {ar, egyseg} szótár
     let currentMode = 'atvetel';
@@ -550,56 +550,98 @@
         });
     }
 
+    // Szövegből szám + egység kinyerése: "10 csomó" -> {qty:10, unit:"csomó"}
+    function parseQtyAndUnit(str) {
+        str = (str || '').toString().trim();
+        const m = str.match(/^([\d.,]+)\s*(.*)$/);
+        if (m) return { qty: parseFloat(m[1].replace(',', '.')) || 0, unit: m[2].trim() };
+        return { qty: 0, unit: str };
+    }
+
+    // Végösszeg élő újraszámolása a kártyán
+    function szamolVegosszeg(rowid) {
+        const order = orders.find(o => o.rowid === rowid);
+        if (!order) return;
+        let osszeg = 0;
+        document.querySelectorAll('.qty-input[data-rowid="' + rowid + '"]').forEach(input => {
+            const ar  = parseFloat(input.dataset.ar)  || 0;
+            const qty = parseFloat(input.value.replace(',', '.')) || 0;
+            osszeg += qty * ar;
+        });
+        const szallDij = parseInt(order.szallitasi_dij || 0);
+        const vanSzall = (order.atvetel_mod || '').toLowerCase().includes('házhoz');
+        if (vanSzall && szallDij > 0) osszeg += szallDij;
+        const el = document.getElementById('total-' + rowid);
+        if (el) el.innerText = '💰 Fizetendő: ' + Math.round(osszeg) + ' Ft';
+        order.vegosszeg = Math.round(osszeg);
+    }
+
     function renderItemsTable(termekStr, rowid, order) {
         if (!termekStr || termekStr.trim() === '') return '<div style="color:#bbb; font-size:14px; padding:10px 0;">Nincs termék adat</div>';
 
         const items = termekStr.split(',').map(t => t.trim()).filter(Boolean);
-        
-        // Szállítási díj
         const szallDij = parseInt(order.szallitasi_dij || 0);
-        let vegosszeg = 0;
+        const vanSzall = (order.atvetel_mod || '').toLowerCase().includes('házhoz');
+        let osszeg = 0;
 
         const rows = items.map(t => {
-            const parts = t.split(':');
-            const nev = parts[0].trim();
-            const suly = parts[1] ? parts[1].trim() : '';
-            // Egységár és darab kiszámolása
-            const [mennyiseg, ...egysegParts] = suly.split(' ');
-            const qty = parseFloat(mennyiseg) || 0;
-            // Egységár keresése a termék nevéből (ha van)
-            // Alap: qty alapú számítás, ha van ár
+            const parts  = t.split(':');
+            const nev    = parts[0].trim();
+            const sulyStr = parts[1] ? parts[1].trim() : '';
+            const { qty, unit } = parseQtyAndUnit(sulyStr);
+
+            // Egységár + egység a termékadatbázisból
+            const td     = termekek[nev] || {};
+            const ar     = td.ar     || 0;
+            const egyseg = td.egyseg || unit || '';
+            const reszosszeg = Math.round(qty * ar);
+            osszeg += reszosszeg;
+
+            const nevSafe = nev.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
             return `
                 <tr class="item-row">
-                    <td class="item-name">${nev}</td>
                     <td>
-                        <input type="text" value="${suly}" class="weight-input"
-                            onchange="updateOrderData(${rowid}, '${nev.replace(/'/g,"\\'")}', this.value)"
-                            onclick="event.stopPropagation()">
+                        <div class="item-name">${nev}</div>
+                        ${ar > 0 ? `<div style="color:#999;font-size:12px;">${ar} Ft / ${egyseg}</div>` : ''}
+                    </td>
+                    <td style="text-align:right; vertical-align:middle;">
+                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;">
+                            <input type="number" step="0.1" min="0"
+                                value="${qty}"
+                                class="weight-input qty-input"
+                                data-rowid="${rowid}"
+                                data-nev="${nevSafe}"
+                                data-ar="${ar}"
+                                data-egyseg="${egyseg}"
+                                oninput="szamolVegosszeg(${rowid}); updateOrderDataDelayed(${rowid}, '${nevSafe}', this.value, '${egyseg}')"
+                                onclick="event.stopPropagation()">
+                            <span style="font-size:13px;color:#555;white-space:nowrap;min-width:36px;">${egyseg}</span>
+                        </div>
+                        ${ar > 0 ? `<div style="font-weight:700;font-size:13px;color:#333;margin-top:3px;">${reszosszeg} Ft</div>` : ''}
                     </td>
                 </tr>
             `;
         }).join('');
 
-        // Végösszeg az order adatból
-        const vegossz = order.vegosszeg;
+        if (vanSzall && szallDij > 0) osszeg += szallDij;
 
         return `
             <table class="items-table">
                 <thead>
                     <tr>
                         <th>Termék</th>
-                        <th>Mennyiség</th>
+                        <th style="text-align:right;">Mennyiség / Összeg</th>
                     </tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>
-            ${szallDij > 0 ? `
-                <table style="width:100%;"><tr class="delivery-fee-row">
-                    <td>🛵 Szállítási díj:</td>
-                    <td style="text-align:right;">${szallDij} Ft</td>
-                </tr></table>
+            ${vanSzall && szallDij > 0 ? `
+                <div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;">
+                    <span>🛵 Szállítási díj:</span><span>${szallDij} Ft</span>
+                </div>
             ` : ''}
-            <div class="total-row">💰 Fizetendő: ${vegossz ? vegossz + ' Ft' : '–'}</div>
+            <div class="total-row" id="total-${rowid}">💰 Fizetendő: ${osszeg} Ft</div>
         `;
     }
 
