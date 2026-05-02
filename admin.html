@@ -232,19 +232,22 @@
         }
         .item-name { font-weight: 600; }
         .weight-input {
-            width: 72px;
+            width: 68px;
             padding: 6px 8px;
             border: 1.5px solid #e0e0e0;
             border-radius: 8px;
             text-align: center;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 15px;
             font-family: 'Nunito', sans-serif;
             background: #fffef5;
             outline: none;
             transition: border-color 0.2s;
+            -moz-appearance: textfield;
         }
-        .weight-input:focus { border-color: var(--green); }
+        .weight-input:focus { border-color: var(--green); background: #fff; }
+        .weight-input::-webkit-inner-spin-button,
+        .weight-input::-webkit-outer-spin-button { opacity: 1; }
         .item-unit { font-size: 12px; color: #999; }
         .item-subtotal { font-weight: 700; color: #444; }
 
@@ -374,6 +377,7 @@
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyApENBRkTF0bGrOj1JeiPAW5HnPWBf7fs6pQi5jUqpRAwcbhHSuY-TP6cMNkj7_ZyKOQ/exec"; 
     let orders = [];
+    let termekek = {}; // nev -> {ar, egyseg} szótár
     let currentMode = 'atvetel';
     let activeCardId = null;
     let zonaFilter = 'mind';
@@ -382,14 +386,26 @@
 
     async function fetchData() {
         try {
-            const response = await fetch(API_URL + "?admin=true", { redirect: "follow" });
-            const data = await response.json();
-            if (data) {
-                orders = data;
-                document.getElementById('last-update').innerText = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
-                buildFilterChips();
-                render();
+            // Rendelések és termékek párhuzamos betöltése
+            const [ordersResp, termekResp] = await Promise.all([
+                fetch(API_URL + "?admin=true", { redirect: "follow" }),
+                fetch(API_URL, { redirect: "follow" })
+            ]);
+            const ordersData = await ordersResp.json();
+            const termekData = await termekResp.json();
+
+            if (ordersData) {
+                orders = ordersData;
             }
+            if (termekData && termekData.termekek) {
+                termekek = {};
+                termekData.termekek.forEach(t => {
+                    termekek[t.nev] = { ar: parseFloat(t.ar) || 0, egyseg: t.egyseg || '' };
+                });
+            }
+            document.getElementById('last-update').innerText = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
+            buildFilterChips();
+            render();
         } catch (e) {
             console.error("Hiba:", e);
             document.getElementById('main-list').innerHTML = `<div class="loading" style="color:#c62828;">Hiba az adatok lekérésekor!<br><small>${e.message}</small></div>`;
@@ -587,19 +603,32 @@
         `;
     }
 
-    async function updateOrderData(rowid, termekNev, ujSuly) {
+    const updateTimers = {};
+
+    function updateOrderDataDelayed(rowid, termekNev, ujMennyiseg, egyseg) {
+        // Debounce: 1.5mp várakozás gépelés után, aztán menti
+        clearTimeout(updateTimers[rowid + termekNev]);
+        updateTimers[rowid + termekNev] = setTimeout(() => {
+            updateOrderData(rowid, termekNev, ujMennyiseg, egyseg);
+        }, 1500);
+    }
+
+    async function updateOrderData(rowid, termekNev, ujMennyiseg, egyseg) {
         const order = orders.find(o => o.rowid === rowid);
         if (!order) return;
+        const ujSulyStr = ujMennyiseg + (egyseg ? ' ' + egyseg : '');
         const regiTermekek = (order.termek || order.termekek || '').split(',');
         const frissitettTermekek = regiTermekek.map(t => {
-            if (t.trim().startsWith(termekNev)) return `${termekNev}: ${ujSuly}`;
+            if (t.trim().startsWith(termekNev)) return `${termekNev}: ${ujSulyStr}`;
             return t;
         }).join(', ');
 
         if (order.termek !== undefined) order.termek = frissitettTermekek;
         if (order.termekek !== undefined) order.termekek = frissitettTermekek;
 
-        const url = `${API_URL}?update=true&rowId=${rowid}&newItems=${encodeURIComponent(frissitettTermekek)}`;
+        // Végösszeg frissítése a sheet-ben is
+        const vegosszeg = order.vegosszeg;
+        const url = `${API_URL}?update=true&rowId=${rowid}&newItems=${encodeURIComponent(frissitettTermekek)}&newVegosszeg=${vegosszeg}`;
         try {
             await fetch(url, { redirect: "follow" });
         } catch(e) { console.error("Update hiba:", e); }
