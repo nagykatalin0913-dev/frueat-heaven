@@ -595,7 +595,7 @@
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxs0gsyCDDC9sDhQ81Lf09m-u9j18aOubnH4LezLjC5uL_R139ukLZPhuvSZUdCSsWCpw/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbyApENBRkTF0bGrOj1JeiPAW5HnPWBf7fs6pQi5jUqpRAwcbhHSuY-TP6cMNkj7_ZyKOQ/exec"; 
     let orders = [];
     let termekek = {}; // nev -> {ar, egyseg} szótár
     let currentMode = 'atvetel';
@@ -1016,59 +1016,59 @@
                 ? Math.round(aktSuly * beszAr).toLocaleString('hu-HU') + ' Ft'
                 : '–';
 
-            card.innerHTML = \`
+            card.innerHTML = `
                 <div class="bsz-card-top">
-                    <div class="bsz-nev">\${nevDisplay}</div>
-                    \${forrasDisplay ? \`<div class="bsz-forras">\${forrasDisplay}</div>\` : ''}
+                    <div class="bsz-nev">${nevDisplay}</div>
+                    ${forrasDisplay ? `<div class="bsz-forras">${forrasDisplay}</div>` : ''}
 
                     <div class="bsz-szukseges">
                         <div class="bsz-szuk-item">
                             <div class="bsz-szuk-label">Szükséges</div>
-                            <div class="bsz-szuk-ertek">\${osszes} \${egyseg}</div>
+                            <div class="bsz-szuk-ertek">${osszes} ${egyseg}</div>
                         </div>
-                        \${becsultSuly > 0 ? \`
+                        ${becsultSuly > 0 ? `
                         <div class="bsz-szuk-item">
                             <div class="bsz-szuk-label">Becsült súly</div>
-                            <div class="bsz-szuk-ertek">\${becsultSuly.toFixed(2)} kg</div>
-                        </div>\` : ''}
+                            <div class="bsz-szuk-ertek">${becsultSuly.toFixed(2)} kg</div>
+                        </div>` : ''}
                     </div>
                 </div>
 
                 <div class="bsz-inputok">
                     <div class="bsz-input-blokk">
-                        <label for="bsz-tenyleges-\${idx}">Tényleges súly (kg)</label>
+                        <label for="bsz-tenyleges-${idx}">Tényleges súly (kg)</label>
                         <input type="number" step="0.01" min="0"
-                            id="bsz-tenyleges-\${idx}"
+                            id="bsz-tenyleges-${idx}"
                             class="bsz-input"
-                            value="\${tenylegesSuly > 0 ? tenylegesSuly : ''}"
-                            placeholder="\${becsultSuly > 0 ? becsultSuly.toFixed(2) : '0'}"
-                            oninput="bszSzamol(\${idx}); bszAutoSave(\${idx}, \${rowId})">
+                            value="${tenylegesSuly > 0 ? tenylegesSuly : ''}"
+                            placeholder="${becsultSuly > 0 ? becsultSuly.toFixed(2) : '0'}"
+                            oninput="bszSzamol(${idx}); bszAutoSave(${idx}, ${rowId})">
                     </div>
                     <div class="bsz-input-blokk">
-                        <label for="bsz-vasarolt-\${idx}">Vásárolt menny. (kg)</label>
+                        <label for="bsz-vasarolt-${idx}">Vásárolt menny. (kg)</label>
                         <input type="number" step="0.1" min="0"
-                            id="bsz-vasarolt-\${idx}"
+                            id="bsz-vasarolt-${idx}"
                             class="bsz-input"
-                            value="\${vasarolt > 0 ? vasarolt : ''}"
+                            value="${vasarolt > 0 ? vasarolt : ''}"
                             placeholder="0"
-                            oninput="bszSzamol(\${idx}); bszAutoSave(\${idx}, \${rowId})">
+                            oninput="bszSzamol(${idx}); bszAutoSave(${idx}, ${rowId})">
                     </div>
                 </div>
 
                 <div class="bsz-eredmeny">
-                    <div class="bsz-maradek \${maradekCls}" id="bsz-maradek-\${idx}">\${maradekStr}</div>
-                    <div class="bsz-koltseg" id="bsz-koltseg-\${idx}">💰 \${aktKoltseg}</div>
+                    <div class="bsz-maradek ${maradekCls}" id="bsz-maradek-${idx}">${maradekStr}</div>
+                    <div class="bsz-koltseg" id="bsz-koltseg-${idx}">💰 ${aktKoltseg}</div>
                 </div>
 
                 <div class="bsz-megvan-sor">
                     <input type="checkbox" class="bsz-megvan-cb"
-                        id="bsz-megvan-\${idx}"
-                        \${isMegvan ? 'checked' : ''}
-                        onchange="bszMegvanChange(\${idx}, \${rowId})">
-                    <label for="bsz-megvan-\${idx}" class="bsz-megvan-label">✅ Megvan</label>
+                        id="bsz-megvan-${idx}"
+                        ${isMegvan ? 'checked' : ''}
+                        onchange="bszMegvanChange(${idx}, ${rowId})">
+                    <label for="bsz-megvan-${idx}" class="bsz-megvan-label">✅ Megvan</label>
                 </div>
-                <div class="bsz-save-indicator" id="bsz-save-\${idx}"></div>
-            \`;
+                <div class="bsz-save-indicator" id="bsz-save-${idx}"></div>
+            `;
 
             lista.appendChild(card);
         });
