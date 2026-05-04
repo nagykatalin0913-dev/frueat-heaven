@@ -3,1163 +3,452 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fru'eat Heaven – Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Fru'eat Heaven - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --green: #2e7d32;
-            --green-light: #e8f5e9;
-            --green-mid: #43a047;
-            --green-dark: #1b5e20;
-            --blue: #1565c0;
-            --blue-light: #e3f0ff;
-            --waze: #00bfdf;
-            --red: #c62828;
-            --yellow: #fff8e1;
-            --shadow: 0 3px 14px rgba(0,0,0,0.09);
-            --radius: 16px;
+            --green:#2e7d32;--green-light:#e8f5e9;--green-mid:#43a047;
+            --green-dark:#1b5e20;--blue:#1565c0;--blue-light:#e3f0ff;
+            --waze:#00bfdf;--red:#c62828;--yellow:#fff8e1;
+            --shadow:0 3px 14px rgba(0,0,0,0.09);--radius:16px;
         }
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Nunito', sans-serif;
-            background: #f0f4f1;
-            margin: 0;
-            padding: 12px;
-            color: #333;
-            padding-bottom: 40px;
-        }
-
-        /* HEADER */
-        .header {
-            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-            color: white;
-            padding: 16px 20px;
-            border-radius: var(--radius);
-            text-align: center;
-            margin-bottom: 14px;
-            box-shadow: 0 4px 16px rgba(46,125,50,0.3);
-        }
-        .header h2 {
-            margin: 0;
-            font-family: 'Playfair Display', serif;
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        .header small { opacity: 0.8; font-size: 12px; }
-
-        /* MÓD VÁLASZTÓ */
-        .mode-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        .mode-btn {
-            padding: 14px 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 15px;
-            font-family: 'Nunito', sans-serif;
-            cursor: pointer;
-            background: white;
-            color: #666;
-            transition: all 0.2s;
-        }
-        .mode-btn.active {
-            background: var(--green);
-            color: white;
-            border-color: var(--green);
-            box-shadow: 0 3px 10px rgba(46,125,50,0.25);
-        }
-
-        /* SZŰRŐK */
-        .filters {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .filter-chip {
-            padding: 7px 14px;
-            border-radius: 20px;
-            border: 1.5px solid #ccc;
-            background: white;
-            font-size: 13px;
-            font-family: 'Nunito', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .filter-chip.active {
-            background: var(--green);
-            color: white;
-            border-color: var(--green);
-        }
-
-        /* KERESŐ */
-        .search-box {
-            width: 100%;
-            padding: 13px 16px;
-            border-radius: 12px;
-            border: 1.5px solid #e0e0e0;
-            margin-bottom: 12px;
-            font-size: 15px;
-            font-family: 'Nunito', sans-serif;
-            background: white;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .search-box:focus { border-color: var(--green); }
-
-        /* ÖSSZESÍTŐ SÁV */
-        .summary-bar {
-            background: white;
-            border-radius: 10px;
-            padding: 10px 16px;
-            margin-bottom: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--green-dark);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: var(--shadow);
-        }
-        .summary-count {
-            background: var(--green);
-            color: white;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 13px;
-        }
-
-        /* KÁRTYÁK */
-        .order-card {
-            background: white;
-            padding: 16px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 14px;
-            border-left: 6px solid #e0e0e0;
-            cursor: pointer;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-        .order-card.active-card {
-            border-left-color: var(--blue);
-            background: #f7faff;
-            box-shadow: 0 4px 20px rgba(21,101,192,0.15);
-        }
-        .order-card.next-card {
-            border-left-color: var(--green-mid);
-        }
-
-        /* KÁRTYA FEJLÉC */
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-        .card-name {
-            font-weight: 800;
-            font-size: 17px;
-            color: #222;
-        }
-        .card-address {
-            font-size: 13px;
-            color: #777;
-            margin-top: 2px;
-        }
-        .zone-tag {
-            font-size: 11px;
-            background: var(--green-light);
-            color: var(--green-dark);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 800;
-            text-transform: uppercase;
-            white-space: nowrap;
-            flex-shrink: 0;
-            margin-left: 8px;
-        }
-        .phone-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--blue);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 700;
-            margin-top: 4px;
-            padding: 5px 12px;
-            background: var(--blue-light);
-            border-radius: 20px;
-        }
-        .phone-link:hover { background: #cfe3ff; }
-
-        /* MEGJEGYZÉS */
-        .comment-box {
-            background: var(--yellow);
-            border: 1px solid #ffe082;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 13px;
-            color: #5d4037;
-            margin: 8px 0;
-        }
-
-        /* TERMÉKEK */
-        .items-table { width: 100%; margin: 12px 0 6px; border-collapse: collapse; }
-        .items-table th {
-            font-size: 11px;
-            color: #999;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 4px 6px;
-            text-align: left;
-            border-bottom: 1.5px solid #f0f0f0;
-        }
-        .items-table th:last-child,
-        .items-table td:last-child { text-align: right; }
-        .item-row td {
-            padding: 8px 6px;
-            font-size: 14px;
-            border-bottom: 1px solid #f5f5f5;
-            vertical-align: middle;
-        }
-        .item-name { font-weight: 600; }
-        .weight-input {
-            width: 68px;
-            padding: 6px 8px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 700;
-            font-size: 15px;
-            font-family: 'Nunito', sans-serif;
-            background: #fffef5;
-            outline: none;
-            transition: border-color 0.2s;
-            -moz-appearance: textfield;
-        }
-        .weight-input:focus { border-color: var(--green); background: #fff; }
-        .weight-input::-webkit-inner-spin-button,
-        .weight-input::-webkit-outer-spin-button { opacity: 1; }
-        .item-unit { font-size: 12px; color: #999; }
-        .item-subtotal { font-weight: 700; color: #444; }
-
-        .delivery-fee-row td {
-            font-size: 14px;
-            color: #777;
-            padding: 6px 6px;
-            font-style: italic;
-        }
-
-        .total-row {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--green-dark);
-            text-align: right;
-            padding: 12px 6px 8px;
-            border-top: 2px solid #e8f5e9;
-            display: block;
-        }
-
-        /* NAVIGÁCIÓ GOMBOK */
-        .nav-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 12px;
-        }
-        .nav-btn {
-            padding: 11px 10px;
-            border-radius: 10px;
-            text-decoration: none;
-            text-align: center;
-            color: white;
-            font-weight: 700;
-            font-size: 14px;
-            font-family: 'Nunito', sans-serif;
-            display: block;
-            transition: opacity 0.15s;
-        }
-        .nav-btn:hover { opacity: 0.88; }
-        .nav-btn.gmaps { background: var(--blue); }
-        .nav-btn.waze { background: var(--waze); }
-
-        /* LEZÁRÁS GOMB */
-        .finish-btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            background: var(--green);
-            color: white;
-            font-weight: 800;
-            font-size: 16px;
-            font-family: 'Nunito', sans-serif;
-            margin-top: 14px;
-            cursor: pointer;
-            box-shadow: 0 3px 10px rgba(46,125,50,0.25);
-            transition: background 0.2s, transform 0.1s;
-        }
-        .finish-btn:hover { background: var(--green-mid); }
-        .finish-btn:active { transform: scale(0.97); }
-        .finish-btn:disabled { background: #b0bec5; cursor: not-allowed; box-shadow: none; }
-
-        /* TÖLTŐ */
-        .loading {
-            text-align: center;
-            padding: 50px 20px;
-            color: #999;
-            font-style: italic;
-            font-size: 16px;
-        }
-        .loading-spinner {
-            width: 36px;
-            height: 36px;
-            border: 4px solid #e0e0e0;
-            border-top-color: var(--green);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 16px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ÁTVÉTEL HELYE SZŰRŐ */
-        #atvetel-pont-szuro {
-            display: none;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        /* ── BESZERZÉS NÉZET ─────────────────────────────── */
-        #beszerzes-view { display: none; }
-
-        .bsz-osszesito {
-            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-            color: white;
-            border-radius: var(--radius);
-            padding: 16px 20px;
-            margin-bottom: 14px;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            box-shadow: 0 4px 16px rgba(46,125,50,0.25);
-        }
-        .bsz-osszesito-item { flex: 1; min-width: 80px; text-align: center; }
-        .bsz-osszesito-item .bsz-ertek {
-            font-size: 18px;
-            font-weight: 800;
-            display: block;
-        }
-        .bsz-osszesito-item .bsz-cimke {
-            font-size: 11px;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .bsz-card {
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 14px;
-            border-left: 5px solid var(--green);
-            transition: opacity 0.3s;
-            overflow: hidden;
-        }
-        .bsz-card.megvan {
-            opacity: 0.45;
-            border-left-color: #b0bec5;
-        }
-        .bsz-card.box-osszetevo {
-            border-left-color: #ffc107;
-            background: #fffef5;
-        }
-        .bsz-card-top {
-            padding: 14px 16px 10px;
-        }
-        .bsz-nev {
-            font-size: 20px;
-            font-weight: 800;
-            color: #1a1a1a;
-            line-height: 1.2;
-        }
-        .bsz-forras {
-            font-size: 12px;
-            color: #888;
-            margin-top: 2px;
-        }
-        .bsz-szukseges {
-            margin-top: 10px;
-            background: #f5f5f5;
-            border-radius: 10px;
-            padding: 10px 12px;
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-        .bsz-szuk-item { flex: 1; min-width: 100px; }
-        .bsz-szuk-label {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.4px;
-        }
-        .bsz-szuk-ertek {
-            font-size: 16px;
-            font-weight: 800;
-            color: #333;
-            margin-top: 2px;
-        }
-        .bsz-becsult {
-            font-size: 13px;
-            color: #555;
-            margin-top: 6px;
-        }
-
-        .bsz-inputok {
-            padding: 12px 16px 16px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .bsz-input-blokk label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            color: #777;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-            letter-spacing: 0.4px;
-        }
-        .bsz-input {
-            width: 100%;
-            padding: 14px 12px;
-            border-radius: 12px;
-            border: 2px solid #e0e0e0;
-            font-size: 22px;
-            font-weight: 800;
-            font-family: 'Nunito', sans-serif;
-            text-align: center;
-            background: #fafafa;
-            outline: none;
-            transition: border-color 0.2s, background 0.2s;
-            -moz-appearance: textfield;
-        }
-        .bsz-input:focus {
-            border-color: var(--green);
-            background: #fff;
-        }
-        .bsz-input::-webkit-inner-spin-button,
-        .bsz-input::-webkit-outer-spin-button { opacity: 1; }
-
-        .bsz-eredmeny {
-            padding: 10px 16px 14px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-            border-top: 1px solid #f0f0f0;
-        }
-        .bsz-maradek {
-            flex: 1;
-            font-size: 16px;
-            font-weight: 800;
-            padding: 8px 14px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .bsz-maradek.pozitiv { background: #e8f5e9; color: #2e7d32; }
-        .bsz-maradek.negativ { background: #ffebee; color: #c62828; }
-        .bsz-maradek.semleges { background: #f5f5f5; color: #666; }
-        .bsz-koltseg {
-            flex: 1;
-            font-size: 14px;
-            font-weight: 700;
-            color: #555;
-            text-align: center;
-            padding: 8px;
-        }
-
-        .bsz-megvan-sor {
-            padding: 0 16px 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .bsz-megvan-cb {
-            width: 24px;
-            height: 24px;
-            accent-color: var(--green);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .bsz-megvan-label {
-            font-size: 15px;
-            font-weight: 700;
-            color: #555;
-            cursor: pointer;
-        }
-
-        .bsz-frissit-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--green);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 800;
-            font-family: 'Nunito', sans-serif;
-            cursor: pointer;
-            margin-bottom: 14px;
-            box-shadow: 0 3px 10px rgba(46,125,50,0.25);
-        }
-        .bsz-frissit-btn:active { transform: scale(0.97); }
-
-        .bsz-save-indicator {
-            font-size: 12px;
-            color: #aaa;
-            text-align: right;
-            padding: 0 16px 8px;
-            font-style: italic;
-        }
-        .bsz-save-indicator.saving { color: var(--green); }
+        *{box-sizing:border-box}
+        body{font-family:'Nunito',sans-serif;background:#f0f4f1;margin:0;padding:12px;color:#333;padding-bottom:40px}
+        .header{background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%);color:white;padding:16px 20px;border-radius:var(--radius);text-align:center;margin-bottom:14px;box-shadow:0 4px 16px rgba(46,125,50,0.3)}
+        .header h2{margin:0;font-size:22px;font-weight:800}
+        .header small{opacity:0.8;font-size:12px}
+        .mode-selector{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+        .mode-btn{padding:14px 10px;border:2px solid #e0e0e0;border-radius:12px;font-weight:700;font-size:14px;font-family:'Nunito',sans-serif;cursor:pointer;background:white;color:#666;transition:all 0.2s}
+        .mode-btn.active{background:var(--green);color:white;border-color:var(--green);box-shadow:0 3px 10px rgba(46,125,50,0.25)}
+        .filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+        .filter-chip{padding:7px 14px;border-radius:20px;border:1.5px solid #ccc;background:white;font-size:13px;font-family:'Nunito',sans-serif;font-weight:600;cursor:pointer;transition:all 0.15s}
+        .filter-chip.active{background:var(--green);color:white;border-color:var(--green)}
+        .search-box{width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;margin-bottom:12px;font-size:15px;font-family:'Nunito',sans-serif;background:white;outline:none;transition:border-color 0.2s}
+        .search-box:focus{border-color:var(--green)}
+        .summary-bar{background:white;border-radius:10px;padding:10px 16px;margin-bottom:12px;font-size:14px;font-weight:700;color:var(--green-dark);display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
+        .summary-count{background:var(--green);color:white;padding:3px 10px;border-radius:20px;font-size:13px}
+        .order-card{background:white;padding:16px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;border-left:6px solid #e0e0e0;cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s;position:relative}
+        .order-card.active-card{border-left-color:var(--blue);background:#f7faff;box-shadow:0 4px 20px rgba(21,101,192,0.15)}
+        .order-card.next-card{border-left-color:var(--green-mid)}
+        .card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+        .card-name{font-weight:800;font-size:17px;color:#222}
+        .card-address{font-size:13px;color:#777;margin-top:2px}
+        .zone-tag{font-size:11px;background:var(--green-light);color:var(--green-dark);padding:4px 10px;border-radius:20px;font-weight:800;text-transform:uppercase;white-space:nowrap;flex-shrink:0;margin-left:8px}
+        .phone-link{display:inline-flex;align-items:center;gap:5px;color:var(--blue);text-decoration:none;font-size:14px;font-weight:700;margin-top:4px;padding:5px 12px;background:var(--blue-light);border-radius:20px}
+        .comment-box{background:var(--yellow);border:1px solid #ffe082;border-radius:8px;padding:8px 12px;font-size:13px;color:#5d4037;margin:8px 0}
+        .items-table{width:100%;margin:12px 0 6px;border-collapse:collapse}
+        .items-table th{font-size:11px;color:#999;font-weight:700;text-transform:uppercase;padding:4px 6px;text-align:left;border-bottom:1.5px solid #f0f0f0}
+        .items-table th:last-child,.items-table td:last-child{text-align:right}
+        .item-row td{padding:8px 6px;font-size:14px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+        .item-name{font-weight:600}
+        .weight-input{width:68px;padding:6px 8px;border:1.5px solid #e0e0e0;border-radius:8px;text-align:center;font-weight:700;font-size:15px;font-family:'Nunito',sans-serif;background:#fffef5;outline:none;transition:border-color 0.2s;-moz-appearance:textfield}
+        .weight-input:focus{border-color:var(--green);background:#fff}
+        .weight-input::-webkit-inner-spin-button,.weight-input::-webkit-outer-spin-button{opacity:1}
+        .total-row{font-size:20px;font-weight:800;color:var(--green-dark);text-align:right;padding:12px 6px 8px;border-top:2px solid #e8f5e9;display:block}
+        .nav-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+        .nav-btn{padding:11px 10px;border-radius:10px;text-decoration:none;text-align:center;color:white;font-weight:700;font-size:14px;font-family:'Nunito',sans-serif;display:block;transition:opacity 0.15s}
+        .nav-btn.gmaps{background:var(--blue)}
+        .nav-btn.waze{background:var(--waze)}
+        .finish-btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--green);color:white;font-weight:800;font-size:16px;font-family:'Nunito',sans-serif;margin-top:14px;cursor:pointer;box-shadow:0 3px 10px rgba(46,125,50,0.25);transition:background 0.2s,transform 0.1s}
+        .finish-btn:hover{background:var(--green-mid)}
+        .finish-btn:active{transform:scale(0.97)}
+        .finish-btn:disabled{background:#b0bec5;cursor:not-allowed;box-shadow:none}
+        .loading{text-align:center;padding:50px 20px;color:#999;font-style:italic;font-size:16px}
+        .loading-spinner{width:36px;height:36px;border:4px solid #e0e0e0;border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        #atvetel-pont-szuro{display:none;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+        /* BESZERZES */
+        #beszerzes-view{display:none}
+        .bsz-frissit-btn{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:12px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:14px;box-shadow:0 3px 10px rgba(46,125,50,0.25)}
+        .bsz-osszesito{background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%);color:white;border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;display:flex;gap:12px;flex-wrap:wrap;box-shadow:0 4px 16px rgba(46,125,50,0.25)}
+        .bsz-osszesito-item{flex:1;min-width:80px;text-align:center}
+        .bsz-ertek{font-size:18px;font-weight:800;display:block}
+        .bsz-cimke{font-size:11px;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px}
+        .bsz-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;border-left:5px solid var(--green);transition:opacity 0.3s;overflow:hidden}
+        .bsz-card.megvan{opacity:0.45;border-left-color:#b0bec5}
+        .bsz-card.box-osszetevo{border-left-color:#ffc107;background:#fffef5}
+        .bsz-card-top{padding:14px 16px 10px}
+        .bsz-nev{font-size:20px;font-weight:800;color:#1a1a1a;line-height:1.2}
+        .bsz-forras{font-size:12px;color:#888;margin-top:2px}
+        .bsz-szukseges{margin-top:10px;background:#f5f5f5;border-radius:10px;padding:10px 12px;display:flex;gap:14px;flex-wrap:wrap}
+        .bsz-szuk-item{flex:1;min-width:100px}
+        .bsz-szuk-label{font-size:11px;color:#888;text-transform:uppercase;font-weight:700;letter-spacing:0.4px}
+        .bsz-szuk-ertek{font-size:16px;font-weight:800;color:#333;margin-top:2px}
+        .bsz-inputok{padding:12px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .bsz-input-blokk label{display:block;font-size:12px;font-weight:700;color:#777;text-transform:uppercase;margin-bottom:5px;letter-spacing:0.4px}
+        .bsz-input{width:100%;padding:14px 12px;border-radius:12px;border:2px solid #e0e0e0;font-size:22px;font-weight:800;font-family:'Nunito',sans-serif;text-align:center;background:#fafafa;outline:none;transition:border-color 0.2s;-moz-appearance:textfield}
+        .bsz-input:focus{border-color:var(--green);background:#fff}
+        .bsz-input::-webkit-inner-spin-button,.bsz-input::-webkit-outer-spin-button{opacity:1}
+        .bsz-eredmeny{padding:10px 16px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px solid #f0f0f0}
+        .bsz-maradek{flex:1;font-size:16px;font-weight:800;padding:8px 14px;border-radius:10px;text-align:center}
+        .bsz-maradek.pozitiv{background:#e8f5e9;color:#2e7d32}
+        .bsz-maradek.negativ{background:#ffebee;color:#c62828}
+        .bsz-maradek.semleges{background:#f5f5f5;color:#666}
+        .bsz-koltseg{flex:1;font-size:14px;font-weight:700;color:#555;text-align:center;padding:8px}
+        .bsz-megvan-sor{padding:0 16px 14px;display:flex;align-items:center;gap:10px}
+        .bsz-megvan-cb{width:24px;height:24px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
+        .bsz-megvan-label{font-size:15px;font-weight:700;color:#555;cursor:pointer}
+        .bsz-save-indicator{font-size:12px;color:#aaa;text-align:right;padding:0 16px 8px;font-style:italic}
+        .bsz-save-indicator.saving{color:var(--green)}
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h2>🍊 Fru'eat Admin</h2>
-    <small id="last-update">Adatok betöltése...</small>
+    <h2>&#127818; Fru'eat Admin</h2>
+    <small id="last-update">Adatok bet&#246;lt&#233;se...</small>
 </div>
 
 <div class="mode-selector">
-    <button id="btn-atvetel" class="mode-btn active" onclick="setMode('atvetel')">🏠 Átvétel</button>
-    <button id="btn-szallitas" class="mode-btn" onclick="setMode('szallitas')">🚚 Kiszállítás</button>
-    <button id="btn-beszerzes" class="mode-btn" onclick="setMode('beszerzes')">🛒 Beszerzés</button>
+    <button id="btn-atvetel"   class="mode-btn active" onclick="setMode('atvetel')">&#127968; &#193;tv&#233;tel</button>
+    <button id="btn-szallitas" class="mode-btn"        onclick="setMode('szallitas')">&#128666; Kiszáll&#237;t&#225;s</button>
+    <button id="btn-beszerzes" class="mode-btn"        onclick="setMode('beszerzes')">&#128722; Beszerz&#233;s</button>
 </div>
 
-<!-- Kiszállítás szűrők: zóna és nap -->
 <div id="szallitas-szurok" style="display:none;">
     <div class="filters" id="zona-chips"></div>
     <div class="filters" id="nap-chips"></div>
 </div>
-
-<!-- Átvétel szűrők: átvételi pont -->
 <div id="atvetel-pont-szuro" class="filters"></div>
 
-<input type="text" id="searchInput" class="search-box" placeholder="🔍 Név vagy cím keresése..." oninput="render()">
+<input type="text" id="searchInput" class="search-box" placeholder="&#128269; N&#233;v vagy c&#237;m keres&#233;se..." oninput="render()">
 
 <div id="summary-bar-wrap" class="summary-bar">
-    <span id="summary-text">Betöltés...</span>
+    <span id="summary-text">Bet&#246;lt&#233;s...</span>
     <span class="summary-count" id="summary-count">0</span>
 </div>
 
-
-<!-- ── BESZERZÉS NÉZET ──────────────────────────────────── -->
 <div id="beszerzes-view">
-    <button class="bsz-frissit-btn" onclick="fetchBeszerzes()">🔄 Beszerzes frissítése</button>
+    <button class="bsz-frissit-btn" onclick="fetchBeszerzes()">&#128260; Beszerz&#233;s friss&#237;t&#233;se</button>
     <div class="bsz-osszesito" id="bsz-osszesito" style="display:none;">
-        <div class="bsz-osszesito-item">
-            <span class="bsz-ertek" id="bsz-total-koltseg">–</span>
-            <span class="bsz-cimke">Becsült cost</span>
-        </div>
-        <div class="bsz-osszesito-item">
-            <span class="bsz-ertek" id="bsz-tenyleges-koltseg">–</span>
-            <span class="bsz-cimke">Tényleges cost</span>
-        </div>
-        <div class="bsz-osszesito-item">
-            <span class="bsz-ertek" id="bsz-db-megvan">–</span>
-            <span class="bsz-cimke">Megvan</span>
-        </div>
+        <div class="bsz-osszesito-item"><span class="bsz-ertek" id="bsz-total-koltseg">-</span><span class="bsz-cimke">Becs&#252;lt cost</span></div>
+        <div class="bsz-osszesito-item"><span class="bsz-ertek" id="bsz-tenyleges-koltseg">-</span><span class="bsz-cimke">T&#233;nyleges cost</span></div>
+        <div class="bsz-osszesito-item"><span class="bsz-ertek" id="bsz-db-megvan">-</span><span class="bsz-cimke">Megvan</span></div>
     </div>
-    <div id="bsz-lista">
-        <div class="loading">Nyomd meg a Frissítés gombot!</div>
-    </div>
+    <div id="bsz-lista"><div class="loading">Nyomd meg a Friss&#237;t&#233;s gombot!</div></div>
 </div>
 
 <div id="main-list">
-    <div class="loading">
-        <div class="loading-spinner"></div>
-        Adatok betöltése a táblázatból...
-    </div>
+    <div class="loading"><div class="loading-spinner"></div>Adatok bet&#246;lt&#233;se...</div>
 </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyApENBRkTF0bGrOj1JeiPAW5HnPWBf7fs6pQi5jUqpRAwcbhHSuY-TP6cMNkj7_ZyKOQ/exec"; 
-    let orders = [];
-    let termekek = {}; // nev -> {ar, egyseg} szótár
-    let currentMode = 'atvetel';
-    let activeCardId = null;
-    let zonaFilter = 'mind';
-    let napFilter = 'mind';
-    let pontFilter = 'mind';
+var API_URL = "https://script.google.com/macros/s/AKfycbyApENBRkTF0bGrOj1JeiPAW5HnPWBf7fs6pQi5jUqpRAwcbhHSuY-TP6cMNkj7_ZyKOQ/exec";
+var orders = [];
+var termekek = {};
+var currentMode = 'atvetel';
+var activeCardId = null;
+var zonaFilter = 'mind';
+var napFilter  = 'mind';
+var pontFilter = 'mind';
 
-    async function fetchData() {
-        try {
-            // Rendelések és termékek párhuzamos betöltése
-            const [ordersResp, termekResp] = await Promise.all([
-                fetch(API_URL + "?admin=true", { redirect: "follow" }),
-                fetch(API_URL, { redirect: "follow" })
-            ]);
-            const ordersData = await ordersResp.json();
-            const termekData = await termekResp.json();
-
-            if (ordersData) {
-                orders = ordersData;
-            }
-            if (termekData && termekData.termekek) {
-                termekek = {};
-                termekData.termekek.forEach(t => {
-                    termekek[t.nev] = { ar: parseFloat(t.ar) || 0, egyseg: t.egyseg || '' };
-                });
-            }
-            document.getElementById('last-update').innerText = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
-            buildFilterChips();
-            render();
-        } catch (e) {
-            console.error("Hiba:", e);
-            document.getElementById('main-list').innerHTML = `<div class="loading" style="color:#c62828;">Hiba az adatok lekérésekor!<br><small>${e.message}</small></div>`;
+async function fetchData() {
+    try {
+        var r1 = await fetch(API_URL + "?admin=true", {redirect:"follow"});
+        var r2 = await fetch(API_URL, {redirect:"follow"});
+        var od = await r1.json();
+        var td = await r2.json();
+        if (od) orders = od;
+        if (td && td.termekek) {
+            termekek = {};
+            td.termekek.forEach(function(t) { termekek[t.nev] = {ar:parseFloat(t.ar)||0, egyseg:t.egyseg||''}; });
         }
+        document.getElementById('last-update').innerText = 'Frissitve: ' + new Date().toLocaleTimeString('hu-HU');
+        buildFilterChips();
+        render();
+    } catch(e) {
+        document.getElementById('main-list').innerHTML = '<div class="loading" style="color:#c62828;">Hiba: ' + e.message + '</div>';
     }
+}
 
-    function buildFilterChips() {
-        // Zóna chipek kiszállításhoz
-        const zonak = [...new Set(orders.filter(o => String(o.atvetel_mod||'').toLowerCase().includes('házhoz')).map(o => o.zona).filter(Boolean))];
-        const zonaEl = document.getElementById('zona-chips');
-        zonaEl.innerHTML = ['mind', ...zonak].map(z => `
-            <div class="filter-chip ${zonaFilter === z ? 'active' : ''}" onclick="setZona('${z}')">
-                ${z === 'mind' ? '📍 Összes zóna' : z}
-            </div>
-        `).join('');
-
-        // Nap chipek kiszállításhoz (datum mező alapján)
-        const napok = [...new Set(orders.filter(o => String(o.atvetel_mod||'').toLowerCase().includes('házhoz')).map(o => {
-            if(!o.datum) return null;
-            const d = new Date(o.datum);
-            return isNaN(d) ? null : d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' });
-        }).filter(Boolean))];
-        const napEl = document.getElementById('nap-chips');
-        napEl.innerHTML = ['mind', ...napok].map(n => `
-            <div class="filter-chip ${napFilter === n ? 'active' : ''}" onclick="setNap('${n}')">
-                ${n === 'mind' ? '📅 Összes nap' : n}
-            </div>
-        `).join('');
-
-        // Átvételi pont chipek
-        const pontok = [...new Set(orders.filter(o => String(o.atvetel_mod||'').toLowerCase().includes('személyes')).map(o => o.zona).filter(Boolean))];
-        const pontEl = document.getElementById('atvetel-pont-szuro');
-        pontEl.innerHTML = ['mind', ...pontok].map(p => `
-            <div class="filter-chip ${pontFilter === p ? 'active' : ''}" onclick="setPont('${p}')">
-                ${p === 'mind' ? '📦 Összes hely' : p}
-            </div>
-        `).join('');
-    }
-
-    function setZona(z) { zonaFilter = z; buildFilterChips(); render(); }
-    function setNap(n) { napFilter = n; buildFilterChips(); render(); }
-    function setPont(p) { pontFilter = p; buildFilterChips(); render(); }
-
-    function setMode(mode) {
-        currentMode = mode;
-        activeCardId = null;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-' + mode).classList.add('active');
-
-        // Beszerzes nézet vs rendelés nézet szétválasztása
-        const isBeszerzes = mode === 'beszerzes';
-        document.getElementById('beszerzes-view').style.display   = isBeszerzes ? 'block' : 'none';
-        document.getElementById('main-list').style.display         = isBeszerzes ? 'none'  : 'block';
-        document.getElementById('searchInput').style.display       = isBeszerzes ? 'none'  : 'block';
-        document.getElementById('summary-bar-wrap').style.display  = isBeszerzes ? 'none'  : 'flex';
-        document.getElementById('szallitas-szurok').style.display  = mode === 'szallitas' ? 'block' : 'none';
-        document.getElementById('atvetel-pont-szuro').style.display= mode === 'atvetel'   ? 'flex'  : 'none';
-
-        if (!isBeszerzes) {
-            buildFilterChips();
-            render();
-        }
-    }
-
-    function render() {
-        const list = document.getElementById('main-list');
-        const search = document.getElementById('searchInput').value.toLowerCase();
-
-        let filtered = orders.filter(o => {
-            const matchSearch = (o.nev||'').toLowerCase().includes(search) || (o.cim||'').toLowerCase().includes(search);
-            const mod = String(o.atvetel_mod || '').toLowerCase();
-            if (currentMode === 'atvetel') {
-                const matchMod = mod.includes('személyes');
-                const matchPont = pontFilter === 'mind' || (o.zona||'') === pontFilter;
-                return matchSearch && matchMod && matchPont;
-            } else {
-                const matchMod = mod.includes('házhoz');
-                const matchZona = zonaFilter === 'mind' || (o.zona||'') === zonaFilter;
-                const matchNap = napFilter === 'mind' || (() => {
-                    if(!o.datum) return false;
-                    const d = new Date(o.datum);
-                    const napStr = isNaN(d) ? null : d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' });
-                    return napStr === napFilter;
-                })();
-                return matchSearch && matchMod && matchZona && matchNap;
-            }
-        });
-
-        // Kiszállításnál zóna alapján sorbarendezés
-        if (currentMode === 'szallitas') {
-            filtered.sort((a, b) => String(a.zona||'').localeCompare(String(b.zona||'')));
-        }
-
-        const count = filtered.length;
-        document.getElementById('summary-count').innerText = count;
-        document.getElementById('summary-text').innerText = currentMode === 'atvetel'
-            ? `Személyes átvétel`
-            : `Kiszállítandó rendelés`;
-
-        list.innerHTML = '';
-
-        if (count === 0) {
-            list.innerHTML = '<div class="loading">Nincs megjelenítendő rendelés.</div>';
-            return;
-        }
-
-        // Ha nincs aktív kártya, az első legyen alapból az
-        if (!activeCardId || !filtered.find(o => o.rowid === activeCardId)) {
-            activeCardId = filtered[0].rowid;
-        }
-
-        filtered.forEach((o, index) => {
-            const isActive = o.rowid === activeCardId;
-            const isFirst = index === 0;
-            const card = document.createElement('div');
-            card.className = `order-card ${isActive ? 'active-card' : (isFirst ? 'next-card' : '')}`;
-            card.onclick = () => { activeCardId = o.rowid; render(); };
-
-            const cleanAddress = (o.cim || '').replace(/\r?\n|\r/g, " ");
-            const termekAdat = o.termek || o.termekek || "";
-            const tel = o.telefon || o.tel || '';
-
-            card.innerHTML = `
-                <div class="card-header">
-                    <div>
-                        <div class="card-name">${o.nev || 'Névtelen'}</div>
-                        <div class="card-address">${o.cim || 'Nincs cím'}</div>
-                        ${tel ? `<a href="tel:${tel}" class="phone-link" onclick="event.stopPropagation()">📞 ${tel}</a>` : ''}
-                    </div>
-                    <span class="zone-tag">${o.zona || 'Pécel'}</span>
-                </div>
-
-                ${o.megjegyzes ? `<div class="comment-box">💬 <b>Megjegyzés:</b> ${o.megjegyzes}</div>` : ''}
-
-                ${renderItemsTable(termekAdat, o.rowid, o)}
-
-                ${currentMode === 'szallitas' ? `
-                    <div class="nav-group" onclick="event.stopPropagation()">
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanAddress)}" target="_blank" class="nav-btn gmaps">🗺 Google Maps</a>
-                        <a href="waze://?q=${encodeURIComponent(cleanAddress)}&navigate=yes" class="nav-btn waze">🔵 Waze</a>
-                    </div>
-                ` : ''}
-
-                <button class="finish-btn" onclick="event.stopPropagation(); completeOrder(${o.rowid})">
-                    ${currentMode === 'atvetel' ? '✓ ÁTADVA ÉS FIZETVE' : '✓ KISZÁLLÍTVA'}
-                </button>
-            `;
-            list.appendChild(card);
+function buildFilterChips() {
+    function makeChips(el, items, current, setter) {
+        el.innerHTML = '';
+        items.forEach(function(v) {
+            var d = document.createElement('div');
+            d.className = 'filter-chip' + (current === v ? ' active' : '');
+            d.textContent = v;
+            d.onclick = function() { setter(v); };
+            el.appendChild(d);
         });
     }
+    var zonak = ['mind']; orders.forEach(function(o){ if(String(o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz')>=0&&o.zona&&zonak.indexOf(o.zona)<0) zonak.push(o.zona); });
+    var napok = ['mind']; orders.forEach(function(o){ if(String(o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz')>=0&&o.datum){var d=new Date(o.datum);if(!isNaN(d)){var s=d.toLocaleDateString('hu-HU',{month:'short',day:'numeric'});if(napok.indexOf(s)<0)napok.push(s);}} });
+    var pontok=['mind']; orders.forEach(function(o){ if(String(o.atvetel_mod||'').toLowerCase().indexOf('szem\u00e9lyes')>=0&&o.zona&&pontok.indexOf(o.zona)<0) pontok.push(o.zona); });
+    makeChips(document.getElementById('zona-chips'), zonak, zonaFilter, function(v){zonaFilter=v;buildFilterChips();render();});
+    makeChips(document.getElementById('nap-chips'),  napok,  napFilter,  function(v){napFilter=v; buildFilterChips();render();});
+    makeChips(document.getElementById('atvetel-pont-szuro'), pontok, pontFilter, function(v){pontFilter=v;buildFilterChips();render();});
+}
 
-    // Szövegből szám + egység kinyerése: "10 csomó" -> {qty:10, unit:"csomó"}
-    function parseQtyAndUnit(str) {
-        str = (str || '').toString().trim();
-        const m = str.match(/^([\d.,]+)\s*(.*)$/);
-        if (m) return { qty: parseFloat(m[1].replace(',', '.')) || 0, unit: m[2].trim() };
-        return { qty: 0, unit: str };
+function setMode(mode) {
+    currentMode = mode; activeCardId = null;
+    document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
+    document.getElementById('btn-'+mode).classList.add('active');
+    var isBsz = mode==='beszerzes';
+    document.getElementById('beszerzes-view').style.display  = isBsz?'block':'none';
+    document.getElementById('main-list').style.display        = isBsz?'none':'block';
+    document.getElementById('searchInput').style.display      = isBsz?'none':'block';
+    document.getElementById('summary-bar-wrap').style.display = isBsz?'none':'flex';
+    document.getElementById('szallitas-szurok').style.display = mode==='szallitas'?'block':'none';
+    document.getElementById('atvetel-pont-szuro').style.display= mode==='atvetel'?'flex':'none';
+    if (!isBsz) { buildFilterChips(); render(); }
+}
+
+function render() {
+    var list   = document.getElementById('main-list');
+    var search = document.getElementById('searchInput').value.toLowerCase();
+    var filtered = orders.filter(function(o) {
+        var ms  = (o.nev||'').toLowerCase().indexOf(search)>=0||(o.cim||'').toLowerCase().indexOf(search)>=0;
+        var mod = String(o.atvetel_mod||'').toLowerCase();
+        if (currentMode==='atvetel') return ms && mod.indexOf('szem\u00e9lyes')>=0 && (pontFilter==='mind'||(o.zona||'')===pontFilter);
+        var mz = zonaFilter==='mind'||(o.zona||'')===zonaFilter;
+        var mn = napFilter==='mind'||(function(){if(!o.datum)return false;var d=new Date(o.datum);return !isNaN(d)&&d.toLocaleDateString('hu-HU',{month:'short',day:'numeric'})===napFilter;})();
+        return ms && mod.indexOf('h\u00e1zhoz')>=0 && mz && mn;
+    });
+    if (currentMode==='szallitas') filtered.sort(function(a,b){return String(a.zona||'').localeCompare(String(b.zona||''));});
+    document.getElementById('summary-count').innerText = filtered.length;
+    document.getElementById('summary-text').innerText  = currentMode==='atvetel'?'Szem\u00e9lyes \u00e1tv\u00e9tel':'Kiszáll\u00edt\u00e1s';
+    list.innerHTML = '';
+    if (!filtered.length){list.innerHTML='<div class="loading">Nincs megjelen\u00edthet\u0151 rendel\u00e9s.</div>';return;}
+    if (!activeCardId||!filtered.find(function(o){return o.rowid===activeCardId;})) activeCardId=filtered[0].rowid;
+    filtered.forEach(function(o,i) {
+        var isActive = o.rowid===activeCardId;
+        var card = document.createElement('div');
+        card.className = 'order-card'+(isActive?' active-card':(i===0?' next-card':''));
+        card.onclick = function(){activeCardId=o.rowid;render();};
+        var ca  = (o.cim||'').replace(/\r?\n|\r/g,' ');
+        var tel = o.telefon||o.tel||'';
+        card.innerHTML =
+            '<div class="card-header">'+
+                '<div>'+
+                    '<div class="card-name">'+(o.nev||'N\u00e9vtelen')+'</div>'+
+                    '<div class="card-address">'+(o.cim||'Nincs c\u00edm')+'</div>'+
+                    (tel?'<a href="tel:'+tel+'" class="phone-link" onclick="event.stopPropagation()">&#128222; '+tel+'</a>':'')+
+                '</div>'+
+                '<span class="zone-tag">'+(o.zona||'P\u00e9cel')+'</span>'+
+            '</div>'+
+            (o.megjegyzes?'<div class="comment-box"><b>Megjegyz\u00e9s:</b> '+o.megjegyzes+'</div>':'')+
+            renderItemsTable(o.termek||o.termekek||'',o.rowid,o)+
+            (currentMode==='szallitas'?
+                '<div class="nav-group" onclick="event.stopPropagation()">'+
+                    '<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(ca)+'" target="_blank" class="nav-btn gmaps">&#128506; Google Maps</a>'+
+                    '<a href="waze://?q='+encodeURIComponent(ca)+'&navigate=yes" class="nav-btn waze">&#128309; Waze</a>'+
+                '</div>':'')+
+            '<button class="finish-btn" onclick="event.stopPropagation();completeOrder('+o.rowid+')">'+
+                (currentMode==='atvetel'?'&#10003; \u00c1TADVA \u00c9S FIZETVE':'&#10003; KISZÁLL\u00cdTVA')+
+            '</button>';
+        list.appendChild(card);
+    });
+}
+
+function parseQtyAndUnit(s) {
+    s=(s||'').toString().trim();
+    var m=s.match(/^([\d.,]+)\s*(.*)$/);
+    return m?{qty:parseFloat(m[1].replace(',','.'))||0,unit:m[2].trim()}:{qty:0,unit:s};
+}
+
+function szamolVegosszeg(rowid) {
+    var order=orders.find(function(o){return o.rowid===rowid;});
+    if(!order)return;
+    var t=0;
+    document.querySelectorAll('.qty-input[data-rowid="'+rowid+'"]').forEach(function(inp){
+        t+=(parseFloat(inp.dataset.ar)||0)*(parseFloat(inp.value.replace(',','.'))||0);
+    });
+    var sd=parseInt(order.szallitasi_dij||0);
+    if((order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz')>=0&&sd>0) t+=sd;
+    var el=document.getElementById('total-'+rowid);
+    if(el) el.innerText='Fizetend\u0151: '+Math.round(t)+' Ft';
+    order.vegosszeg=Math.round(t);
+}
+
+function renderItemsTable(str,rowid,order) {
+    if(!str||!str.trim())return'<div style="color:#bbb;font-size:14px;padding:10px 0;">Nincs term\u00e9k adat</div>';
+    var items=str.split(',').map(function(t){return t.trim();}).filter(Boolean);
+    var sd=parseInt(order.szallitasi_dij||0);
+    var vs=(order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz')>=0;
+    var tot=0;
+    var rows=items.map(function(t){
+        var p=t.split(':'),nev=p[0].trim(),su=p[1]?p[1].trim():'';
+        var pq=parseQtyAndUnit(su);
+        var td=termekek[nev]||{},ar=td.ar||0,eg=td.egyseg||pq.unit||'';
+        var rs=Math.round(pq.qty*ar); tot+=rs;
+        var ns=nev.replace(/'/g,'').replace(/"/g,'');
+        return '<tr class="item-row">'+
+            '<td><div class="item-name">'+nev+'</div>'+(ar>0?'<div style="color:#999;font-size:12px;">'+ar+' Ft / '+eg+'</div>':'')+  '</td>'+
+            '<td style="text-align:right;vertical-align:middle;">'+
+                '<div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;">'+
+                    '<input type="number" step="0.1" min="0" value="'+pq.qty+'" class="weight-input qty-input"'+
+                    ' data-rowid="'+rowid+'" data-nev="'+ns+'" data-ar="'+ar+'" data-egyseg="'+eg+'"'+
+                    ' oninput="szamolVegosszeg('+rowid+');updateOrderDataDelayed('+rowid+',\''+ns+'\',this.value,\''+eg+'\')"'+
+                    ' onclick="event.stopPropagation()">'+
+                    '<span style="font-size:13px;color:#555;white-space:nowrap;min-width:36px;">'+eg+'</span>'+
+                '</div>'+
+                (ar>0?'<div style="font-weight:700;font-size:13px;color:#333;margin-top:3px;">'+rs+' Ft</div>':'')+
+            '</td>'+
+        '</tr>';
+    }).join('');
+    if(vs&&sd>0)tot+=sd;
+    return '<table class="items-table"><thead><tr><th>Term\u00e9k</th><th style="text-align:right;">Mennyis\u00e9g / \u00d6sszeg</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+        (vs&&sd>0?'<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Sz\u00e1ll\u00edt\u00e1si d\u00edj:</span><span>'+sd+' Ft</span></div>':'')+
+        '<div class="total-row" id="total-'+rowid+'">Fizetend\u0151: '+tot+' Ft</div>';
+}
+
+var updateTimers={};
+function updateOrderDataDelayed(rowid,nev,val,eg) {
+    clearTimeout(updateTimers[rowid+nev]);
+    updateTimers[rowid+nev]=setTimeout(function(){updateOrderData(rowid,nev,val,eg);},1500);
+}
+async function updateOrderData(rowid,nev,val,eg) {
+    var order=orders.find(function(o){return o.rowid===rowid;});
+    if(!order)return;
+    var ns=val+(eg?' '+eg:'');
+    var rt=(order.termek||order.termekek||'').split(',').map(function(t){
+        return t.trim().indexOf(nev)===0?nev+': '+ns:t;
+    }).join(', ');
+    if(order.termek!==undefined)order.termek=rt;
+    if(order.termekek!==undefined)order.termekek=rt;
+    try{await fetch(API_URL+'?update=true&rowId='+rowid+'&newItems='+encodeURIComponent(rt)+'&newVegosszeg='+order.vegosszeg,{redirect:'follow'});}catch(e){}
+}
+async function completeOrder(rowId) {
+    if(!confirm('Lez\u00e1rod a rendel\u00e9st?'))return;
+    var ns=currentMode==='atvetel'?'\u00c1tv\u00e9ve':'Kiszáll\u00edtva';
+    try{
+        var r=await fetch(API_URL+'?update=true&rowId='+rowId+'&newStatus='+encodeURIComponent(ns),{redirect:'follow'});
+        if((await r.text()).trim()==='ok'){orders=orders.filter(function(o){return o.rowid!==rowId;});activeCardId=null;buildFilterChips();render();}
+        else alert('Hiba!');
+    }catch(e){alert('H\u00e1l\u00f3zati hiba!');}
+}
+
+// BSZERZES
+var bszAdatok=[];
+var bszTimers={};
+
+async function fetchBeszerzes() {
+    document.getElementById('bsz-lista').innerHTML='<div class="loading"><div class="loading-spinner"></div>Bet\u00f6lt\u00e9s...</div>';
+    try{
+        var r=await fetch(API_URL+'?beszerzes=true',{redirect:'follow'});
+        var d=await r.json();
+        bszAdatok=Array.isArray(d)?d:(d&&Array.isArray(d.sorok)?d.sorok:[]);
+        renderBszerzes();
+    }catch(e){document.getElementById('bsz-lista').innerHTML='<div class="loading" style="color:#c62828;">Hiba: '+e.message+'</div>';}
+}
+
+function renderBszerzes() {
+    var lista=document.getElementById('bsz-lista');
+    if(!bszAdatok.length){
+        lista.innerHTML='<div class="loading">Nincs adat. Futtasd a Bszerz\u00e9s kalcul\u00e1tort!</div>';
+        document.getElementById('bsz-osszesito').style.display='none';
+        return;
     }
+    var tbk=0,ttk=0,mgv=0;
+    lista.innerHTML='';
+    bszAdatok.forEach(function(sor,idx){
+        var nev   =(sor['termek']||sor['nev']||'').toString().trim();
+        var osszes=parseFloat(sor['osszes_mennyiseg'])||0;
+        var egyseg=(sor['egyseg']||'kg').toString();
+        var bsuly =parseFloat(sor['becsult_suly'])||0;
+        var tsuly =parseFloat(sor['tenyleges_suly'])||0;
+        var vas   =parseFloat(sor['vasarolt_mennyiseg'])||0;
+        var bar   =parseFloat(sor['beszerzesi_ar'])||0;
+        var rid   =sor['_rowindex']||sor['_rowIndex']||(idx+5);
+        var mgvan =!!(sor['megvan']&&sor['megvan'].toString().trim()!==''&&sor['megvan']!=='0'&&sor['megvan']!=='false');
+        var isOssz=nev.indexOf('\u2514')>=0;
+        var aktS  =tsuly>0?tsuly:bsuly;
+        if(bar>0){tbk+=Math.round(bsuly*bar);ttk+=Math.round(aktS*bar);}
+        if(mgvan)mgv++;
+        var ndsp  =isOssz?nev.replace(/\s*\u2514\s*/,'').replace(/\s*\[.*\]$/,'').trim():nev;
+        var bm    =nev.match(/\[(.*)\]/);
+        var fdsp  =isOssz?(bm?bm[1]:'box \u00f6sszetev\u0151'):'';
+        var mar   =vas>0?vas-aktS:null;
+        var mcls  =mar===null?'semleges':(mar>=0?'pozitiv':'negativ');
+        var mstr  =mar===null?'Add meg a v\u00e1s\u00e1rolt mennyis\u00e9get':(mar>=0?'+':'')+mar.toFixed(2)+' kg marad\u00e9k';
+        var akk   =aktS>0&&bar>0?Math.round(aktS*bar).toLocaleString('hu-HU')+' Ft':'-';
+        var bsh   =bsuly>0?'<div class="bsz-szuk-item"><div class="bsz-szuk-label">Becs\u00fclt s\u00faly</div><div class="bsz-szuk-ertek">'+bsuly.toFixed(2)+' kg</div></div>':'';
+        var fh    =fdsp?'<div class="bsz-forras">'+fdsp+'</div>':'';
+        var tval  =tsuly>0?tsuly:'';
+        var vval  =vas>0?vas:'';
+        var bph   =bsuly>0?bsuly.toFixed(2):'0';
+        var card  =document.createElement('div');
+        card.id='bsz-card-'+idx;
+        card.className='bsz-card'+(mgvan?' megvan':'')+(isOssz?' box-osszetevo':'');
+        card.innerHTML=
+            '<div class="bsz-card-top">'+
+                '<div class="bsz-nev">'+ndsp+'</div>'+fh+
+                '<div class="bsz-szukseges">'+
+                    '<div class="bsz-szuk-item"><div class="bsz-szuk-label">Sz\u00fcks\u00e9ges</div><div class="bsz-szuk-ertek">'+osszes+' '+egyseg+'</div></div>'+bsh+
+                '</div>'+
+            '</div>'+
+            '<div class="bsz-inputok">'+
+                '<div class="bsz-input-blokk">'+
+                    '<label for="bsz-t-'+idx+'">T\u00e9nyleges s\u00faly (kg)</label>'+
+                    '<input type="number" step="0.01" min="0" id="bsz-t-'+idx+'" class="bsz-input" value="'+tval+'" placeholder="'+bph+'" oninput="bszSzamol('+idx+');bszAutoSave('+idx+','+rid+')">'+
+                '</div>'+
+                '<div class="bsz-input-blokk">'+
+                    '<label for="bsz-v-'+idx+'">V\u00e1s\u00e1rolt (kg)</label>'+
+                    '<input type="number" step="0.1" min="0" id="bsz-v-'+idx+'" class="bsz-input" value="'+vval+'" placeholder="0" oninput="bszSzamol('+idx+');bszAutoSave('+idx+','+rid+')">'+
+                '</div>'+
+            '</div>'+
+            '<div class="bsz-eredmeny">'+
+                '<div class="bsz-maradek '+mcls+'" id="bsz-m-'+idx+'">'+mstr+'</div>'+
+                '<div class="bsz-koltseg" id="bsz-k-'+idx+'">\uD83D\uDCB0 '+akk+'</div>'+
+            '</div>'+
+            '<div class="bsz-megvan-sor">'+
+                '<input type="checkbox" class="bsz-megvan-cb" id="bsz-mg-'+idx+'"'+(mgvan?' checked':'')+' onchange="bszMgChange('+idx+','+rid+')">'+
+                '<label for="bsz-mg-'+idx+'" class="bsz-megvan-label">\u2705 Megvan</label>'+
+            '</div>'+
+            '<div class="bsz-save-indicator" id="bsz-s-'+idx+'"></div>';
+        lista.appendChild(card);
+    });
+    document.getElementById('bsz-osszesito').style.display='flex';
+    document.getElementById('bsz-total-koltseg').innerText   =tbk.toLocaleString('hu-HU')+' Ft';
+    document.getElementById('bsz-tenyleges-koltseg').innerText=ttk.toLocaleString('hu-HU')+' Ft';
+    document.getElementById('bsz-db-megvan').innerText       =mgv+' / '+bszAdatok.length;
+}
 
-    // Végösszeg élő újraszámolása a kártyán
-    function szamolVegosszeg(rowid) {
-        const order = orders.find(o => o.rowid === rowid);
-        if (!order) return;
-        let osszeg = 0;
-        document.querySelectorAll('.qty-input[data-rowid="' + rowid + '"]').forEach(input => {
-            const ar  = parseFloat(input.dataset.ar)  || 0;
-            const qty = parseFloat(input.value.replace(',', '.')) || 0;
-            osszeg += qty * ar;
-        });
-        const szallDij = parseInt(order.szallitasi_dij || 0);
-        const vanSzall = (order.atvetel_mod || '').toLowerCase().includes('házhoz');
-        if (vanSzall && szallDij > 0) osszeg += szallDij;
-        const el = document.getElementById('total-' + rowid);
-        if (el) el.innerText = '💰 Fizetendő: ' + Math.round(osszeg) + ' Ft';
-        order.vegosszeg = Math.round(osszeg);
-    }
-
-    function renderItemsTable(termekStr, rowid, order) {
-        if (!termekStr || termekStr.trim() === '') return '<div style="color:#bbb; font-size:14px; padding:10px 0;">Nincs termék adat</div>';
-
-        const items = termekStr.split(',').map(t => t.trim()).filter(Boolean);
-        const szallDij = parseInt(order.szallitasi_dij || 0);
-        const vanSzall = (order.atvetel_mod || '').toLowerCase().includes('házhoz');
-        let osszeg = 0;
-
-        const rows = items.map(t => {
-            const parts  = t.split(':');
-            const nev    = parts[0].trim();
-            const sulyStr = parts[1] ? parts[1].trim() : '';
-            const { qty, unit } = parseQtyAndUnit(sulyStr);
-
-            // Egységár + egység a termékadatbázisból
-            const td     = termekek[nev] || {};
-            const ar     = td.ar     || 0;
-            const egyseg = td.egyseg || unit || '';
-            const reszosszeg = Math.round(qty * ar);
-            osszeg += reszosszeg;
-
-            const nevSafe = nev.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
-            return `
-                <tr class="item-row">
-                    <td>
-                        <div class="item-name">${nev}</div>
-                        ${ar > 0 ? `<div style="color:#999;font-size:12px;">${ar} Ft / ${egyseg}</div>` : ''}
-                    </td>
-                    <td style="text-align:right; vertical-align:middle;">
-                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;">
-                            <input type="number" step="0.1" min="0"
-                                value="${qty}"
-                                class="weight-input qty-input"
-                                data-rowid="${rowid}"
-                                data-nev="${nevSafe}"
-                                data-ar="${ar}"
-                                data-egyseg="${egyseg}"
-                                oninput="szamolVegosszeg(${rowid}); updateOrderDataDelayed(${rowid}, '${nevSafe}', this.value, '${egyseg}')"
-                                onclick="event.stopPropagation()">
-                            <span style="font-size:13px;color:#555;white-space:nowrap;min-width:36px;">${egyseg}</span>
-                        </div>
-                        ${ar > 0 ? `<div style="font-weight:700;font-size:13px;color:#333;margin-top:3px;">${reszosszeg} Ft</div>` : ''}
-                    </td>
-                </tr>
-            `;
-        }).join('');
-
-        if (vanSzall && szallDij > 0) osszeg += szallDij;
-
-        return `
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th>Termék</th>
-                        <th style="text-align:right;">Mennyiség / Összeg</th>
-                    </tr>
-                </thead>
-                <tbody>${rows}</tbody>
-            </table>
-            ${vanSzall && szallDij > 0 ? `
-                <div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;">
-                    <span>🛵 Szállítási díj:</span><span>${szallDij} Ft</span>
-                </div>
-            ` : ''}
-            <div class="total-row" id="total-${rowid}">💰 Fizetendő: ${osszeg} Ft</div>
-        `;
-    }
-
-    const updateTimers = {};
-
-    function updateOrderDataDelayed(rowid, termekNev, ujMennyiseg, egyseg) {
-        // Debounce: 1.5mp várakozás gépelés után, aztán menti
-        clearTimeout(updateTimers[rowid + termekNev]);
-        updateTimers[rowid + termekNev] = setTimeout(() => {
-            updateOrderData(rowid, termekNev, ujMennyiseg, egyseg);
-        }, 1500);
-    }
-
-    async function updateOrderData(rowid, termekNev, ujMennyiseg, egyseg) {
-        const order = orders.find(o => o.rowid === rowid);
-        if (!order) return;
-        const ujSulyStr = ujMennyiseg + (egyseg ? ' ' + egyseg : '');
-        const regiTermekek = (order.termek || order.termekek || '').split(',');
-        const frissitettTermekek = regiTermekek.map(t => {
-            if (t.trim().startsWith(termekNev)) return `${termekNev}: ${ujSulyStr}`;
-            return t;
-        }).join(', ');
-
-        if (order.termek !== undefined) order.termek = frissitettTermekek;
-        if (order.termekek !== undefined) order.termekek = frissitettTermekek;
-
-        // Végösszeg frissítése a sheet-ben is
-        const vegosszeg = order.vegosszeg;
-        const url = `${API_URL}?update=true&rowId=${rowid}&newItems=${encodeURIComponent(frissitettTermekek)}&newVegosszeg=${vegosszeg}`;
-        try {
-            await fetch(url, { redirect: "follow" });
-        } catch(e) { console.error("Update hiba:", e); }
-    }
-
-    async function completeOrder(rowId) {
-        if (!confirm('Lezárod a rendelést?')) return;
-        const btns = document.querySelectorAll('.finish-btn');
-        btns.forEach(b => { if(b.onclick && b.onclick.toString().includes(rowId)) { b.innerText = 'Mentés...'; b.disabled = true; } });
-
-        try {
-            const newStatus = currentMode === 'atvetel' ? 'Átvéve' : 'Kiszállítva';
-            const resp = await fetch(`${API_URL}?update=true&rowId=${rowId}&newStatus=${encodeURIComponent(newStatus)}`, { redirect: "follow" });
-            const result = await resp.text();
-            if (result.trim() === 'ok') {
-                orders = orders.filter(o => o.rowid !== rowId);
-                activeCardId = null;
-                buildFilterChips();
-                render();
-            } else {
-                alert('Hiba a mentésnél, kérlek próbáld újra!');
-            }
-        } catch (e) {
-            alert('Hálózati hiba! Próbáld újra.');
+function bszSzamol(idx) {
+    var sor=bszAdatok[idx]; if(!sor)return;
+    var bs=parseFloat(sor['becsult_suly'])||0;
+    var ba=parseFloat(sor['beszerzesi_ar'])||0;
+    var tv=parseFloat(document.getElementById('bsz-t-'+idx).value)||0;
+    var vv=parseFloat(document.getElementById('bsz-v-'+idx).value)||0;
+    var ak=tv>0?tv:bs;
+    var mr=vv>0?vv-ak:null;
+    var mEl=document.getElementById('bsz-m-'+idx);
+    if(mEl){mEl.className='bsz-maradek '+(mr===null?'semleges':(mr>=0?'pozitiv':'negativ'));mEl.innerText=mr===null?'Add meg a v\u00e1s\u00e1rolt mennyis\u00e9get':(mr>=0?'+':'')+mr.toFixed(2)+' kg marad\u00e9k';}
+    var kEl=document.getElementById('bsz-k-'+idx);
+    if(kEl)kEl.innerText='\uD83D\uDCB0 '+(ba>0&&ak>0?Math.round(ak*ba).toLocaleString('hu-HU')+' Ft':'-');
+}
+function bszAutoSave(idx,rid) {
+    var iEl=document.getElementById('bsz-s-'+idx);
+    if(iEl){iEl.className='bsz-save-indicator saving';iEl.innerText='Ment\u00e9s...';}
+    clearTimeout(bszTimers[idx]);
+    bszTimers[idx]=setTimeout(function(){bszSave(idx,rid);},1000);
+}
+async function bszSave(idx,rid) {
+    var tv=document.getElementById('bsz-t-'+idx).value;
+    var vv=document.getElementById('bsz-v-'+idx).value;
+    var mg=document.getElementById('bsz-mg-'+idx).checked?'1':'';
+    var iEl=document.getElementById('bsz-s-'+idx);
+    var url=API_URL+'?updateBszerzes=true&rowId='+rid+'&tenyleges_suly='+tv+'&vasarolt_mennyiseg='+vv+'&megvan='+encodeURIComponent(mg);
+    try{
+        await fetch(url,{redirect:'follow'});
+        if(bszAdatok[idx]){
+            if(tv)bszAdatok[idx]['tenyleges_suly']=parseFloat(tv);
+            if(vv)bszAdatok[idx]['vasarolt_mennyiseg']=parseFloat(vv);
+            bszAdatok[idx]['megvan']=mg;
         }
-    }
+        if(iEl){iEl.className='bsz-save-indicator';iEl.innerText='\u2713 Mentve';}
+    }catch(e){if(iEl){iEl.style.color='#c62828';iEl.innerText='Hiba!';}}
+}
+function bszMgChange(idx,rid) {
+    var card=document.getElementById('bsz-card-'+idx);
+    var cb=document.getElementById('bsz-mg-'+idx);
+    if(card){if(cb.checked)card.classList.add('megvan');else card.classList.remove('megvan');}
+    bszSave(idx,rid);
+}
 
-
-    // ── BESZERZÉS NÉZET ─────────────────────────────────────────
-    let beszerzesAdatok = [];
-    const bszSaveTimers = {};
-
-    async function fetchBeszerzes() {
-        document.getElementById('bsz-lista').innerHTML =
-            '<div class="loading"><div class="loading-spinner"></div>Betöltés...</div>';
-        try {
-            const resp = await fetch(API_URL + '?beszerzes=true', { redirect: 'follow' });
-            const data = await resp.json();
-            // API tömböt ad vissza (Beszerzes sheet sorai)
-            if (Array.isArray(data)) {
-                beszerzesAdatok = data;
-            } else if (data && Array.isArray(data.sorok)) {
-                beszerzesAdatok = data.sorok;
-            } else {
-                beszerzesAdatok = [];
-            }
-            renderBeszerzes();
-        } catch(e) {
-            document.getElementById('bsz-lista').innerHTML =
-                '<div class="loading" style="color:#c62828;">Hiba a betöltésnél: ' + e.message + '</div>';
-        }
-    }
-
-    function renderBeszerzes() {
-        const lista = document.getElementById('bsz-lista');
-        if (!beszerzesAdatok.length) {
-            lista.innerHTML = '<div class="loading">Nincs adat. Futtasd le a Beszerzes kalkulátort a Sheetsben!</div>';
-            document.getElementById('bsz-osszesito').style.display = 'none';
-            return;
-        }
-
-        let totalBecsultKoltseg  = 0;
-        let totalTenylegesKoltseg = 0;
-        let megvanDb = 0;
-
-        lista.innerHTML = '';
-
-        beszerzesAdatok.forEach(function(sor, idx) {
-            // Mezők normalizálása (a Sheet fejlécek kisbetűsítve jönnek)
-            const nev             = (sor['termek']              || sor['nev']  || '').toString().trim();
-            const osszes          = parseFloat(sor['osszes_mennyiseg']) || 0;
-            const egyseg          = (sor['egyseg']              || 'kg').toString();
-            const becsultSuly     = parseFloat(sor['becsult_suly'])     || 0;
-            const tenylegesSuly   = parseFloat(sor['tenyleges_suly'])   || 0;
-            const vasarolt        = parseFloat(sor['vasarolt_mennyiseg'])|| 0;
-            const beszAr          = parseFloat(sor['beszerzesi_ar'])     || 0;
-            const rowId           = idx + 5; // Beszerzes sheet: 1-3 összesítő, 4 fejléc, 5-től adatok
-            const isMegvan        = !!sor['megvan'];
-            const isOsszetevo     = nev.startsWith('  └');
-
-            // Összesítők számítása
-            const aktSuly = tenylegesSuly > 0 ? tenylegesSuly : becsultSuly;
-            if (beszAr > 0) {
-                totalBecsultKoltseg   += Math.round(becsultSuly  * beszAr);
-                totalTenylegesKoltseg += Math.round(aktSuly       * beszAr);
-            }
-            if (isMegvan) megvanDb++;
-
-            // Kártya
-            const card = document.createElement('div');
-            card.className = 'bsz-card' +
-                             (isMegvan    ? ' megvan'        : '') +
-                             (isOsszetevo ? ' box-osszetevo' : '');
-            card.id = 'bsz-card-' + idx;
-
-            // Névből szép megjelenítés (összetevőnél levágja a "└" részt)
-            const nevDisplay = isOsszetevo
-                ? nev.replace('  └ ', '').replace(/\[.*\]/, '').trim()
-                : nev;
-            const forrasDisplay = isOsszetevo
-                ? (nev.match(/\[(.*)\]/) ? '📦 ' + nev.match(/\[(.*)\]/)[1] : 'box összetevő')
-                : '';
-
-            // Maradék számítás
-            const aktVasarolt = vasarolt > 0 ? vasarolt : 0;
-            const maradek     = aktVasarolt > 0
-                ? aktVasarolt - (tenylegesSuly > 0 ? tenylegesSuly : becsultSuly)
-                : null;
-            const maradekCls  = maradek === null ? 'semleges'
-                              : maradek >= 0     ? 'pozitiv' : 'negativ';
-            const maradekStr  = maradek === null ? 'Adja meg a vásárolt mennyiséget'
-                              : (maradek >= 0 ? '+' : '') + maradek.toFixed(2) + ' kg maradék';
-
-            // Költség (tényleges súly alapján)
-            const aktKoltseg = aktSuly > 0 && beszAr > 0
-                ? Math.round(aktSuly * beszAr).toLocaleString('hu-HU') + ' Ft'
-                : '–';
-
-            card.innerHTML = `
-                <div class="bsz-card-top">
-                    <div class="bsz-nev">${nevDisplay}</div>
-                    ${forrasDisplay ? `<div class="bsz-forras">${forrasDisplay}</div>` : ''}
-
-                    <div class="bsz-szukseges">
-                        <div class="bsz-szuk-item">
-                            <div class="bsz-szuk-label">Szükséges</div>
-                            <div class="bsz-szuk-ertek">${osszes} ${egyseg}</div>
-                        </div>
-                        ${becsultSuly > 0 ? `
-                        <div class="bsz-szuk-item">
-                            <div class="bsz-szuk-label">Becsült súly</div>
-                            <div class="bsz-szuk-ertek">${becsultSuly.toFixed(2)} kg</div>
-                        </div>` : ''}
-                    </div>
-                </div>
-
-                <div class="bsz-inputok">
-                    <div class="bsz-input-blokk">
-                        <label for="bsz-tenyleges-${idx}">Tényleges súly (kg)</label>
-                        <input type="number" step="0.01" min="0"
-                            id="bsz-tenyleges-${idx}"
-                            class="bsz-input"
-                            value="${tenylegesSuly > 0 ? tenylegesSuly : ''}"
-                            placeholder="${becsultSuly > 0 ? becsultSuly.toFixed(2) : '0'}"
-                            oninput="bszSzamol(${idx}); bszAutoSave(${idx}, ${rowId})">
-                    </div>
-                    <div class="bsz-input-blokk">
-                        <label for="bsz-vasarolt-${idx}">Vásárolt menny. (kg)</label>
-                        <input type="number" step="0.1" min="0"
-                            id="bsz-vasarolt-${idx}"
-                            class="bsz-input"
-                            value="${vasarolt > 0 ? vasarolt : ''}"
-                            placeholder="0"
-                            oninput="bszSzamol(${idx}); bszAutoSave(${idx}, ${rowId})">
-                    </div>
-                </div>
-
-                <div class="bsz-eredmeny">
-                    <div class="bsz-maradek ${maradekCls}" id="bsz-maradek-${idx}">${maradekStr}</div>
-                    <div class="bsz-koltseg" id="bsz-koltseg-${idx}">💰 ${aktKoltseg}</div>
-                </div>
-
-                <div class="bsz-megvan-sor">
-                    <input type="checkbox" class="bsz-megvan-cb"
-                        id="bsz-megvan-${idx}"
-                        ${isMegvan ? 'checked' : ''}
-                        onchange="bszMegvanChange(${idx}, ${rowId})">
-                    <label for="bsz-megvan-${idx}" class="bsz-megvan-label">✅ Megvan</label>
-                </div>
-                <div class="bsz-save-indicator" id="bsz-save-${idx}"></div>
-            `;
-
-            lista.appendChild(card);
-        });
-
-        // Összesítő frissítése
-        document.getElementById('bsz-osszesito').style.display = 'flex';
-        document.getElementById('bsz-total-koltseg').innerText =
-            totalBecsultKoltseg.toLocaleString('hu-HU') + ' Ft';
-        document.getElementById('bsz-tenyleges-koltseg').innerText =
-            totalTenylegesKoltseg.toLocaleString('hu-HU') + ' Ft';
-        document.getElementById('bsz-db-megvan').innerText =
-            megvanDb + ' / ' + beszerzesAdatok.length;
-    }
-
-    // Azonnali UI frissítés gépeléskor
-    function bszSzamol(idx) {
-        const sor         = beszerzesAdatok[idx];
-        const becsult     = parseFloat(sor['becsult_suly'])   || 0;
-        const beszAr      = parseFloat(sor['beszerzesi_ar'])   || 0;
-
-        const tenyleges   = parseFloat(document.getElementById('bsz-tenyleges-' + idx).value) || 0;
-        const vasarolt    = parseFloat(document.getElementById('bsz-vasarolt-' + idx).value)  || 0;
-
-        const aktSuly     = tenyleges > 0 ? tenyleges : becsult;
-        const maradek     = vasarolt  > 0 ? vasarolt - aktSuly : null;
-
-        // Maradék
-        const mEl         = document.getElementById('bsz-maradek-' + idx);
-        if (maradek === null) {
-            mEl.className   = 'bsz-maradek semleges';
-            mEl.innerText   = 'Adja meg a vásárolt mennyiséget';
-        } else {
-            mEl.className   = 'bsz-maradek ' + (maradek >= 0 ? 'pozitiv' : 'negativ');
-            mEl.innerText   = (maradek >= 0 ? '+' : '') + maradek.toFixed(2) + ' kg maradék';
-        }
-
-        // Költség
-        const kEl         = document.getElementById('bsz-koltseg-' + idx);
-        kEl.innerText     = beszAr > 0 && aktSuly > 0
-            ? '💰 ' + Math.round(aktSuly * beszAr).toLocaleString('hu-HU') + ' Ft'
-            : '💰 –';
-    }
-
-    // Autosave debounce (1 mp)
-    function bszAutoSave(idx, rowId) {
-        const indEl = document.getElementById('bsz-save-' + idx);
-        if (indEl) { indEl.className = 'bsz-save-indicator saving'; indEl.innerText = 'Mentés...'; }
-        clearTimeout(bszSaveTimers[idx]);
-        bszSaveTimers[idx] = setTimeout(function() { bszSave(idx, rowId); }, 1000);
-    }
-
-    async function bszSave(idx, rowId) {
-        const tenyleges = parseFloat(document.getElementById('bsz-tenyleges-' + idx).value) || '';
-        const vasarolt  = parseFloat(document.getElementById('bsz-vasarolt-'  + idx).value) || '';
-        const megvan    = document.getElementById('bsz-megvan-' + idx).checked ? '1' : '';
-        const indEl     = document.getElementById('bsz-save-' + idx);
-
-        const url = API_URL +
-            '?updateBeszerzes=true' +
-            '&rowId='                + rowId +
-            '&tenyleges_suly='       + tenyleges +
-            '&vasarolt_mennyiseg='   + vasarolt +
-            '&megvan='               + encodeURIComponent(megvan);
-        try {
-            await fetch(url, { redirect: 'follow' });
-            // Lokális adat frissítése
-            if (beszerzesAdatok[idx]) {
-                if (tenyleges !== '') beszerzesAdatok[idx]['tenyleges_suly']     = tenyleges;
-                if (vasarolt  !== '') beszerzesAdatok[idx]['vasarolt_mennyiseg'] = vasarolt;
-                beszerzesAdatok[idx]['megvan'] = megvan;
-            }
-            if (indEl) { indEl.className = 'bsz-save-indicator'; indEl.innerText = '✓ Mentve'; }
-        } catch(e) {
-            if (indEl) { indEl.className = 'bsz-save-indicator'; indEl.style.color = '#c62828'; indEl.innerText = '⚠ Hiba!'; }
-        }
-    }
-
-    // Megvan checkbox azonnali mentés
-    function bszMegvanChange(idx, rowId) {
-        const card = document.getElementById('bsz-card-' + idx);
-        const cb   = document.getElementById('bsz-megvan-' + idx);
-        if (card) {
-            if (cb.checked) card.classList.add('megvan');
-            else            card.classList.remove('megvan');
-        }
-        bszSave(idx, rowId);
-    }
-
-    fetchData();
-    setInterval(fetchData, 60000);
+fetchData();
+setInterval(fetchData,60000);
 </script>
-
 </body>
 </html>
