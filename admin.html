@@ -452,19 +452,16 @@ async function fetchBeszerzes() {
     var lista = document.getElementById('bsz-lista');
     lista.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Betöltés...</div>';
     try {
-        // 1) Beszerzes sheet adatai (összevont termékek + admin adatok)
+        // 1) Beszerzes sheet – a szamolBeszerzes() script már összeállította
+        //    Fejléc (4. sor): termek | osszes_mennyiseg | egyseg | eladasi_ar | beszerzesi_ar |
+        //                     bevetel | koltseg | profit | becsult_suly | box_db |
+        //                     rendeles_mennyiseg | tenyleges_suly | vasarolt_mennyiseg | megvan | maradek
         var r1 = await fetch(API_URL + '?beszerzes=true', { redirect: 'follow' });
         var rawBsz = await r1.json();
 
-        // 2) Rendelések (aktív) – kell a "rendelésből" bontáshoz
-        var r2 = await fetch(API_URL + '?admin=true', { redirect: 'follow' });
-        var aktRendelesek = await r2.json();
-
-        // 3) Termékek (box kalkulátorhoz: atlag_suly, box_egyseg stb.)
-        var r3 = await fetch(API_URL, { redirect: 'follow' });
-        var td = await r3.json();
-
-        // Termék adatbázis frissítése
+        // 2) Termék adatbázis (box_egyseg + tipus szűréshez)
+        var r2 = await fetch(API_URL, { redirect: 'follow' });
+        var td = await r2.json();
         if (td && td.termekek) {
             termekek = {};
             td.termekek.forEach(function(t) {
@@ -479,134 +476,47 @@ async function fetchBeszerzes() {
             });
         }
 
-        // ── Rendelésekből számolj ki termékenkénti mennyiségeket ──
-        // { "Termék neve": { rendeles_mennyiseg, egyseg } }
-        var rendelesOsszesites = {};
-        aktRendelesek.forEach(function(o) {
-            var termekStr = (o.termek || o.termekek || '').toString();
-            termekStr.split(',').forEach(function(sor) {
-                sor = sor.trim();
-                if (!sor) return;
-                var dp = sor.indexOf(':');
-                if (dp < 0) return;
-                var nev = sor.substring(0, dp).trim();
-                var resz = sor.substring(dp + 1).trim();
-                var m = resz.match(/^([\d.,]+)\s*(.*)$/);
-                if (!m) return;
-                var qty = parseFloat(m[1].replace(',','.')) || 0;
-                var eg  = m[2].trim().toLowerCase();
-                // kg-ra konvertálunk ha szükséges
-                var td2 = termekek[nev] || {};
-                var qtyKg = qty;
-                if ((eg === 'db' || eg === 'csomó' || eg === 'csomo') && td2.atlag_suly > 0) {
-                    qtyKg = qty * td2.atlag_suly;
-                }
-                if (!rendelesOsszesites[nev]) rendelesOsszesites[nev] = { db: 0, kg: 0, egyseg: td2.egyseg || eg };
-                if (eg === 'db' || eg === 'csomó' || eg === 'csomo') rendelesOsszesites[nev].db += qty;
-                else rendelesOsszesites[nev].kg += qtyKg;
-            });
-        });
+        var bszAdatok = Array.isArray(rawBsz) ? rawBsz : [];
 
-        // ── Beszerzes sheet feldolgozása ──
-        // A sheet sorai:
-        //   • Normál sor: termék neve (pl. "Avalantino paradicsom_klon" vagy "Paradicsom")
-        //   • Box összetevő sor: "  └ Termék neve [BoxNév]"
-        // A script összevonja őket, de a "└" sorok esetleg még ott lehetnek → szűrjük
-        // A termek oszlop végén "_klon" vagy "_box" végződés is lehet → tisztítjuk
-
-        var bszAdatok = Array.isArray(rawBsz) ? rawBsz : (rawBsz && Array.isArray(rawBsz.sorok) ? rawBsz.sorok : []);
-
-        // Gyűjtjük össze termék nevenkénti összesítést a sheet-ből
-        // { tisztaNev: { osszes_mennyiseg, egyseg, becsult_suly, tenyleges_suly, vasarolt_mennyiseg,
-        //                megvan, beszerzesi_ar, _rowIndex, box_mennyiseg, rendeles_mennyiseg } }
-        var termekMap = {};
-        var termekSorrend = [];
-
+        // ── Feldolgozás: 1 sor = 1 kártya ──
+        // A script (Code.gs v6) már összevonta a box+rendelés adatokat.
+        // box_db  = nyers darabszám a box receptből (pl. 10 db cukkini) → egész szám
+        // rendeles_mennyiseg = kg a direkt rendelésekből
+        // osszes_mennyiseg   = kg összesen (box kg-becslés + rendeles kg)
+        bszKartyak = [];
         bszAdatok.forEach(function(sor) {
-            var nev = (sor['termek'] || sor['nev'] || '').toString().trim();
+            var nev = (sor['termek'] || '').toString().trim();
             if (!nev) return;
 
-            // Szűrés: "└" kezdetű sorok (box összetevők) – a script összevonta, de ha mégis itt van
-            // Ne jelenjen meg külön kártyaként, de adatát adjuk a fő termékhez ha egyezik
-            var isBoxOsszetevo = nev.indexOf('\u2514') >= 0 || nev.match(/^\s+L\s/);
-            if (isBoxOsszetevo) {
-                // Kivesszük a termék nevet és a box nevet
-                var tisztaNev = nev.replace(/^\s*\u2514\s*/, '').replace(/^\s*L\s+/, '').replace(/\s*\[.*\]$/, '').trim();
-                // Ha már van ilyen termék a mapban, adjuk hozzá a mennyiséget
-                if (termekMap[tisztaNev]) {
-                    var osszes = parseFloat(sor['osszes_mennyiseg']) || 0;
-                    termekMap[tisztaNev].box_mennyiseg = (termekMap[tisztaNev].box_mennyiseg || 0) + osszes;
-                    termekMap[tisztaNev].osszes_mennyiseg += osszes;
-                    termekMap[tisztaNev].becsult_suly = (termekMap[tisztaNev].becsult_suly || 0) +
-                        (parseFloat(sor['becsult_suly']) || osszes);
-                }
-                return; // ne legyen önálló kártya
-            }
-
-            // Normál sor – tisztítjuk a _klon / _box végződést és a "└" jelölést
-            var tisztaNev = nev
-                .replace(/_klon$/, '')
-                .replace(/_box$/, '')
-                .replace(/^\s*\u2514\s*/, '')
-                .replace(/\s*\[.*\]$/, '')
-                .trim();
-
-            var osszes      = parseFloat(sor['osszes_mennyiseg']) || 0;
-            var egyseg      = (sor['egyseg'] || 'kg').toString().trim();
-            var bsuly       = parseFloat(sor['becsult_suly']) || 0;
-            var tsuly       = parseFloat(sor['tenyleges_suly']) || 0;
-            var vas         = parseFloat(sor['vasarolt_mennyiseg']) || 0;
-            var megvan      = !!(sor['megvan'] && sor['megvan'].toString().trim() !== '' && sor['megvan'] !== '0' && sor['megvan'] !== 'false');
-            var beszAr      = parseFloat(sor['beszerzesi_ar']) || 0;
-            var rowIdx      = parseInt(sor['_rowindex'] || sor['_rowIndex']) || 0;
-
-            // Ha a termék típusa "box" → ne jelenjen meg (a box maga nem vásárolható nyersen)
-            var td2 = termekek[tisztaNev] || {};
+            // Box típusú termék → ne jelenjen meg önállóan
+            var td2 = termekek[nev] || {};
             if (td2.tipus === 'box') return;
 
-            if (!termekMap[tisztaNev]) {
-                termekMap[tisztaNev] = {
-                    nev:                tisztaNev,
-                    osszes_mennyiseg:   0,
-                    egyseg:             egyseg,
-                    becsult_suly:       0,
-                    tenyleges_suly:     tsuly,
-                    vasarolt_mennyiseg: vas,
-                    megvan:             megvan,
-                    beszerzesi_ar:      beszAr,
-                    _rowIndex:          rowIdx,
-                    box_mennyiseg:      0,
-                    rendeles_mennyiseg: 0
-                };
-                termekSorrend.push(tisztaNev);
-            }
-            termekMap[tisztaNev].osszes_mennyiseg   += osszes;
-            termekMap[tisztaNev].becsult_suly       += bsuly > 0 ? bsuly : osszes;
-            // Admin adatok csak az első sornál számítanak (a legtöbb esetben 1 sor lesz)
-            if (tsuly > 0) termekMap[tisztaNev].tenyleges_suly = tsuly;
-            if (vas   > 0) termekMap[tisztaNev].vasarolt_mennyiseg = vas;
-        });
+            var boxDb    = parseInt(sor['box_db'])               || 0;
+            var renKg    = parseFloat(sor['rendeles_mennyiseg'])  || 0;
+            var osszesKg = parseFloat(sor['osszes_mennyiseg'])    || 0;
+            var bsuly    = parseFloat(sor['becsult_suly'])        || osszesKg;
+            var tsuly    = parseFloat(sor['tenyleges_suly'])      || 0;
+            var vas      = parseFloat(sor['vasarolt_mennyiseg'])  || 0;
+            var megvan   = !!(sor['megvan'] && sor['megvan'].toString().trim() !== ''
+                              && sor['megvan'] !== '0' && sor['megvan'] !== 'false');
+            var beszAr   = parseFloat(sor['beszerzesi_ar'])       || 0;
+            var rowIdx   = parseInt(sor['_rowIndex'] || sor['_rowindex']) || 0;
 
-        // ── Bontás kiszámítása: box vs rendelés ──
-        // A rendelesOsszesites-ből vesszük a rendelési részt
-        termekSorrend.forEach(function(nev) {
-            var t = termekMap[nev];
-            var r = rendelesOsszesites[nev];
-            if (r) {
-                t.rendeles_mennyiseg = r.kg > 0 ? r.kg : r.db;
-                t.rendeles_db        = r.db;
-                t.rendeles_egyseg    = r.egyseg;
-                // Box rész = összes - rendelés (ha pozitív)
-                t.box_mennyiseg      = Math.max(0, (t.osszes_mennyiseg || 0) - t.rendeles_mennyiseg);
-            } else {
-                // Nincs direkt rendelés → csak box
-                t.box_mennyiseg      = t.osszes_mennyiseg || 0;
-                t.rendeles_mennyiseg = 0;
-            }
+            bszKartyak.push({
+                nev:                nev,
+                osszes_mennyiseg:   osszesKg,
+                egyseg:             'kg',
+                becsult_suly:       bsuly,
+                box_db:             boxDb,     // nyers db (pl. 10 db cukkini a boxból)
+                rendeles_mennyiseg: renKg,     // kg direkt rendelésekből
+                tenyleges_suly:     tsuly,
+                vasarolt_mennyiseg: vas,
+                megvan:             megvan,
+                beszerzesi_ar:      beszAr,
+                _rowIndex:          rowIdx
+            });
         });
-
-        // Mentjük a kártyák adatát
-        bszKartyak = termekSorrend.map(function(nev){ return termekMap[nev]; });
 
         renderBszerzes();
 
@@ -615,7 +525,6 @@ async function fetchBeszerzes() {
         console.error('fetchBeszerzes hiba:', e);
     }
 }
-
 // ══════════════════════════════════════════════════════════════
 //  BESZERZES – RENDER (1 termék = 1 kártya)
 // ══════════════════════════════════════════════════════════════
@@ -657,22 +566,26 @@ function renderBszerzes() {
         var koltsegStr = koltseg > 0 ? koltseg.toLocaleString('hu-HU') + ' Ft' : '-';
 
         // Bontás sorok (box / rendelés)
-        var boxMny  = t.box_mennyiseg  || 0;
-        var renMny  = t.rendeles_mennyiseg || 0;
+        // box_db  = nyers egész db a boxból (pl. 10 db cukkini)
+        // rendeles_mennyiseg = kg a direkt rendelésekből
+        var boxDb   = t.box_db || 0;
+        var renKg   = t.rendeles_mennyiseg || 0;
         var td2     = termekek[nev] || {};
-        var boxEgy  = td2.box_egyseg || egyseg;
+        var boxEgy  = td2.box_egyseg || 'db';  // box egység a Termekek fülről
 
         var bontasHtml = '';
-        if (boxMny > 0) {
+        if (boxDb > 0) {
+            // Boxhoz: mindig egész darabszám + kg-becslés zárójelben
+            var boxKgBecsles = td2.atlag_suly > 0 ? ' (~' + kerekitSzam(boxDb * td2.atlag_suly) + ' kg)' : '';
             bontasHtml += '<div class="bsz-bontas-item box-szin">' +
                 '<div class="bsz-bontas-label">📦 Boxhoz</div>' +
-                '<div class="bsz-bontas-ertek">' + kerekitSzam(boxMny) + ' ' + boxEgy + '</div>' +
+                '<div class="bsz-bontas-ertek">' + boxDb + ' ' + boxEgy + boxKgBecsles + '</div>' +
             '</div>';
         }
-        if (renMny > 0) {
+        if (renKg > 0) {
             bontasHtml += '<div class="bsz-bontas-item rendeles-szin">' +
                 '<div class="bsz-bontas-label">🛒 Rendelések</div>' +
-                '<div class="bsz-bontas-ertek">' + kerekitSzam(renMny) + ' ' + egyseg + '</div>' +
+                '<div class="bsz-bontas-ertek">' + kerekitSzam(renKg) + ' kg</div>' +
             '</div>';
         }
 
