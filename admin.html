@@ -356,6 +356,7 @@ function renderBszerzes() {
         var rid   =sor['_rowindex']||sor['_rowIndex']||(idx+5);
         var mgvan =!!(sor['megvan']&&sor['megvan'].toString().trim()!==''&&sor['megvan']!=='0'&&sor['megvan']!=='false');
         var isOssz=nev.indexOf('\u2514')>=0;
+        if (isOssz) return;
         var aktS  =tsuly>0?tsuly:bsuly;
         if(bar>0){tbk+=Math.round(bsuly*bar);ttk+=Math.round(aktS*bar);}
         if(mgvan)mgv++;
