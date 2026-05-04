@@ -10,23 +10,34 @@
             --green:#2e7d32;--green-light:#e8f5e9;--green-mid:#43a047;
             --green-dark:#1b5e20;--blue:#1565c0;--blue-light:#e3f0ff;
             --waze:#00bfdf;--red:#c62828;--yellow:#fff8e1;
+            --orange:#e65100;--orange-light:#fff3e0;
             --shadow:0 3px 14px rgba(0,0,0,0.09);--radius:16px;
         }
         *{box-sizing:border-box}
         body{font-family:'Nunito',sans-serif;background:#f0f4f1;margin:0;padding:12px;color:#333;padding-bottom:40px}
+
+        /* HEADER */
         .header{background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%);color:white;padding:16px 20px;border-radius:var(--radius);text-align:center;margin-bottom:14px;box-shadow:0 4px 16px rgba(46,125,50,0.3)}
         .header h2{margin:0;font-size:22px;font-weight:800}
         .header small{opacity:0.8;font-size:12px}
+
+        /* MODE SELECTOR */
         .mode-selector{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
         .mode-btn{padding:14px 10px;border:2px solid #e0e0e0;border-radius:12px;font-weight:700;font-size:14px;font-family:'Nunito',sans-serif;cursor:pointer;background:white;color:#666;transition:all 0.2s}
         .mode-btn.active{background:var(--green);color:white;border-color:var(--green);box-shadow:0 3px 10px rgba(46,125,50,0.25)}
+
+        /* FILTERS */
         .filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
         .filter-chip{padding:7px 14px;border-radius:20px;border:1.5px solid #ccc;background:white;font-size:13px;font-family:'Nunito',sans-serif;font-weight:600;cursor:pointer;transition:all 0.15s}
         .filter-chip.active{background:var(--green);color:white;border-color:var(--green)}
+
+        /* SEARCH & SUMMARY */
         .search-box{width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid #e0e0e0;margin-bottom:12px;font-size:15px;font-family:'Nunito',sans-serif;background:white;outline:none;transition:border-color 0.2s}
         .search-box:focus{border-color:var(--green)}
         .summary-bar{background:white;border-radius:10px;padding:10px 16px;margin-bottom:12px;font-size:14px;font-weight:700;color:var(--green-dark);display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
         .summary-count{background:var(--green);color:white;padding:3px 10px;border-radius:20px;font-size:13px}
+
+        /* ORDER CARDS (átvétel + kiszállítás – VÁLTOZATLAN) */
         .order-card{background:white;padding:16px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;border-left:6px solid #e0e0e0;cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s;position:relative}
         .order-card.active-card{border-left-color:var(--blue);background:#f7faff;box-shadow:0 4px 20px rgba(21,101,192,0.15)}
         .order-card.next-card{border-left-color:var(--green-mid)}
@@ -53,56 +64,90 @@
         .finish-btn:hover{background:var(--green-mid)}
         .finish-btn:active{transform:scale(0.97)}
         .finish-btn:disabled{background:#b0bec5;cursor:not-allowed;box-shadow:none}
+
+        /* LOADING */
         .loading{text-align:center;padding:50px 20px;color:#999;font-style:italic;font-size:16px}
         .loading-spinner{width:36px;height:36px;border:4px solid #e0e0e0;border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
         @keyframes spin{to{transform:rotate(360deg)}}
         #atvetel-pont-szuro{display:none;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-        /* BESZERZES */
+
+        /* ════════════════════════════════════════
+           BESZERZES – TELJESEN ÚJ DIZÁJN
+           ════════════════════════════════════════ */
         #beszerzes-view{display:none}
-        .bsz-frissit-btn{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:12px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:14px;box-shadow:0 3px 10px rgba(46,125,50,0.25)}
+
+        .bsz-frissit-btn{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:12px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:14px;box-shadow:0 3px 10px rgba(46,125,50,0.25);transition:background 0.2s}
+        .bsz-frissit-btn:active{background:var(--green-dark)}
+
+        /* Összesítő sáv */
         .bsz-osszesito{background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%);color:white;border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;display:flex;gap:12px;flex-wrap:wrap;box-shadow:0 4px 16px rgba(46,125,50,0.25)}
         .bsz-osszesito-item{flex:1;min-width:80px;text-align:center}
         .bsz-ertek{font-size:18px;font-weight:800;display:block}
         .bsz-cimke{font-size:11px;opacity:0.8;text-transform:uppercase;letter-spacing:0.5px}
-        .bsz-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;border-left:5px solid var(--green);transition:opacity 0.3s;overflow:hidden}
+
+        /* Kártyák */
+        .bsz-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;border-left:5px solid var(--green);overflow:hidden;transition:opacity 0.3s,box-shadow 0.2s}
         .bsz-card.megvan{opacity:0.45;border-left-color:#b0bec5}
-        .bsz-card.box-osszetevo{border-left-color:#ffc107;background:#fffef5}
-        .bsz-card-top{padding:14px 16px 10px}
-        .bsz-nev{font-size:20px;font-weight:800;color:#1a1a1a;line-height:1.2}
-        .bsz-forras{font-size:12px;color:#888;margin-top:2px}
-        .bsz-szukseges{margin-top:10px;background:#f5f5f5;border-radius:10px;padding:10px 12px;display:flex;gap:14px;flex-wrap:wrap}
-        .bsz-szuk-item{flex:1;min-width:100px}
-        .bsz-szuk-label{font-size:11px;color:#888;text-transform:uppercase;font-weight:700;letter-spacing:0.4px}
-        .bsz-szuk-ertek{font-size:16px;font-weight:800;color:#333;margin-top:2px}
-        .bsz-inputok{padding:12px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .bsz-card.megvan .bsz-body{display:none}
+        .bsz-card.megvan .bsz-header{cursor:pointer}
+
+        /* Kártya fejléc (mindig látható) */
+        .bsz-header{padding:14px 16px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+        .bsz-header-left{flex:1;min-width:0}
+        .bsz-nev{font-size:19px;font-weight:800;color:#1a1a1a;line-height:1.2}
+        .bsz-osszesen-badge{display:inline-block;background:var(--green-light);color:var(--green-dark);padding:3px 10px;border-radius:20px;font-size:13px;font-weight:800;margin-top:4px}
+        .bsz-megvan-indicator{font-size:20px;flex-shrink:0}
+
+        /* Bontás (boxhoz + rendelés) */
+        .bsz-bontas{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 12px;border-bottom:1px solid #f0f0f0}
+        .bsz-bontas-item{flex:1;min-width:120px;background:#fafafa;border-radius:10px;padding:8px 12px}
+        .bsz-bontas-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#888;margin-bottom:2px}
+        .bsz-bontas-ertek{font-size:15px;font-weight:800;color:#333}
+        .bsz-bontas-item.box-szin{background:var(--orange-light);}
+        .bsz-bontas-item.box-szin .bsz-bontas-label{color:var(--orange)}
+        .bsz-bontas-item.box-szin .bsz-bontas-ertek{color:var(--orange)}
+        .bsz-bontas-item.rendeles-szin{background:var(--blue-light)}
+        .bsz-bontas-item.rendeles-szin .bsz-bontas-label{color:var(--blue)}
+        .bsz-bontas-item.rendeles-szin .bsz-bontas-ertek{color:var(--blue)}
+
+        /* Input blokk */
+        .bsz-body{padding:12px 16px 0}
+        .bsz-inputok{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
         .bsz-input-blokk label{display:block;font-size:12px;font-weight:700;color:#777;text-transform:uppercase;margin-bottom:5px;letter-spacing:0.4px}
         .bsz-input{width:100%;padding:14px 12px;border-radius:12px;border:2px solid #e0e0e0;font-size:22px;font-weight:800;font-family:'Nunito',sans-serif;text-align:center;background:#fafafa;outline:none;transition:border-color 0.2s;-moz-appearance:textfield}
         .bsz-input:focus{border-color:var(--green);background:#fff}
         .bsz-input::-webkit-inner-spin-button,.bsz-input::-webkit-outer-spin-button{opacity:1}
-        .bsz-eredmeny{padding:10px 16px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px solid #f0f0f0}
-        .bsz-maradek{flex:1;font-size:16px;font-weight:800;padding:8px 14px;border-radius:10px;text-align:center}
+
+        /* Eredmény sor */
+        .bsz-eredmeny{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-bottom:12px}
+        .bsz-maradek{flex:1;font-size:15px;font-weight:800;padding:10px 14px;border-radius:10px;text-align:center;min-width:120px}
         .bsz-maradek.pozitiv{background:#e8f5e9;color:#2e7d32}
         .bsz-maradek.negativ{background:#ffebee;color:#c62828}
-        .bsz-maradek.semleges{background:#f5f5f5;color:#666}
-        .bsz-koltseg{flex:1;font-size:14px;font-weight:700;color:#555;text-align:center;padding:8px}
+        .bsz-maradek.semleges{background:#f5f5f5;color:#888}
+        .bsz-koltseg-box{flex:1;font-size:14px;font-weight:700;color:#555;text-align:center;padding:10px;background:#f8f8f8;border-radius:10px;min-width:100px}
+        .bsz-koltseg-label{font-size:11px;color:#aaa;text-transform:uppercase;margin-bottom:2px}
+
+        /* Megvan sor */
         .bsz-megvan-sor{padding:0 16px 14px;display:flex;align-items:center;gap:10px}
         .bsz-megvan-cb{width:24px;height:24px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
-        .bsz-megvan-label{font-size:15px;font-weight:700;color:#555;cursor:pointer}
-        .bsz-save-indicator{font-size:12px;color:#aaa;text-align:right;padding:0 16px 8px;font-style:italic}
+        .bsz-megvan-label{font-size:15px;font-weight:700;color:#555;cursor:pointer;flex:1}
+        .bsz-save-indicator{font-size:12px;color:#aaa;text-align:right;font-style:italic;margin-left:auto}
         .bsz-save-indicator.saving{color:var(--green)}
+
+        .bsz-becsult-info{font-size:12px;color:#aaa;padding:0 16px 8px;font-style:italic}
     </style>
 </head>
 <body>
 
 <div class="header">
     <h2>&#127818; Fru'eat Admin</h2>
-    <small id="last-update">Adatok bet&#246;lt&#233;se...</small>
+    <small id="last-update">Adatok betöltése...</small>
 </div>
 
 <div class="mode-selector">
-    <button id="btn-atvetel"   class="mode-btn active" onclick="setMode('atvetel')">&#127968; &#193;tv&#233;tel</button>
-    <button id="btn-szallitas" class="mode-btn"        onclick="setMode('szallitas')">&#128666; Kiszáll&#237;t&#225;s</button>
-    <button id="btn-beszerzes" class="mode-btn"        onclick="setMode('beszerzes')">&#128722; Beszerz&#233;s</button>
+    <button id="btn-atvetel"   class="mode-btn active" onclick="setMode('atvetel')">&#127968; Átvétel</button>
+    <button id="btn-szallitas" class="mode-btn"        onclick="setMode('szallitas')">&#128666; Kiszállítás</button>
+    <button id="btn-beszerzes" class="mode-btn"        onclick="setMode('beszerzes')">&#128722; Beszerz.</button>
 </div>
 
 <div id="szallitas-szurok" style="display:none;">
@@ -111,52 +156,83 @@
 </div>
 <div id="atvetel-pont-szuro" class="filters"></div>
 
-<input type="text" id="searchInput" class="search-box" placeholder="&#128269; N&#233;v vagy c&#237;m keres&#233;se..." oninput="render()">
+<input type="text" id="searchInput" class="search-box" placeholder="&#128269; Név vagy cím keresése..." oninput="render()">
 
 <div id="summary-bar-wrap" class="summary-bar">
-    <span id="summary-text">Bet&#246;lt&#233;s...</span>
+    <span id="summary-text">Betöltés...</span>
     <span class="summary-count" id="summary-count">0</span>
 </div>
 
+<!-- BESZERZES NÉZET -->
 <div id="beszerzes-view">
-    <button class="bsz-frissit-btn" onclick="fetchBeszerzes()">&#128260; Beszerz&#233;s friss&#237;t&#233;se</button>
+    <button class="bsz-frissit-btn" onclick="fetchBeszerzes()">&#128260; Beszerz. lista frissítése</button>
     <div class="bsz-osszesito" id="bsz-osszesito" style="display:none;">
-        <div class="bsz-osszesito-item"><span class="bsz-ertek" id="bsz-total-koltseg">-</span><span class="bsz-cimke">Becs&#252;lt cost</span></div>
-        <div class="bsz-osszesito-item"><span class="bsz-ertek" id="bsz-tenyleges-koltseg">-</span><span class="bsz-cimke">T&#233;nyleges cost</span></div>
-        <div class="bsz-osszesito-item"><span class="bsz-ertek" id="bsz-db-megvan">-</span><span class="bsz-cimke">Megvan</span></div>
+        <div class="bsz-osszesito-item">
+            <span class="bsz-ertek" id="bsz-total-koltseg">-</span>
+            <span class="bsz-cimke">Becsült cost</span>
+        </div>
+        <div class="bsz-osszesito-item">
+            <span class="bsz-ertek" id="bsz-tenyleges-koltseg">-</span>
+            <span class="bsz-cimke">Tényleges cost</span>
+        </div>
+        <div class="bsz-osszesito-item">
+            <span class="bsz-ertek" id="bsz-db-megvan">-</span>
+            <span class="bsz-cimke">Megvan</span>
+        </div>
     </div>
-    <div id="bsz-lista"><div class="loading">Nyomd meg a Friss&#237;t&#233;s gombot!</div></div>
+    <div id="bsz-lista"><div class="loading">Nyomd meg a Frissítés gombot!</div></div>
 </div>
 
 <div id="main-list">
-    <div class="loading"><div class="loading-spinner"></div>Adatok bet&#246;lt&#233;se...</div>
+    <div class="loading"><div class="loading-spinner"></div>Adatok betöltése...</div>
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════════════
+//  KONFIG
+// ══════════════════════════════════════════════════════════════
 var API_URL = "https://script.google.com/macros/s/AKfycbxs0gsyCDDC9sDhQ81Lf09m-u9j18aOubnH4LezLjC5uL_R139ukLZPhuvSZUdCSsWCpw/exec";
+
+// ══════════════════════════════════════════════════════════════
+//  GLOBÁLIS ÁLLAPOT
+// ══════════════════════════════════════════════════════════════
 var orders = [];
-var termekek = {};
+var termekek = {};           // { "Termék neve": { ar, egyseg, beszerzesi_ar, atlag_suly, tipus, box_egyseg } }
 var currentMode = 'atvetel';
 var activeCardId = null;
 var zonaFilter = 'mind';
 var napFilter  = 'mind';
 var pontFilter = 'mind';
 
+// Beszerz. állapot
+var bszKartyak = [];         // összevont kártyák tömbje (1 termék = 1 elem)
+var bszTimers  = {};
+var bszSaveData = {};        // { termekNev: { tenyleges_suly, vasarolt_mennyiseg, megvan, _rowIndex } }
+
+// ══════════════════════════════════════════════════════════════
+//  ADATBETÖLTÉS (átvétel + kiszállítás + termékek)
+// ══════════════════════════════════════════════════════════════
 async function fetchData() {
     try {
-        var r1 = await fetch(API_URL + "?admin=true", {redirect:"follow"});
-        var r2 = await fetch(API_URL, {redirect:"follow"});
-        var r3 = await fetch(API_URL + "?beszerzes=true", {redirect:"follow"});
+        var r1 = await fetch(API_URL + "?admin=true", { redirect: "follow" });
+        var r2 = await fetch(API_URL, { redirect: "follow" });
         var od = await r1.json();
         var td = await r2.json();
-        var bd = await r3.json();
-        console.log("BESZERZES:", bd);
         if (od) orders = od;
         if (td && td.termekek) {
             termekek = {};
-            td.termekek.forEach(function(t) { termekek[t.nev] = {ar:parseFloat(t.ar)||0, egyseg:t.egyseg||''}; });
+            td.termekek.forEach(function(t) {
+                termekek[t.nev] = {
+                    ar:              parseFloat(t.ar) || 0,
+                    egyseg:          t.egyseg || '',
+                    beszerzesi_ar:   parseFloat(t.beszerzesi_ar) || 0,
+                    atlag_suly:      parseFloat(t.atlag_suly) || 0,
+                    tipus:           (t.tipus || '').toString().trim().toLowerCase(),
+                    box_egyseg:      (t.box_egyseg || '').toString().trim().toLowerCase()
+                };
+            });
         }
-        document.getElementById('last-update').innerText = 'Frissitve: ' + new Date().toLocaleTimeString('hu-HU');
+        document.getElementById('last-update').innerText = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
         buildFilterChips();
         render();
     } catch(e) {
@@ -164,6 +240,9 @@ async function fetchData() {
     }
 }
 
+// ══════════════════════════════════════════════════════════════
+//  ÁTVÉTEL / KISZÁLLÍTÁS – FILTER CHIPEK
+// ══════════════════════════════════════════════════════════════
 function buildFilterChips() {
     function makeChips(el, items, current, setter) {
         el.innerHTML = '';
@@ -175,284 +254,603 @@ function buildFilterChips() {
             el.appendChild(d);
         });
     }
-    var zonak = ['mind']; orders.forEach(function(o){ if(String(o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz')>=0&&o.zona&&zonak.indexOf(o.zona)<0) zonak.push(o.zona); });
-    var napok = ['mind']; orders.forEach(function(o){ if(String(o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz')>=0&&o.datum){var d=new Date(o.datum);if(!isNaN(d)){var s=d.toLocaleDateString('hu-HU',{month:'short',day:'numeric'});if(napok.indexOf(s)<0)napok.push(s);}} });
-    var pontok=['mind']; orders.forEach(function(o){ if(String(o.atvetel_mod||'').toLowerCase().indexOf('szem\u00e9lyes')>=0&&o.zona&&pontok.indexOf(o.zona)<0) pontok.push(o.zona); });
-    makeChips(document.getElementById('zona-chips'), zonak, zonaFilter, function(v){zonaFilter=v;buildFilterChips();render();});
-    makeChips(document.getElementById('nap-chips'),  napok,  napFilter,  function(v){napFilter=v; buildFilterChips();render();});
-    makeChips(document.getElementById('atvetel-pont-szuro'), pontok, pontFilter, function(v){pontFilter=v;buildFilterChips();render();});
+    var zonak = ['mind'];
+    orders.forEach(function(o) {
+        if (String(o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0 && o.zona && zonak.indexOf(o.zona) < 0)
+            zonak.push(o.zona);
+    });
+    var napok = ['mind'];
+    orders.forEach(function(o) {
+        if (String(o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0 && o.datum) {
+            var d = new Date(o.datum);
+            if (!isNaN(d)) {
+                var s = d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' });
+                if (napok.indexOf(s) < 0) napok.push(s);
+            }
+        }
+    });
+    var pontok = ['mind'];
+    orders.forEach(function(o) {
+        if (String(o.atvetel_mod||'').toLowerCase().indexOf('szem\u00e9lyes') >= 0 && o.zona && pontok.indexOf(o.zona) < 0)
+            pontok.push(o.zona);
+    });
+    makeChips(document.getElementById('zona-chips'), zonak, zonaFilter, function(v){ zonaFilter = v; buildFilterChips(); render(); });
+    makeChips(document.getElementById('nap-chips'),  napok,  napFilter,  function(v){ napFilter  = v; buildFilterChips(); render(); });
+    makeChips(document.getElementById('atvetel-pont-szuro'), pontok, pontFilter, function(v){ pontFilter = v; buildFilterChips(); render(); });
 }
 
+// ══════════════════════════════════════════════════════════════
+//  MÓD VÁLTÁS
+// ══════════════════════════════════════════════════════════════
 function setMode(mode) {
     currentMode = mode; activeCardId = null;
-    document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
-    document.getElementById('btn-'+mode).classList.add('active');
-    var isBsz = mode==='beszerzes';
-    document.getElementById('beszerzes-view').style.display  = isBsz?'block':'none';
-    document.getElementById('main-list').style.display        = isBsz?'none':'block';
-    document.getElementById('searchInput').style.display      = isBsz?'none':'block';
-    document.getElementById('summary-bar-wrap').style.display = isBsz?'none':'flex';
-    document.getElementById('szallitas-szurok').style.display = mode==='szallitas'?'block':'none';
-    document.getElementById('atvetel-pont-szuro').style.display= mode==='atvetel'?'flex':'none';
+    document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('active'); });
+    document.getElementById('btn-' + mode).classList.add('active');
+    var isBsz = mode === 'beszerzes';
+    document.getElementById('beszerzes-view').style.display   = isBsz ? 'block' : 'none';
+    document.getElementById('main-list').style.display         = isBsz ? 'none'  : 'block';
+    document.getElementById('searchInput').style.display       = isBsz ? 'none'  : 'block';
+    document.getElementById('summary-bar-wrap').style.display  = isBsz ? 'none'  : 'flex';
+    document.getElementById('szallitas-szurok').style.display  = mode === 'szallitas' ? 'block' : 'none';
+    document.getElementById('atvetel-pont-szuro').style.display = mode === 'atvetel'   ? 'flex'  : 'none';
     if (!isBsz) { buildFilterChips(); render(); }
 }
 
+// ══════════════════════════════════════════════════════════════
+//  ÁTVÉTEL / KISZÁLLÍTÁS – RENDER (VÁLTOZATLAN LOGIKA)
+// ══════════════════════════════════════════════════════════════
 function render() {
     var list   = document.getElementById('main-list');
     var search = document.getElementById('searchInput').value.toLowerCase();
     var filtered = orders.filter(function(o) {
-        var ms  = (o.nev||'').toLowerCase().indexOf(search)>=0||(o.cim||'').toLowerCase().indexOf(search)>=0;
+        var ms  = (o.nev||'').toLowerCase().indexOf(search) >= 0 || (o.cim||'').toLowerCase().indexOf(search) >= 0;
         var mod = String(o.atvetel_mod||'').toLowerCase();
-        if (currentMode==='atvetel') return ms && mod.indexOf('szem\u00e9lyes')>=0 && (pontFilter==='mind'||(o.zona||'')===pontFilter);
-        var mz = zonaFilter==='mind'||(o.zona||'')===zonaFilter;
-        var mn = napFilter==='mind'||(function(){if(!o.datum)return false;var d=new Date(o.datum);return !isNaN(d)&&d.toLocaleDateString('hu-HU',{month:'short',day:'numeric'})===napFilter;})();
-        return ms && mod.indexOf('h\u00e1zhoz')>=0 && mz && mn;
+        if (currentMode === 'atvetel') return ms && mod.indexOf('szem\u00e9lyes') >= 0 && (pontFilter === 'mind' || (o.zona||'') === pontFilter);
+        var mz = zonaFilter === 'mind' || (o.zona||'') === zonaFilter;
+        var mn = napFilter === 'mind' || (function(){
+            if (!o.datum) return false;
+            var d = new Date(o.datum);
+            return !isNaN(d) && d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' }) === napFilter;
+        })();
+        return ms && mod.indexOf('h\u00e1zhoz') >= 0 && mz && mn;
     });
-    if (currentMode==='szallitas') filtered.sort(function(a,b){return String(a.zona||'').localeCompare(String(b.zona||''));});
+    if (currentMode === 'szallitas') filtered.sort(function(a,b){ return String(a.zona||'').localeCompare(String(b.zona||'')); });
     document.getElementById('summary-count').innerText = filtered.length;
-    document.getElementById('summary-text').innerText  = currentMode==='atvetel'?'Szem\u00e9lyes \u00e1tv\u00e9tel':'Kiszáll\u00edt\u00e1s';
+    document.getElementById('summary-text').innerText  = currentMode === 'atvetel' ? 'Személyes átvétel' : 'Kiszállítás';
     list.innerHTML = '';
-    if (!filtered.length){list.innerHTML='<div class="loading">Nincs megjelen\u00edthet\u0151 rendel\u00e9s.</div>';return;}
-    if (!activeCardId||!filtered.find(function(o){return o.rowid===activeCardId;})) activeCardId=filtered[0].rowid;
-    filtered.forEach(function(o,i) {
-        var isActive = o.rowid===activeCardId;
+    if (!filtered.length) { list.innerHTML = '<div class="loading">Nincs megjeleníthető rendelés.</div>'; return; }
+    if (!activeCardId || !filtered.find(function(o){ return o.rowid === activeCardId; })) activeCardId = filtered[0].rowid;
+    filtered.forEach(function(o, i) {
+        var isActive = o.rowid === activeCardId;
         var card = document.createElement('div');
-        card.className = 'order-card'+(isActive?' active-card':(i===0?' next-card':''));
-        card.onclick = function(){activeCardId=o.rowid;render();};
-        var ca  = (o.cim||'').replace(/\r?\n|\r/g,' ');
-        var tel = o.telefon||o.tel||'';
+        card.className = 'order-card' + (isActive ? ' active-card' : (i === 0 ? ' next-card' : ''));
+        card.onclick = function(){ activeCardId = o.rowid; render(); };
+        var ca  = (o.cim||'').replace(/\r?\n|\r/g, ' ');
+        var tel = o.telefon || o.tel || '';
         card.innerHTML =
-            '<div class="card-header">'+
-                '<div>'+
-                    '<div class="card-name">'+(o.nev||'N\u00e9vtelen')+'</div>'+
-                    '<div class="card-address">'+(o.cim||'Nincs c\u00edm')+'</div>'+
-                    (tel?'<a href="tel:'+tel+'" class="phone-link" onclick="event.stopPropagation()">&#128222; '+tel+'</a>':'')+
-                '</div>'+
-                '<span class="zone-tag">'+(o.zona||'P\u00e9cel')+'</span>'+
-            '</div>'+
-            (o.megjegyzes?'<div class="comment-box"><b>Megjegyz\u00e9s:</b> '+o.megjegyzes+'</div>':'')+
-            renderItemsTable(o.termek||o.termekek||'',o.rowid,o)+
-            (currentMode==='szallitas'?
-                '<div class="nav-group" onclick="event.stopPropagation()">'+
-                    '<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(ca)+'" target="_blank" class="nav-btn gmaps">&#128506; Google Maps</a>'+
-                    '<a href="waze://?q='+encodeURIComponent(ca)+'&navigate=yes" class="nav-btn waze">&#128309; Waze</a>'+
-                '</div>':'')+
-            '<button class="finish-btn" onclick="event.stopPropagation();completeOrder('+o.rowid+')">'+
-                (currentMode==='atvetel'?'&#10003; \u00c1TADVA \u00c9S FIZETVE':'&#10003; KISZÁLL\u00cdTVA')+
+            '<div class="card-header">' +
+                '<div>' +
+                    '<div class="card-name">'  + (o.nev||'Névtelen') + '</div>' +
+                    '<div class="card-address">' + (o.cim||'Nincs cím') + '</div>' +
+                    (tel ? '<a href="tel:' + tel + '" class="phone-link" onclick="event.stopPropagation()">&#128222; ' + tel + '</a>' : '') +
+                '</div>' +
+                '<span class="zone-tag">' + (o.zona||'Pécel') + '</span>' +
+            '</div>' +
+            (o.megjegyzes ? '<div class="comment-box"><b>Megjegyzés:</b> ' + o.megjegyzes + '</div>' : '') +
+            renderItemsTable(o.termek || o.termekek || '', o.rowid, o) +
+            (currentMode === 'szallitas' ?
+                '<div class="nav-group" onclick="event.stopPropagation()">' +
+                    '<a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(ca) + '" target="_blank" class="nav-btn gmaps">&#128506; Google Maps</a>' +
+                    '<a href="waze://?q=' + encodeURIComponent(ca) + '&navigate=yes" class="nav-btn waze">&#128309; Waze</a>' +
+                '</div>' : '') +
+            '<button class="finish-btn" onclick="event.stopPropagation();completeOrder(' + o.rowid + ')">' +
+                (currentMode === 'atvetel' ? '&#10003; ÁTADVA ÉS FIZETVE' : '&#10003; KISZÁLLÍTVA') +
             '</button>';
         list.appendChild(card);
     });
 }
 
 function parseQtyAndUnit(s) {
-    s=(s||'').toString().trim();
-    var m=s.match(/^([\d.,]+)\s*(.*)$/);
-    return m?{qty:parseFloat(m[1].replace(',','.'))||0,unit:m[2].trim()}:{qty:0,unit:s};
+    s = (s||'').toString().trim();
+    var m = s.match(/^([\d.,]+)\s*(.*)$/);
+    return m ? { qty: parseFloat(m[1].replace(',','.')) || 0, unit: m[2].trim() } : { qty: 0, unit: s };
 }
 
 function szamolVegosszeg(rowid) {
-    var order=orders.find(function(o){return o.rowid===rowid;});
-    if(!order)return;
-    var t=0;
-    document.querySelectorAll('.qty-input[data-rowid="'+rowid+'"]').forEach(function(inp){
-        t+=(parseFloat(inp.dataset.ar)||0)*(parseFloat(inp.value.replace(',','.'))||0);
+    var order = orders.find(function(o){ return o.rowid === rowid; });
+    if (!order) return;
+    var t = 0;
+    document.querySelectorAll('.qty-input[data-rowid="' + rowid + '"]').forEach(function(inp){
+        t += (parseFloat(inp.dataset.ar)||0) * (parseFloat(inp.value.replace(',','.')) || 0);
     });
-    var sd=parseInt(order.szallitasi_dij||0);
-    if((order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz')>=0&&sd>0) t+=sd;
-    var el=document.getElementById('total-'+rowid);
-    if(el) el.innerText='Fizetend\u0151: '+Math.round(t)+' Ft';
-    order.vegosszeg=Math.round(t);
+    var sd = parseInt(order.szallitasi_dij || 0);
+    if ((order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0 && sd > 0) t += sd;
+    var el = document.getElementById('total-' + rowid);
+    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft';
+    order.vegosszeg = Math.round(t);
 }
 
-function renderItemsTable(str,rowid,order) {
-    if(!str||!str.trim())return'<div style="color:#bbb;font-size:14px;padding:10px 0;">Nincs term\u00e9k adat</div>';
-    var items=str.split(',').map(function(t){return t.trim();}).filter(Boolean);
-    var sd=parseInt(order.szallitasi_dij||0);
-    var vs=(order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz')>=0;
-    var tot=0;
-    var rows=items.map(function(t){
-        var p=t.split(':'),nev=p[0].trim(),su=p[1]?p[1].trim():'';
-        var pq=parseQtyAndUnit(su);
-        var td=termekek[nev]||{},ar=td.ar||0,eg=td.egyseg||pq.unit||'';
-        var rs=Math.round(pq.qty*ar); tot+=rs;
-        var ns=nev.replace(/'/g,'').replace(/"/g,'');
-        return '<tr class="item-row">'+
-            '<td><div class="item-name">'+nev+'</div>'+(ar>0?'<div style="color:#999;font-size:12px;">'+ar+' Ft / '+eg+'</div>':'')+  '</td>'+
-            '<td style="text-align:right;vertical-align:middle;">'+
-                '<div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;">'+
-                    '<input type="number" step="0.1" min="0" value="'+pq.qty+'" class="weight-input qty-input"'+
-                    ' data-rowid="'+rowid+'" data-nev="'+ns+'" data-ar="'+ar+'" data-egyseg="'+eg+'"'+
-                    ' oninput="szamolVegosszeg('+rowid+');updateOrderDataDelayed('+rowid+',\''+ns+'\',this.value,\''+eg+'\')"'+
-                    ' onclick="event.stopPropagation()">'+
-                    '<span style="font-size:13px;color:#555;white-space:nowrap;min-width:36px;">'+eg+'</span>'+
-                '</div>'+
-                (ar>0?'<div style="font-weight:700;font-size:13px;color:#333;margin-top:3px;">'+rs+' Ft</div>':'')+
-            '</td>'+
+function renderItemsTable(str, rowid, order) {
+    if (!str || !str.trim()) return '<div style="color:#bbb;font-size:14px;padding:10px 0;">Nincs termék adat</div>';
+    var items = str.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
+    var sd = parseInt(order.szallitasi_dij || 0);
+    var vs = (order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
+    var tot = 0;
+    var rows = items.map(function(t) {
+        var p = t.split(':'), nev = p[0].trim(), su = p[1] ? p[1].trim() : '';
+        var pq = parseQtyAndUnit(su);
+        var td = termekek[nev] || {}, ar = td.ar || 0, eg = td.egyseg || pq.unit || '';
+        var rs = Math.round(pq.qty * ar); tot += rs;
+        var ns = nev.replace(/'/g,'').replace(/"/g,'');
+        return '<tr class="item-row">' +
+            '<td><div class="item-name">' + nev + '</div>' + (ar > 0 ? '<div style="color:#999;font-size:12px;">' + ar + ' Ft / ' + eg + '</div>' : '') + '</td>' +
+            '<td style="text-align:right;vertical-align:middle;">' +
+                '<div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;">' +
+                    '<input type="number" step="0.1" min="0" value="' + pq.qty + '" class="weight-input qty-input"' +
+                    ' data-rowid="' + rowid + '" data-nev="' + ns + '" data-ar="' + ar + '" data-egyseg="' + eg + '"' +
+                    ' oninput="szamolVegosszeg(' + rowid + ');updateOrderDataDelayed(' + rowid + ',\'' + ns + '\',this.value,\'' + eg + '\')"' +
+                    ' onclick="event.stopPropagation()">' +
+                    '<span style="font-size:13px;color:#555;white-space:nowrap;min-width:36px;">' + eg + '</span>' +
+                '</div>' +
+                (ar > 0 ? '<div style="font-weight:700;font-size:13px;color:#333;margin-top:3px;">' + rs + ' Ft</div>' : '') +
+            '</td>' +
         '</tr>';
     }).join('');
-    if(vs&&sd>0)tot+=sd;
-    return '<table class="items-table"><thead><tr><th>Term\u00e9k</th><th style="text-align:right;">Mennyis\u00e9g / \u00d6sszeg</th></tr></thead><tbody>'+rows+'</tbody></table>'+
-        (vs&&sd>0?'<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Sz\u00e1ll\u00edt\u00e1si d\u00edj:</span><span>'+sd+' Ft</span></div>':'')+
-        '<div class="total-row" id="total-'+rowid+'">Fizetend\u0151: '+tot+' Ft</div>';
+    if (vs && sd > 0) tot += sd;
+    return '<table class="items-table"><thead><tr><th>Termék</th><th style="text-align:right;">Mennyiség / Összeg</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        (vs && sd > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Szállítási díj:</span><span>' + sd + ' Ft</span></div>' : '') +
+        '<div class="total-row" id="total-' + rowid + '">Fizetendő: ' + tot + ' Ft</div>';
 }
 
-var updateTimers={};
-function updateOrderDataDelayed(rowid,nev,val,eg) {
-    clearTimeout(updateTimers[rowid+nev]);
-    updateTimers[rowid+nev]=setTimeout(function(){updateOrderData(rowid,nev,val,eg);},1500);
+var updateTimers = {};
+function updateOrderDataDelayed(rowid, nev, val, eg) {
+    clearTimeout(updateTimers[rowid + nev]);
+    updateTimers[rowid + nev] = setTimeout(function(){ updateOrderData(rowid, nev, val, eg); }, 1500);
 }
-async function updateOrderData(rowid,nev,val,eg) {
-    var order=orders.find(function(o){return o.rowid===rowid;});
-    if(!order)return;
-    var ns=val+(eg?' '+eg:'');
-    var rt=(order.termek||order.termekek||'').split(',').map(function(t){
-        return t.trim().indexOf(nev)===0?nev+': '+ns:t;
+async function updateOrderData(rowid, nev, val, eg) {
+    var order = orders.find(function(o){ return o.rowid === rowid; });
+    if (!order) return;
+    var ns = val + (eg ? ' ' + eg : '');
+    var rt = (order.termek || order.termekek || '').split(',').map(function(t){
+        return t.trim().indexOf(nev) === 0 ? nev + ': ' + ns : t;
     }).join(', ');
-    if(order.termek!==undefined)order.termek=rt;
-    if(order.termekek!==undefined)order.termekek=rt;
-    try{await fetch(API_URL+'?update=true&rowId='+rowid+'&newItems='+encodeURIComponent(rt)+'&newVegosszeg='+order.vegosszeg,{redirect:'follow'});}catch(e){}
-}
-async function completeOrder(rowId) {
-    if(!confirm('Lez\u00e1rod a rendel\u00e9st?'))return;
-    var ns=currentMode==='atvetel'?'\u00c1tv\u00e9ve':'Kiszáll\u00edtva';
-    try{
-        var r=await fetch(API_URL+'?update=true&rowId='+rowId+'&newStatus='+encodeURIComponent(ns),{redirect:'follow'});
-        if((await r.text()).trim()==='ok'){orders=orders.filter(function(o){return o.rowid!==rowId;});activeCardId=null;buildFilterChips();render();}
-        else alert('Hiba!');
-    }catch(e){alert('H\u00e1l\u00f3zati hiba!');}
+    if (order.termek !== undefined) order.termek = rt;
+    if (order.termekek !== undefined) order.termekek = rt;
+    try { await fetch(API_URL + '?update=true&rowId=' + rowid + '&newItems=' + encodeURIComponent(rt) + '&newVegosszeg=' + order.vegosszeg, { redirect: 'follow' }); } catch(e) {}
 }
 
-// BSZERZES
-var bszAdatok=[];
-var bszTimers={};
+async function completeOrder(rowId) {
+    if (!confirm('Lezárod a rendelést?')) return;
+    var ns = currentMode === 'atvetel' ? 'Átvéve' : 'Kiszállítva';
+    try {
+        var r = await fetch(API_URL + '?update=true&rowId=' + rowId + '&newStatus=' + encodeURIComponent(ns), { redirect: 'follow' });
+        if ((await r.text()).trim() === 'ok') {
+            orders = orders.filter(function(o){ return o.rowid !== rowId; });
+            activeCardId = null; buildFilterChips(); render();
+        } else alert('Hiba!');
+    } catch(e) { alert('Hálózati hiba!'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BESZERZES – LOGIKA
+//
+//  Adatforrás: API ?beszerzes=true → Beszerzes sheet (4. sor fejléc)
+//  A sheet-et a szamolBeszerzes() script tölti fel.
+//  Egy sor = egy termék (script már összevonta box+rendelés adatot).
+//
+//  AMIT A FRONTEND CÉL:
+//    – Szűri a "└ box összetevő" sorokat (ezek nem kellenek a kártyához)
+//    – Összevon: ha mégis külön sor lenne box-összetevő, hozzáadja a fő termékhez
+//    – 1 termék = 1 kártya
+//    – Mutat: boxhoz szükséges / rendeléshez szükséges / összesen
+//    – Input: tényleges súly / vásárolt mennyiség
+//    – Számol: maradék, költség
+//    – Megvan checkbox → kártya összecsukódik
+// ══════════════════════════════════════════════════════════════
 
 async function fetchBeszerzes() {
-    document.getElementById('bsz-lista').innerHTML='<div class="loading"><div class="loading-spinner"></div>Bet\u00f6lt\u00e9s...</div>';
-    try{
-        var r=await fetch(API_URL+'?beszerzes=true',{redirect:'follow'});
-        var d=await r.json();
-        bszAdatok=Array.isArray(d)?d:(d&&Array.isArray(d.sorok)?d.sorok:[]);
+    var lista = document.getElementById('bsz-lista');
+    lista.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Betöltés...</div>';
+    try {
+        // 1) Beszerzes sheet adatai (összevont termékek + admin adatok)
+        var r1 = await fetch(API_URL + '?beszerzes=true', { redirect: 'follow' });
+        var rawBsz = await r1.json();
+
+        // 2) Rendelések (aktív) – kell a "rendelésből" bontáshoz
+        var r2 = await fetch(API_URL + '?admin=true', { redirect: 'follow' });
+        var aktRendelesek = await r2.json();
+
+        // 3) Termékek (box kalkulátorhoz: atlag_suly, box_egyseg stb.)
+        var r3 = await fetch(API_URL, { redirect: 'follow' });
+        var td = await r3.json();
+
+        // Termék adatbázis frissítése
+        if (td && td.termekek) {
+            termekek = {};
+            td.termekek.forEach(function(t) {
+                termekek[t.nev] = {
+                    ar:            parseFloat(t.ar) || 0,
+                    egyseg:        t.egyseg || '',
+                    beszerzesi_ar: parseFloat(t.beszerzesi_ar) || 0,
+                    atlag_suly:    parseFloat(t.atlag_suly) || 0,
+                    tipus:         (t.tipus || '').toString().trim().toLowerCase(),
+                    box_egyseg:    (t.box_egyseg || '').toString().trim().toLowerCase()
+                };
+            });
+        }
+
+        // ── Rendelésekből számolj ki termékenkénti mennyiségeket ──
+        // { "Termék neve": { rendeles_mennyiseg, egyseg } }
+        var rendelesOsszesites = {};
+        aktRendelesek.forEach(function(o) {
+            var termekStr = (o.termek || o.termekek || '').toString();
+            termekStr.split(',').forEach(function(sor) {
+                sor = sor.trim();
+                if (!sor) return;
+                var dp = sor.indexOf(':');
+                if (dp < 0) return;
+                var nev = sor.substring(0, dp).trim();
+                var resz = sor.substring(dp + 1).trim();
+                var m = resz.match(/^([\d.,]+)\s*(.*)$/);
+                if (!m) return;
+                var qty = parseFloat(m[1].replace(',','.')) || 0;
+                var eg  = m[2].trim().toLowerCase();
+                // kg-ra konvertálunk ha szükséges
+                var td2 = termekek[nev] || {};
+                var qtyKg = qty;
+                if ((eg === 'db' || eg === 'csomó' || eg === 'csomo') && td2.atlag_suly > 0) {
+                    qtyKg = qty * td2.atlag_suly;
+                }
+                if (!rendelesOsszesites[nev]) rendelesOsszesites[nev] = { db: 0, kg: 0, egyseg: td2.egyseg || eg };
+                if (eg === 'db' || eg === 'csomó' || eg === 'csomo') rendelesOsszesites[nev].db += qty;
+                else rendelesOsszesites[nev].kg += qtyKg;
+            });
+        });
+
+        // ── Beszerzes sheet feldolgozása ──
+        // A sheet sorai:
+        //   • Normál sor: termék neve (pl. "Avalantino paradicsom_klon" vagy "Paradicsom")
+        //   • Box összetevő sor: "  └ Termék neve [BoxNév]"
+        // A script összevonja őket, de a "└" sorok esetleg még ott lehetnek → szűrjük
+        // A termek oszlop végén "_klon" vagy "_box" végződés is lehet → tisztítjuk
+
+        var bszAdatok = Array.isArray(rawBsz) ? rawBsz : (rawBsz && Array.isArray(rawBsz.sorok) ? rawBsz.sorok : []);
+
+        // Gyűjtjük össze termék nevenkénti összesítést a sheet-ből
+        // { tisztaNev: { osszes_mennyiseg, egyseg, becsult_suly, tenyleges_suly, vasarolt_mennyiseg,
+        //                megvan, beszerzesi_ar, _rowIndex, box_mennyiseg, rendeles_mennyiseg } }
+        var termekMap = {};
+        var termekSorrend = [];
+
+        bszAdatok.forEach(function(sor) {
+            var nev = (sor['termek'] || sor['nev'] || '').toString().trim();
+            if (!nev) return;
+
+            // Szűrés: "└" kezdetű sorok (box összetevők) – a script összevonta, de ha mégis itt van
+            // Ne jelenjen meg külön kártyaként, de adatát adjuk a fő termékhez ha egyezik
+            var isBoxOsszetevo = nev.indexOf('\u2514') >= 0 || nev.match(/^\s+L\s/);
+            if (isBoxOsszetevo) {
+                // Kivesszük a termék nevet és a box nevet
+                var tisztaNev = nev.replace(/^\s*\u2514\s*/, '').replace(/^\s*L\s+/, '').replace(/\s*\[.*\]$/, '').trim();
+                // Ha már van ilyen termék a mapban, adjuk hozzá a mennyiséget
+                if (termekMap[tisztaNev]) {
+                    var osszes = parseFloat(sor['osszes_mennyiseg']) || 0;
+                    termekMap[tisztaNev].box_mennyiseg = (termekMap[tisztaNev].box_mennyiseg || 0) + osszes;
+                    termekMap[tisztaNev].osszes_mennyiseg += osszes;
+                    termekMap[tisztaNev].becsult_suly = (termekMap[tisztaNev].becsult_suly || 0) +
+                        (parseFloat(sor['becsult_suly']) || osszes);
+                }
+                return; // ne legyen önálló kártya
+            }
+
+            // Normál sor – tisztítjuk a _klon / _box végződést és a "└" jelölést
+            var tisztaNev = nev
+                .replace(/_klon$/, '')
+                .replace(/_box$/, '')
+                .replace(/^\s*\u2514\s*/, '')
+                .replace(/\s*\[.*\]$/, '')
+                .trim();
+
+            var osszes      = parseFloat(sor['osszes_mennyiseg']) || 0;
+            var egyseg      = (sor['egyseg'] || 'kg').toString().trim();
+            var bsuly       = parseFloat(sor['becsult_suly']) || 0;
+            var tsuly       = parseFloat(sor['tenyleges_suly']) || 0;
+            var vas         = parseFloat(sor['vasarolt_mennyiseg']) || 0;
+            var megvan      = !!(sor['megvan'] && sor['megvan'].toString().trim() !== '' && sor['megvan'] !== '0' && sor['megvan'] !== 'false');
+            var beszAr      = parseFloat(sor['beszerzesi_ar']) || 0;
+            var rowIdx      = parseInt(sor['_rowindex'] || sor['_rowIndex']) || 0;
+
+            // Ha a termék típusa "box" → ne jelenjen meg (a box maga nem vásárolható nyersen)
+            var td2 = termekek[tisztaNev] || {};
+            if (td2.tipus === 'box') return;
+
+            if (!termekMap[tisztaNev]) {
+                termekMap[tisztaNev] = {
+                    nev:                tisztaNev,
+                    osszes_mennyiseg:   0,
+                    egyseg:             egyseg,
+                    becsult_suly:       0,
+                    tenyleges_suly:     tsuly,
+                    vasarolt_mennyiseg: vas,
+                    megvan:             megvan,
+                    beszerzesi_ar:      beszAr,
+                    _rowIndex:          rowIdx,
+                    box_mennyiseg:      0,
+                    rendeles_mennyiseg: 0
+                };
+                termekSorrend.push(tisztaNev);
+            }
+            termekMap[tisztaNev].osszes_mennyiseg   += osszes;
+            termekMap[tisztaNev].becsult_suly       += bsuly > 0 ? bsuly : osszes;
+            // Admin adatok csak az első sornál számítanak (a legtöbb esetben 1 sor lesz)
+            if (tsuly > 0) termekMap[tisztaNev].tenyleges_suly = tsuly;
+            if (vas   > 0) termekMap[tisztaNev].vasarolt_mennyiseg = vas;
+        });
+
+        // ── Bontás kiszámítása: box vs rendelés ──
+        // A rendelesOsszesites-ből vesszük a rendelési részt
+        termekSorrend.forEach(function(nev) {
+            var t = termekMap[nev];
+            var r = rendelesOsszesites[nev];
+            if (r) {
+                t.rendeles_mennyiseg = r.kg > 0 ? r.kg : r.db;
+                t.rendeles_db        = r.db;
+                t.rendeles_egyseg    = r.egyseg;
+                // Box rész = összes - rendelés (ha pozitív)
+                t.box_mennyiseg      = Math.max(0, (t.osszes_mennyiseg || 0) - t.rendeles_mennyiseg);
+            } else {
+                // Nincs direkt rendelés → csak box
+                t.box_mennyiseg      = t.osszes_mennyiseg || 0;
+                t.rendeles_mennyiseg = 0;
+            }
+        });
+
+        // Mentjük a kártyák adatát
+        bszKartyak = termekSorrend.map(function(nev){ return termekMap[nev]; });
+
         renderBszerzes();
-    }catch(e){document.getElementById('bsz-lista').innerHTML='<div class="loading" style="color:#c62828;">Hiba: '+e.message+'</div>';}
+
+    } catch(e) {
+        document.getElementById('bsz-lista').innerHTML = '<div class="loading" style="color:#c62828;">Hiba: ' + e.message + '</div>';
+        console.error('fetchBeszerzes hiba:', e);
+    }
 }
 
+// ══════════════════════════════════════════════════════════════
+//  BESZERZES – RENDER (1 termék = 1 kártya)
+// ══════════════════════════════════════════════════════════════
 function renderBszerzes() {
-    var lista=document.getElementById('bsz-lista');
-    if(!bszAdatok.length){
-        lista.innerHTML='<div class="loading">Nincs adat. Futtasd a Bszerz\u00e9s kalcul\u00e1tort!</div>';
-        document.getElementById('bsz-osszesito').style.display='none';
+    var lista = document.getElementById('bsz-lista');
+    if (!bszKartyak.length) {
+        lista.innerHTML = '<div class="loading">Nincs adat. Futtasd a Bszerz. lista frissítését!</div>';
+        document.getElementById('bsz-osszesito').style.display = 'none';
         return;
     }
-    var tbk=0,ttk=0,mgv=0;
-    lista.innerHTML='';
-    bszAdatok.forEach(function(sor,idx){
-        var nev   =(sor['termek']||sor['nev']||'').toString().trim();
-        var osszes=parseFloat(sor['osszes_mennyiseg'])||0;
-        var egyseg=(sor['egyseg']||'kg').toString();
-        var bsuly =parseFloat(sor['becsult_suly'])||0;
-        var tsuly =parseFloat(sor['tenyleges_suly'])||0;
-        var vas   =parseFloat(sor['vasarolt_mennyiseg'])||0;
-        var bar   =parseFloat(sor['beszerzesi_ar'])||0;
-        var rid   =sor['_rowindex']||sor['_rowIndex']||(idx+5);
-        var mgvan =!!(sor['megvan']&&sor['megvan'].toString().trim()!==''&&sor['megvan']!=='0'&&sor['megvan']!=='false');
-        var isOssz=nev.indexOf('\u2514')>=0;
-        if (isOssz) return;
-        var aktS  =tsuly>0?tsuly:bsuly;
-        if(bar>0){tbk+=Math.round(bsuly*bar);ttk+=Math.round(aktS*bar);}
-        if(mgvan)mgv++;
-        var ndsp  =isOssz?nev.replace(/\s*\u2514\s*/,'').replace(/\s*\[.*\]$/,'').trim():nev;
-        var bm    =nev.match(/\[(.*)\]/);
-        var fdsp  =isOssz?(bm?bm[1]:'box \u00f6sszetev\u0151'):'';
-        var mar   =vas>0?vas-aktS:null;
-        var mcls  =mar===null?'semleges':(mar>=0?'pozitiv':'negativ');
-        var mstr  =mar===null?'Add meg a v\u00e1s\u00e1rolt mennyis\u00e9get':(mar>=0?'+':'')+mar.toFixed(2)+' kg marad\u00e9k';
-        var akk   =aktS>0&&bar>0?Math.round(aktS*bar).toLocaleString('hu-HU')+' Ft':'-';
-        var bsh   =bsuly>0?'<div class="bsz-szuk-item"><div class="bsz-szuk-label">Becs\u00fclt s\u00faly</div><div class="bsz-szuk-ertek">'+bsuly.toFixed(2)+' kg</div></div>':'';
-        var fh    =fdsp?'<div class="bsz-forras">'+fdsp+'</div>':'';
-        var tval  =tsuly>0?tsuly:'';
-        var vval  =vas>0?vas:'';
-        var bph   =bsuly>0?bsuly.toFixed(2):'0';
-        var card  =document.createElement('div');
-        card.id='bsz-card-'+idx;
-        card.className='bsz-card'+(mgvan?' megvan':'')+(isOssz?' box-osszetevo':'');
-        card.innerHTML=
-            '<div class="bsz-card-top">'+
-                '<div class="bsz-nev">'+ndsp+'</div>'+fh+
-                '<div class="bsz-szukseges">'+
-                    '<div class="bsz-szuk-item"><div class="bsz-szuk-label">Sz\u00fcks\u00e9ges</div><div class="bsz-szuk-ertek">'+osszes+' '+egyseg+'</div></div>'+bsh+
-                '</div>'+
-            '</div>'+
-            '<div class="bsz-inputok">'+
-                '<div class="bsz-input-blokk">'+
-                    '<label for="bsz-t-'+idx+'">T\u00e9nyleges s\u00faly (kg)</label>'+
-                    '<input type="number" step="0.01" min="0" id="bsz-t-'+idx+'" class="bsz-input" value="'+tval+'" placeholder="'+bph+'" oninput="bszSzamol('+idx+');bszAutoSave('+idx+','+rid+')">'+
-                '</div>'+
-                '<div class="bsz-input-blokk">'+
-                    '<label for="bsz-v-'+idx+'">V\u00e1s\u00e1rolt (kg)</label>'+
-                    '<input type="number" step="0.1" min="0" id="bsz-v-'+idx+'" class="bsz-input" value="'+vval+'" placeholder="0" oninput="bszSzamol('+idx+');bszAutoSave('+idx+','+rid+')">'+
-                '</div>'+
-            '</div>'+
-            '<div class="bsz-eredmeny">'+
-                '<div class="bsz-maradek '+mcls+'" id="bsz-m-'+idx+'">'+mstr+'</div>'+
-                '<div class="bsz-koltseg" id="bsz-k-'+idx+'">\uD83D\uDCB0 '+akk+'</div>'+
-            '</div>'+
-            '<div class="bsz-megvan-sor">'+
-                '<input type="checkbox" class="bsz-megvan-cb" id="bsz-mg-'+idx+'"'+(mgvan?' checked':'')+' onchange="bszMgChange('+idx+','+rid+')">'+
-                '<label for="bsz-mg-'+idx+'" class="bsz-megvan-label">\u2705 Megvan</label>'+
-            '</div>'+
-            '<div class="bsz-save-indicator" id="bsz-s-'+idx+'"></div>';
+
+    var tbk = 0, ttk = 0, mgv = 0;
+    lista.innerHTML = '';
+
+    bszKartyak.forEach(function(t, idx) {
+        var nev      = t.nev;
+        var egyseg   = t.egyseg || 'kg';
+        var bsuly    = t.becsult_suly || t.osszes_mennyiseg || 0;
+        var tsuly    = t.tenyleges_suly || 0;
+        var vas      = t.vasarolt_mennyiseg || 0;
+        var bar      = t.beszerzesi_ar || 0;
+        var mgvan    = t.megvan;
+        var rid      = t._rowIndex || (idx + 5);
+
+        var aktSuly  = tsuly > 0 ? tsuly : bsuly;
+        var koltseg  = bar > 0 && aktSuly > 0 ? Math.round(aktSuly * bar) : 0;
+        var tKoltseg = bar > 0 && bsuly   > 0 ? Math.round(bsuly   * bar) : 0;
+
+        tbk += tKoltseg;
+        if (bar > 0) ttk += koltseg;
+        if (mgvan) mgv++;
+
+        var mar      = vas > 0 && aktSuly > 0 ? vas - aktSuly : null;
+        var mcls     = mar === null ? 'semleges' : (mar >= 0 ? 'pozitiv' : 'negativ');
+        var mstr     = mar === null
+            ? 'Add meg a vásárolt mennyiséget'
+            : (mar >= 0 ? '+' : '') + kerekitSzam(mar) + ' ' + egyseg + ' maradék';
+
+        var koltsegStr = koltseg > 0 ? koltseg.toLocaleString('hu-HU') + ' Ft' : '-';
+
+        // Bontás sorok (box / rendelés)
+        var boxMny  = t.box_mennyiseg  || 0;
+        var renMny  = t.rendeles_mennyiseg || 0;
+        var td2     = termekek[nev] || {};
+        var boxEgy  = td2.box_egyseg || egyseg;
+
+        var bontasHtml = '';
+        if (boxMny > 0) {
+            bontasHtml += '<div class="bsz-bontas-item box-szin">' +
+                '<div class="bsz-bontas-label">📦 Boxhoz</div>' +
+                '<div class="bsz-bontas-ertek">' + kerekitSzam(boxMny) + ' ' + boxEgy + '</div>' +
+            '</div>';
+        }
+        if (renMny > 0) {
+            bontasHtml += '<div class="bsz-bontas-item rendeles-szin">' +
+                '<div class="bsz-bontas-label">🛒 Rendelések</div>' +
+                '<div class="bsz-bontas-ertek">' + kerekitSzam(renMny) + ' ' + egyseg + '</div>' +
+            '</div>';
+        }
+
+        var tval = tsuly > 0 ? tsuly : '';
+        var vval = vas   > 0 ? vas   : '';
+
+        var card = document.createElement('div');
+        card.id = 'bsz-card-' + idx;
+        card.className = 'bsz-card' + (mgvan ? ' megvan' : '');
+        card.innerHTML =
+            // ── FEJLÉC (mindig látható, megvan esetén kattintható) ──
+            '<div class="bsz-header" onclick="bszToggleCard(' + idx + ')">' +
+                '<div class="bsz-header-left">' +
+                    '<div class="bsz-nev">' + htmlEsc(nev) + '</div>' +
+                    '<div class="bsz-osszesen-badge">Összesen: ' + kerekitSzam(t.osszes_mennyiseg || bsuly) + ' ' + egyseg + '</div>' +
+                '</div>' +
+                '<div class="bsz-megvan-indicator">' + (mgvan ? '✅' : '') + '</div>' +
+            '</div>' +
+
+            // ── TÖRZS (összecsukható) ──
+            '<div class="bsz-body">' +
+
+                // Bontás
+                (bontasHtml ? '<div class="bsz-bontas">' + bontasHtml + '</div>' : '') +
+
+                // Becsült súly info
+                (bsuly > 0 ? '<div class="bsz-becsult-info">Becsült szükséglet: ' + kerekitSzam(bsuly) + ' ' + egyseg +
+                    (bar > 0 ? ' · Becsült cost: ' + tKoltseg.toLocaleString('hu-HU') + ' Ft' : '') + '</div>' : '') +
+
+                // Input mezők
+                '<div class="bsz-inputok">' +
+                    '<div class="bsz-input-blokk">' +
+                        '<label for="bsz-t-' + idx + '">Tényleges (' + egyseg + ')</label>' +
+                        '<input type="number" step="0.01" min="0" id="bsz-t-' + idx + '" class="bsz-input" value="' + tval + '" placeholder="' + kerekitSzam(bsuly) + '" oninput="bszSzamol(' + idx + ');bszAutoSave(' + idx + ',' + rid + ')">' +
+                    '</div>' +
+                    '<div class="bsz-input-blokk">' +
+                        '<label for="bsz-v-' + idx + '">Vásárolt (' + egyseg + ')</label>' +
+                        '<input type="number" step="0.1" min="0" id="bsz-v-' + idx + '" class="bsz-input" value="' + vval + '" placeholder="0" oninput="bszSzamol(' + idx + ');bszAutoSave(' + idx + ',' + rid + ')">' +
+                    '</div>' +
+                '</div>' +
+
+                // Eredmény
+                '<div class="bsz-eredmeny">' +
+                    '<div class="bsz-maradek ' + mcls + '" id="bsz-m-' + idx + '">' + mstr + '</div>' +
+                    '<div class="bsz-koltseg-box" id="bsz-k-' + idx + '">' +
+                        '<div class="bsz-koltseg-label">💰 Tényleges cost</div>' +
+                        '<div>' + koltsegStr + '</div>' +
+                    '</div>' +
+                '</div>' +
+
+                // Megvan sor
+                '<div class="bsz-megvan-sor">' +
+                    '<input type="checkbox" class="bsz-megvan-cb" id="bsz-mg-' + idx + '"' + (mgvan ? ' checked' : '') + ' onchange="bszMgChange(' + idx + ',' + rid + ')">' +
+                    '<label for="bsz-mg-' + idx + '" class="bsz-megvan-label">✅ Megvan</label>' +
+                    '<div class="bsz-save-indicator" id="bsz-s-' + idx + '"></div>' +
+                '</div>' +
+
+            '</div>'; // .bsz-body
+
         lista.appendChild(card);
     });
-    document.getElementById('bsz-osszesito').style.display='flex';
-    document.getElementById('bsz-total-koltseg').innerText   =tbk.toLocaleString('hu-HU')+' Ft';
-    document.getElementById('bsz-tenyleges-koltseg').innerText=ttk.toLocaleString('hu-HU')+' Ft';
-    document.getElementById('bsz-db-megvan').innerText       =mgv+' / '+bszAdatok.length;
+
+    document.getElementById('bsz-osszesito').style.display = 'flex';
+    document.getElementById('bsz-total-koltseg').innerText    = tbk.toLocaleString('hu-HU') + ' Ft';
+    document.getElementById('bsz-tenyleges-koltseg').innerText = ttk.toLocaleString('hu-HU') + ' Ft';
+    document.getElementById('bsz-db-megvan').innerText         = mgv + ' / ' + bszKartyak.length;
 }
 
+// ══════════════════════════════════════════════════════════════
+//  BESZERZES – KÁRTYA TOGGLE (megvan esetén összecsukás)
+// ══════════════════════════════════════════════════════════════
+function bszToggleCard(idx) {
+    var card = document.getElementById('bsz-card-' + idx);
+    if (!card) return;
+    var isMegvan = card.classList.contains('megvan');
+    if (isMegvan) {
+        // Kattintásra nyitjuk meg ideiglenesen
+        var body = card.querySelector('.bsz-body');
+        if (body) body.style.display = body.style.display === 'block' ? '' : 'block';
+    }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BESZERZES – SZÁMOLÁS
+// ══════════════════════════════════════════════════════════════
 function bszSzamol(idx) {
-    var sor=bszAdatok[idx]; if(!sor)return;
-    var bs=parseFloat(sor['becsult_suly'])||0;
-    var ba=parseFloat(sor['beszerzesi_ar'])||0;
-    var tv=parseFloat(document.getElementById('bsz-t-'+idx).value)||0;
-    var vv=parseFloat(document.getElementById('bsz-v-'+idx).value)||0;
-    var ak=tv>0?tv:bs;
-    var mr=vv>0?vv-ak:null;
-    var mEl=document.getElementById('bsz-m-'+idx);
-    if(mEl){mEl.className='bsz-maradek '+(mr===null?'semleges':(mr>=0?'pozitiv':'negativ'));mEl.innerText=mr===null?'Add meg a v\u00e1s\u00e1rolt mennyis\u00e9get':(mr>=0?'+':'')+mr.toFixed(2)+' kg marad\u00e9k';}
-    var kEl=document.getElementById('bsz-k-'+idx);
-    if(kEl)kEl.innerText='\uD83D\uDCB0 '+(ba>0&&ak>0?Math.round(ak*ba).toLocaleString('hu-HU')+' Ft':'-');
-}
-function bszAutoSave(idx,rid) {
-    var iEl=document.getElementById('bsz-s-'+idx);
-    if(iEl){iEl.className='bsz-save-indicator saving';iEl.innerText='Ment\u00e9s...';}
-    clearTimeout(bszTimers[idx]);
-    bszTimers[idx]=setTimeout(function(){bszSave(idx,rid);},1000);
-}
-async function bszSave(idx,rid) {
-    var tv=document.getElementById('bsz-t-'+idx).value;
-    var vv=document.getElementById('bsz-v-'+idx).value;
-    var mg=document.getElementById('bsz-mg-'+idx).checked?'1':'';
-    var iEl=document.getElementById('bsz-s-'+idx);
-    var url=API_URL+'?updateBszerzes=true&rowId='+rid+'&tenyleges_suly='+tv+'&vasarolt_mennyiseg='+vv+'&megvan='+encodeURIComponent(mg);
-    try{
-        await fetch(url,{redirect:'follow'});
-        if(bszAdatok[idx]){
-            if(tv)bszAdatok[idx]['tenyleges_suly']=parseFloat(tv);
-            if(vv)bszAdatok[idx]['vasarolt_mennyiseg']=parseFloat(vv);
-            bszAdatok[idx]['megvan']=mg;
-        }
-        if(iEl){iEl.className='bsz-save-indicator';iEl.innerText='\u2713 Mentve';}
-    }catch(e){if(iEl){iEl.style.color='#c62828';iEl.innerText='Hiba!';}}
-}
-function bszMgChange(idx,rid) {
-    var card=document.getElementById('bsz-card-'+idx);
-    var cb=document.getElementById('bsz-mg-'+idx);
-    if(card){if(cb.checked)card.classList.add('megvan');else card.classList.remove('megvan');}
-    bszSave(idx,rid);
+    var t = bszKartyak[idx]; if (!t) return;
+    var bs  = t.becsult_suly || t.osszes_mennyiseg || 0;
+    var ba  = t.beszerzesi_ar || 0;
+    var eg  = t.egyseg || 'kg';
+    var tv  = parseFloat(document.getElementById('bsz-t-' + idx).value) || 0;
+    var vv  = parseFloat(document.getElementById('bsz-v-' + idx).value) || 0;
+    var ak  = tv > 0 ? tv : bs;
+    var mr  = vv > 0 ? vv - ak : null;
+
+    var mEl = document.getElementById('bsz-m-' + idx);
+    if (mEl) {
+        mEl.className = 'bsz-maradek ' + (mr === null ? 'semleges' : (mr >= 0 ? 'pozitiv' : 'negativ'));
+        mEl.innerText = mr === null
+            ? 'Add meg a vásárolt mennyiséget'
+            : (mr >= 0 ? '+' : '') + kerekitSzam(mr) + ' ' + eg + ' maradék';
+    }
+    var kEl = document.getElementById('bsz-k-' + idx);
+    if (kEl) {
+        var koltseg = ba > 0 && ak > 0 ? Math.round(ak * ba).toLocaleString('hu-HU') + ' Ft' : '-';
+        kEl.innerHTML = '<div class="bsz-koltseg-label">💰 Tényleges cost</div><div>' + koltseg + '</div>';
+    }
 }
 
+// ══════════════════════════════════════════════════════════════
+//  BESZERZES – AUTOSAVE
+// ══════════════════════════════════════════════════════════════
+function bszAutoSave(idx, rid) {
+    var iEl = document.getElementById('bsz-s-' + idx);
+    if (iEl) { iEl.className = 'bsz-save-indicator saving'; iEl.innerText = 'Mentés...'; }
+    clearTimeout(bszTimers[idx]);
+    bszTimers[idx] = setTimeout(function(){ bszSave(idx, rid); }, 1000);
+}
+
+async function bszSave(idx, rid) {
+    var tv  = document.getElementById('bsz-t-' + idx).value;
+    var vv  = document.getElementById('bsz-v-' + idx).value;
+    var mg  = document.getElementById('bsz-mg-' + idx).checked ? '1' : '';
+    var iEl = document.getElementById('bsz-s-' + idx);
+    var url = API_URL + '?updateBszerzes=true&rowId=' + rid +
+              '&tenyleges_suly='    + tv +
+              '&vasarolt_mennyiseg=' + vv +
+              '&megvan='            + encodeURIComponent(mg);
+    try {
+        await fetch(url, { redirect: 'follow' });
+        if (bszKartyak[idx]) {
+            if (tv) bszKartyak[idx].tenyleges_suly    = parseFloat(tv);
+            if (vv) bszKartyak[idx].vasarolt_mennyiseg = parseFloat(vv);
+            bszKartyak[idx].megvan = !!mg;
+        }
+        if (iEl) { iEl.className = 'bsz-save-indicator'; iEl.innerText = '✓ Mentve'; }
+    } catch(e) {
+        if (iEl) { iEl.style.color = '#c62828'; iEl.innerText = 'Hiba!'; }
+    }
+}
+
+function bszMgChange(idx, rid) {
+    var card = document.getElementById('bsz-card-' + idx);
+    var cb   = document.getElementById('bsz-mg-' + idx);
+    var body = card ? card.querySelector('.bsz-body') : null;
+    if (card) {
+        if (cb.checked) {
+            card.classList.add('megvan');
+            if (body) body.style.display = ''; // CSS vezérli (display:none)
+        } else {
+            card.classList.remove('megvan');
+        }
+    }
+    if (bszKartyak[idx]) bszKartyak[idx].megvan = cb.checked;
+    bszSave(idx, rid);
+    // Összesítő frissítés
+    var mgv = bszKartyak.filter(function(t){ return t.megvan; }).length;
+    document.getElementById('bsz-db-megvan').innerText = mgv + ' / ' + bszKartyak.length;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════════════
+function kerekitSzam(v) {
+    var r = Math.round((v || 0) * 100) / 100;
+    return r % 1 === 0 ? r.toString() : r.toFixed(2);
+}
+function htmlEsc(s) {
+    return (s || '').toString()
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INDÍTÁS
+// ══════════════════════════════════════════════════════════════
 fetchData();
-setInterval(fetchData,60000);
+setInterval(fetchData, 60000);
 </script>
 </body>
 </html>
