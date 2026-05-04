@@ -51,7 +51,7 @@
         /* MÓD VÁLASZTÓ */
         .mode-selector {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
             margin-bottom: 12px;
         }
@@ -337,6 +337,202 @@
             gap: 8px;
             margin-bottom: 12px;
         }
+
+        /* ── BESZERZÉS NÉZET ─────────────────────────────── */
+        #beszerzes-view { display: none; }
+
+        .bsz-osszesito {
+            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+            color: white;
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 14px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 16px rgba(46,125,50,0.25);
+        }
+        .bsz-osszesito-item { flex: 1; min-width: 80px; text-align: center; }
+        .bsz-osszesito-item .bsz-ertek {
+            font-size: 18px;
+            font-weight: 800;
+            display: block;
+        }
+        .bsz-osszesito-item .bsz-cimke {
+            font-size: 11px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .bsz-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 14px;
+            border-left: 5px solid var(--green);
+            transition: opacity 0.3s;
+            overflow: hidden;
+        }
+        .bsz-card.megvan {
+            opacity: 0.45;
+            border-left-color: #b0bec5;
+        }
+        .bsz-card.box-osszetevo {
+            border-left-color: #ffc107;
+            background: #fffef5;
+        }
+        .bsz-card-top {
+            padding: 14px 16px 10px;
+        }
+        .bsz-nev {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1a1a1a;
+            line-height: 1.2;
+        }
+        .bsz-forras {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .bsz-szukseges {
+            margin-top: 10px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .bsz-szuk-item { flex: 1; min-width: 100px; }
+        .bsz-szuk-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+        .bsz-szuk-ertek {
+            font-size: 16px;
+            font-weight: 800;
+            color: #333;
+            margin-top: 2px;
+        }
+        .bsz-becsult {
+            font-size: 13px;
+            color: #555;
+            margin-top: 6px;
+        }
+
+        .bsz-inputok {
+            padding: 12px 16px 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .bsz-input-blokk label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            letter-spacing: 0.4px;
+        }
+        .bsz-input {
+            width: 100%;
+            padding: 14px 12px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            font-size: 22px;
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            text-align: center;
+            background: #fafafa;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+            -moz-appearance: textfield;
+        }
+        .bsz-input:focus {
+            border-color: var(--green);
+            background: #fff;
+        }
+        .bsz-input::-webkit-inner-spin-button,
+        .bsz-input::-webkit-outer-spin-button { opacity: 1; }
+
+        .bsz-eredmeny {
+            padding: 10px 16px 14px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-top: 1px solid #f0f0f0;
+        }
+        .bsz-maradek {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 800;
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .bsz-maradek.pozitiv { background: #e8f5e9; color: #2e7d32; }
+        .bsz-maradek.negativ { background: #ffebee; color: #c62828; }
+        .bsz-maradek.semleges { background: #f5f5f5; color: #666; }
+        .bsz-koltseg {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 700;
+            color: #555;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .bsz-megvan-sor {
+            padding: 0 16px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .bsz-megvan-cb {
+            width: 24px;
+            height: 24px;
+            accent-color: var(--green);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .bsz-megvan-label {
+            font-size: 15px;
+            font-weight: 700;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .bsz-frissit-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--green);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            cursor: pointer;
+            margin-bottom: 14px;
+            box-shadow: 0 3px 10px rgba(46,125,50,0.25);
+        }
+        .bsz-frissit-btn:active { transform: scale(0.97); }
+
+        .bsz-save-indicator {
+            font-size: 12px;
+            color: #aaa;
+            text-align: right;
+            padding: 0 16px 8px;
+            font-style: italic;
+        }
+        .bsz-save-indicator.saving { color: var(--green); }
     </style>
 </head>
 <body>
@@ -349,6 +545,7 @@
 <div class="mode-selector">
     <button id="btn-atvetel" class="mode-btn active" onclick="setMode('atvetel')">🏠 Átvétel</button>
     <button id="btn-szallitas" class="mode-btn" onclick="setMode('szallitas')">🚚 Kiszállítás</button>
+    <button id="btn-beszerzes" class="mode-btn" onclick="setMode('beszerzes')">🛒 Beszerzés</button>
 </div>
 
 <!-- Kiszállítás szűrők: zóna és nap -->
@@ -362,9 +559,32 @@
 
 <input type="text" id="searchInput" class="search-box" placeholder="🔍 Név vagy cím keresése..." oninput="render()">
 
-<div class="summary-bar">
+<div id="summary-bar-wrap" class="summary-bar">
     <span id="summary-text">Betöltés...</span>
     <span class="summary-count" id="summary-count">0</span>
+</div>
+
+
+<!-- ── BESZERZÉS NÉZET ──────────────────────────────────── -->
+<div id="beszerzes-view">
+    <button class="bsz-frissit-btn" onclick="fetchBeszerzes()">🔄 Beszerzes frissítése</button>
+    <div class="bsz-osszesito" id="bsz-osszesito" style="display:none;">
+        <div class="bsz-osszesito-item">
+            <span class="bsz-ertek" id="bsz-total-koltseg">–</span>
+            <span class="bsz-cimke">Becsült cost</span>
+        </div>
+        <div class="bsz-osszesito-item">
+            <span class="bsz-ertek" id="bsz-tenyleges-koltseg">–</span>
+            <span class="bsz-cimke">Tényleges cost</span>
+        </div>
+        <div class="bsz-osszesito-item">
+            <span class="bsz-ertek" id="bsz-db-megvan">–</span>
+            <span class="bsz-cimke">Megvan</span>
+        </div>
+    </div>
+    <div id="bsz-lista">
+        <div class="loading">Nyomd meg a Frissítés gombot!</div>
+    </div>
 </div>
 
 <div id="main-list">
@@ -455,12 +675,19 @@
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('btn-' + mode).classList.add('active');
 
-        document.getElementById('szallitas-szurok').style.display = mode === 'szallitas' ? 'block' : 'none';
-        const pontSzuro = document.getElementById('atvetel-pont-szuro');
-        pontSzuro.style.display = mode === 'atvetel' ? 'flex' : 'none';
+        // Beszerzes nézet vs rendelés nézet szétválasztása
+        const isBeszerzes = mode === 'beszerzes';
+        document.getElementById('beszerzes-view').style.display   = isBeszerzes ? 'block' : 'none';
+        document.getElementById('main-list').style.display         = isBeszerzes ? 'none'  : 'block';
+        document.getElementById('searchInput').style.display       = isBeszerzes ? 'none'  : 'block';
+        document.getElementById('summary-bar-wrap').style.display  = isBeszerzes ? 'none'  : 'flex';
+        document.getElementById('szallitas-szurok').style.display  = mode === 'szallitas' ? 'block' : 'none';
+        document.getElementById('atvetel-pont-szuro').style.display= mode === 'atvetel'   ? 'flex'  : 'none';
 
-        buildFilterChips();
-        render();
+        if (!isBeszerzes) {
+            buildFilterChips();
+            render();
+        }
     }
 
     function render() {
@@ -696,6 +923,238 @@
         } catch (e) {
             alert('Hálózati hiba! Próbáld újra.');
         }
+    }
+
+
+    // ── BESZERZÉS NÉZET ─────────────────────────────────────────
+    let beszerzesAdatok = [];
+    const bszSaveTimers = {};
+
+    async function fetchBeszerzes() {
+        document.getElementById('bsz-lista').innerHTML =
+            '<div class="loading"><div class="loading-spinner"></div>Betöltés...</div>';
+        try {
+            const resp = await fetch(API_URL + '?beszerzes=true', { redirect: 'follow' });
+            const data = await resp.json();
+            // API tömböt ad vissza (Beszerzes sheet sorai)
+            if (Array.isArray(data)) {
+                beszerzesAdatok = data;
+            } else if (data && Array.isArray(data.sorok)) {
+                beszerzesAdatok = data.sorok;
+            } else {
+                beszerzesAdatok = [];
+            }
+            renderBeszerzes();
+        } catch(e) {
+            document.getElementById('bsz-lista').innerHTML =
+                '<div class="loading" style="color:#c62828;">Hiba a betöltésnél: ' + e.message + '</div>';
+        }
+    }
+
+    function renderBeszerzes() {
+        const lista = document.getElementById('bsz-lista');
+        if (!beszerzesAdatok.length) {
+            lista.innerHTML = '<div class="loading">Nincs adat. Futtasd le a Beszerzes kalkulátort a Sheetsben!</div>';
+            document.getElementById('bsz-osszesito').style.display = 'none';
+            return;
+        }
+
+        let totalBecsultKoltseg  = 0;
+        let totalTenylegesKoltseg = 0;
+        let megvanDb = 0;
+
+        lista.innerHTML = '';
+
+        beszerzesAdatok.forEach(function(sor, idx) {
+            // Mezők normalizálása (a Sheet fejlécek kisbetűsítve jönnek)
+            const nev             = (sor['termek']              || sor['nev']  || '').toString().trim();
+            const osszes          = parseFloat(sor['osszes_mennyiseg']) || 0;
+            const egyseg          = (sor['egyseg']              || 'kg').toString();
+            const becsultSuly     = parseFloat(sor['becsult_suly'])     || 0;
+            const tenylegesSuly   = parseFloat(sor['tenyleges_suly'])   || 0;
+            const vasarolt        = parseFloat(sor['vasarolt_mennyiseg'])|| 0;
+            const beszAr          = parseFloat(sor['beszerzesi_ar'])     || 0;
+            const rowId           = idx + 5; // Beszerzes sheet: 1-3 összesítő, 4 fejléc, 5-től adatok
+            const isMegvan        = !!sor['megvan'];
+            const isOsszetevo     = nev.startsWith('  └');
+
+            // Összesítők számítása
+            const aktSuly = tenylegesSuly > 0 ? tenylegesSuly : becsultSuly;
+            if (beszAr > 0) {
+                totalBecsultKoltseg   += Math.round(becsultSuly  * beszAr);
+                totalTenylegesKoltseg += Math.round(aktSuly       * beszAr);
+            }
+            if (isMegvan) megvanDb++;
+
+            // Kártya
+            const card = document.createElement('div');
+            card.className = 'bsz-card' +
+                             (isMegvan    ? ' megvan'        : '') +
+                             (isOsszetevo ? ' box-osszetevo' : '');
+            card.id = 'bsz-card-' + idx;
+
+            // Névből szép megjelenítés (összetevőnél levágja a "└" részt)
+            const nevDisplay = isOsszetevo
+                ? nev.replace('  └ ', '').replace(/\[.*\]/, '').trim()
+                : nev;
+            const forrasDisplay = isOsszetevo
+                ? (nev.match(/\[(.*)\]/) ? '📦 ' + nev.match(/\[(.*)\]/)[1] : 'box összetevő')
+                : '';
+
+            // Maradék számítás
+            const aktVasarolt = vasarolt > 0 ? vasarolt : 0;
+            const maradek     = aktVasarolt > 0
+                ? aktVasarolt - (tenylegesSuly > 0 ? tenylegesSuly : becsultSuly)
+                : null;
+            const maradekCls  = maradek === null ? 'semleges'
+                              : maradek >= 0     ? 'pozitiv' : 'negativ';
+            const maradekStr  = maradek === null ? 'Adja meg a vásárolt mennyiséget'
+                              : (maradek >= 0 ? '+' : '') + maradek.toFixed(2) + ' kg maradék';
+
+            // Költség (tényleges súly alapján)
+            const aktKoltseg = aktSuly > 0 && beszAr > 0
+                ? Math.round(aktSuly * beszAr).toLocaleString('hu-HU') + ' Ft'
+                : '–';
+
+            card.innerHTML = \`
+                <div class="bsz-card-top">
+                    <div class="bsz-nev">\${nevDisplay}</div>
+                    \${forrasDisplay ? \`<div class="bsz-forras">\${forrasDisplay}</div>\` : ''}
+
+                    <div class="bsz-szukseges">
+                        <div class="bsz-szuk-item">
+                            <div class="bsz-szuk-label">Szükséges</div>
+                            <div class="bsz-szuk-ertek">\${osszes} \${egyseg}</div>
+                        </div>
+                        \${becsultSuly > 0 ? \`
+                        <div class="bsz-szuk-item">
+                            <div class="bsz-szuk-label">Becsült súly</div>
+                            <div class="bsz-szuk-ertek">\${becsultSuly.toFixed(2)} kg</div>
+                        </div>\` : ''}
+                    </div>
+                </div>
+
+                <div class="bsz-inputok">
+                    <div class="bsz-input-blokk">
+                        <label for="bsz-tenyleges-\${idx}">Tényleges súly (kg)</label>
+                        <input type="number" step="0.01" min="0"
+                            id="bsz-tenyleges-\${idx}"
+                            class="bsz-input"
+                            value="\${tenylegesSuly > 0 ? tenylegesSuly : ''}"
+                            placeholder="\${becsultSuly > 0 ? becsultSuly.toFixed(2) : '0'}"
+                            oninput="bszSzamol(\${idx}); bszAutoSave(\${idx}, \${rowId})">
+                    </div>
+                    <div class="bsz-input-blokk">
+                        <label for="bsz-vasarolt-\${idx}">Vásárolt menny. (kg)</label>
+                        <input type="number" step="0.1" min="0"
+                            id="bsz-vasarolt-\${idx}"
+                            class="bsz-input"
+                            value="\${vasarolt > 0 ? vasarolt : ''}"
+                            placeholder="0"
+                            oninput="bszSzamol(\${idx}); bszAutoSave(\${idx}, \${rowId})">
+                    </div>
+                </div>
+
+                <div class="bsz-eredmeny">
+                    <div class="bsz-maradek \${maradekCls}" id="bsz-maradek-\${idx}">\${maradekStr}</div>
+                    <div class="bsz-koltseg" id="bsz-koltseg-\${idx}">💰 \${aktKoltseg}</div>
+                </div>
+
+                <div class="bsz-megvan-sor">
+                    <input type="checkbox" class="bsz-megvan-cb"
+                        id="bsz-megvan-\${idx}"
+                        \${isMegvan ? 'checked' : ''}
+                        onchange="bszMegvanChange(\${idx}, \${rowId})">
+                    <label for="bsz-megvan-\${idx}" class="bsz-megvan-label">✅ Megvan</label>
+                </div>
+                <div class="bsz-save-indicator" id="bsz-save-\${idx}"></div>
+            \`;
+
+            lista.appendChild(card);
+        });
+
+        // Összesítő frissítése
+        document.getElementById('bsz-osszesito').style.display = 'flex';
+        document.getElementById('bsz-total-koltseg').innerText =
+            totalBecsultKoltseg.toLocaleString('hu-HU') + ' Ft';
+        document.getElementById('bsz-tenyleges-koltseg').innerText =
+            totalTenylegesKoltseg.toLocaleString('hu-HU') + ' Ft';
+        document.getElementById('bsz-db-megvan').innerText =
+            megvanDb + ' / ' + beszerzesAdatok.length;
+    }
+
+    // Azonnali UI frissítés gépeléskor
+    function bszSzamol(idx) {
+        const sor         = beszerzesAdatok[idx];
+        const becsult     = parseFloat(sor['becsult_suly'])   || 0;
+        const beszAr      = parseFloat(sor['beszerzesi_ar'])   || 0;
+
+        const tenyleges   = parseFloat(document.getElementById('bsz-tenyleges-' + idx).value) || 0;
+        const vasarolt    = parseFloat(document.getElementById('bsz-vasarolt-' + idx).value)  || 0;
+
+        const aktSuly     = tenyleges > 0 ? tenyleges : becsult;
+        const maradek     = vasarolt  > 0 ? vasarolt - aktSuly : null;
+
+        // Maradék
+        const mEl         = document.getElementById('bsz-maradek-' + idx);
+        if (maradek === null) {
+            mEl.className   = 'bsz-maradek semleges';
+            mEl.innerText   = 'Adja meg a vásárolt mennyiséget';
+        } else {
+            mEl.className   = 'bsz-maradek ' + (maradek >= 0 ? 'pozitiv' : 'negativ');
+            mEl.innerText   = (maradek >= 0 ? '+' : '') + maradek.toFixed(2) + ' kg maradék';
+        }
+
+        // Költség
+        const kEl         = document.getElementById('bsz-koltseg-' + idx);
+        kEl.innerText     = beszAr > 0 && aktSuly > 0
+            ? '💰 ' + Math.round(aktSuly * beszAr).toLocaleString('hu-HU') + ' Ft'
+            : '💰 –';
+    }
+
+    // Autosave debounce (1 mp)
+    function bszAutoSave(idx, rowId) {
+        const indEl = document.getElementById('bsz-save-' + idx);
+        if (indEl) { indEl.className = 'bsz-save-indicator saving'; indEl.innerText = 'Mentés...'; }
+        clearTimeout(bszSaveTimers[idx]);
+        bszSaveTimers[idx] = setTimeout(function() { bszSave(idx, rowId); }, 1000);
+    }
+
+    async function bszSave(idx, rowId) {
+        const tenyleges = parseFloat(document.getElementById('bsz-tenyleges-' + idx).value) || '';
+        const vasarolt  = parseFloat(document.getElementById('bsz-vasarolt-'  + idx).value) || '';
+        const megvan    = document.getElementById('bsz-megvan-' + idx).checked ? '1' : '';
+        const indEl     = document.getElementById('bsz-save-' + idx);
+
+        const url = API_URL +
+            '?updateBeszerzes=true' +
+            '&rowId='                + rowId +
+            '&tenyleges_suly='       + tenyleges +
+            '&vasarolt_mennyiseg='   + vasarolt +
+            '&megvan='               + encodeURIComponent(megvan);
+        try {
+            await fetch(url, { redirect: 'follow' });
+            // Lokális adat frissítése
+            if (beszerzesAdatok[idx]) {
+                if (tenyleges !== '') beszerzesAdatok[idx]['tenyleges_suly']     = tenyleges;
+                if (vasarolt  !== '') beszerzesAdatok[idx]['vasarolt_mennyiseg'] = vasarolt;
+                beszerzesAdatok[idx]['megvan'] = megvan;
+            }
+            if (indEl) { indEl.className = 'bsz-save-indicator'; indEl.innerText = '✓ Mentve'; }
+        } catch(e) {
+            if (indEl) { indEl.className = 'bsz-save-indicator'; indEl.style.color = '#c62828'; indEl.innerText = '⚠ Hiba!'; }
+        }
+    }
+
+    // Megvan checkbox azonnali mentés
+    function bszMegvanChange(idx, rowId) {
+        const card = document.getElementById('bsz-card-' + idx);
+        const cb   = document.getElementById('bsz-megvan-' + idx);
+        if (card) {
+            if (cb.checked) card.classList.add('megvan');
+            else            card.classList.remove('megvan');
+        }
+        bszSave(idx, rowId);
     }
 
     fetchData();
