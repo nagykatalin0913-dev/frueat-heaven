@@ -361,7 +361,14 @@ function szamolVegosszeg(rowid) {
     if (!order) return;
     var t = 0;
     document.querySelectorAll('.qty-input[data-rowid="' + rowid + '"]').forEach(function(inp){
-        t += (parseFloat(inp.dataset.ar)||0) * (parseFloat(inp.value.replace(',','.')) || 0);
+        var ar  = parseFloat(inp.dataset.ar) || 0;
+        var qty = parseFloat(inp.value.replace(',','.')) || 0;
+        var rs  = Math.round(ar * qty);
+        t += rs;
+        // Soronkénti részösszeg frissítése
+        var nev = inp.dataset.nev || '';
+        var rsEl = document.getElementById('item-rs-' + rowid + '-' + nev);
+        if (rsEl) rsEl.innerText = rs + ' Ft';
     });
     var sd = parseInt(order.szallitasi_dij || 0);
     if ((order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0 && sd > 0) t += sd;
@@ -392,7 +399,7 @@ function renderItemsTable(str, rowid, order) {
                     ' onclick="event.stopPropagation()">' +
                     '<span style="font-size:13px;color:#555;white-space:nowrap;min-width:36px;">' + eg + '</span>' +
                 '</div>' +
-                (ar > 0 ? '<div style="font-weight:700;font-size:13px;color:#333;margin-top:3px;">' + rs + ' Ft</div>' : '') +
+                (ar > 0 ? '<div id="item-rs-' + rowid + '-' + ns + '" style="font-weight:700;font-size:13px;color:#333;margin-top:3px;">' + rs + ' Ft</div>' : '') +
             '</td>' +
         '</tr>';
     }).join('');
