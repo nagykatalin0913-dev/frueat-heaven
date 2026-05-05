@@ -555,6 +555,8 @@ function renderBszerzes() {
         var bar      = t.beszerzesi_ar || 0;
         var mgvan    = t.megvan;
         var rid      = t._rowIndex || (idx + 5);
+        // Megjelenítési egység: a termék saját egysége (kg/db/csomó)
+        var dispEgy  = egyseg;
 
         var aktSuly  = tsuly > 0 ? tsuly : bsuly;
         var koltseg  = bar > 0 && aktSuly > 0 ? Math.round(aktSuly * bar) : 0;
@@ -568,31 +570,36 @@ function renderBszerzes() {
         var mcls     = mar === null ? 'semleges' : (mar >= 0 ? 'pozitiv' : 'negativ');
         var mstr     = mar === null
             ? 'Add meg a vásárolt mennyiséget'
-            : (mar >= 0 ? '+' : '') + kerekitSzam(mar) + ' ' + egyseg + ' maradék';
+            : (mar >= 0 ? '+' : '') + kerekitSzam(mar) + ' ' + dispEgy + ' maradék';
 
         var koltsegStr = koltseg > 0 ? koltseg.toLocaleString('hu-HU') + ' Ft' : '-';
 
         // Bontás sorok (box / rendelés)
-        // box_db  = nyers egész db a boxból (pl. 10 db cukkini)
-        // rendeles_mennyiseg = kg a direkt rendelésekből
+        // box_db = nyers db a boxból (ha a recept db-ben adja)
+        // rendeles_mennyiseg = a termék saját egységében (kg/db/csomó)
         var boxDb   = t.box_db || 0;
-        var renKg   = t.rendeles_mennyiseg || 0;
+        var renMny  = t.rendeles_mennyiseg || 0;
         var td2     = termekek[nev] || {};
-        var boxEgy  = td2.box_egyseg || 'db';  // box egység a Termekek fülről
+        var sajatEg = (td2.egyseg || egyseg || 'kg').toLowerCase();
+        var boxEgy  = (td2.box_egyseg || 'db').toLowerCase();
 
         var bontasHtml = '';
         if (boxDb > 0) {
-            // Boxhoz: mindig egész darabszám + kg-becslés zárójelben
-            var boxKgBecsles = td2.atlag_suly > 0 ? ' (~' + kerekitSzam(boxDb * td2.atlag_suly) + ' kg)' : '';
+            // Ha a termék saját egysége kg → kg-becslés is kell zárójelben
+            // Ha db → csak db (nincs becslés szükséges)
+            var boxKgInfo = '';
+            if (sajatEg === 'kg' && td2.atlag_suly > 0) {
+                boxKgInfo = ' (~' + kerekitSzam(boxDb * td2.atlag_suly) + ' kg)';
+            }
             bontasHtml += '<div class="bsz-bontas-item box-szin">' +
                 '<div class="bsz-bontas-label">📦 Boxhoz</div>' +
-                '<div class="bsz-bontas-ertek">' + boxDb + ' ' + boxEgy + boxKgBecsles + '</div>' +
+                '<div class="bsz-bontas-ertek">' + boxDb + ' ' + boxEgy + boxKgInfo + '</div>' +
             '</div>';
         }
-        if (renKg > 0) {
+        if (renMny > 0) {
             bontasHtml += '<div class="bsz-bontas-item rendeles-szin">' +
                 '<div class="bsz-bontas-label">🛒 Rendelések</div>' +
-                '<div class="bsz-bontas-ertek">' + kerekitSzam(renKg) + ' kg</div>' +
+                '<div class="bsz-bontas-ertek">' + kerekitSzam(renMny) + ' ' + sajatEg + '</div>' +
             '</div>';
         }
 
@@ -607,7 +614,7 @@ function renderBszerzes() {
             '<div class="bsz-header" onclick="bszToggleCard(' + idx + ')">' +
                 '<div class="bsz-header-left">' +
                     '<div class="bsz-nev">' + htmlEsc(nev) + '</div>' +
-                    '<div class="bsz-osszesen-badge">Összesen: ' + kerekitSzam(t.osszes_mennyiseg || bsuly) + ' ' + egyseg + '</div>' +
+                    '<div class="bsz-osszesen-badge">Összesen: ' + kerekitSzam(t.osszes_mennyiseg || bsuly) + ' ' + dispEgy + '</div>' +
                 '</div>' +
                 '<div class="bsz-megvan-indicator">' + (mgvan ? '✅' : '') + '</div>' +
             '</div>' +
@@ -625,11 +632,11 @@ function renderBszerzes() {
                 // Input mezők
                 '<div class="bsz-inputok">' +
                     '<div class="bsz-input-blokk">' +
-                        '<label for="bsz-t-' + idx + '">Tényleges (' + egyseg + ')</label>' +
+                        '<label for="bsz-t-' + idx + '">Tényleges (' + dispEgy + ')</label>' +
                         '<input type="number" step="0.01" min="0" id="bsz-t-' + idx + '" class="bsz-input" value="' + tval + '" placeholder="' + kerekitSzam(bsuly) + '" oninput="bszSzamol(' + idx + ');bszAutoSave(' + idx + ',' + rid + ')">' +
                     '</div>' +
                     '<div class="bsz-input-blokk">' +
-                        '<label for="bsz-v-' + idx + '">Vásárolt (' + egyseg + ')</label>' +
+                        '<label for="bsz-v-' + idx + '">Vásárolt (' + dispEgy + ')</label>' +
                         '<input type="number" step="0.1" min="0" id="bsz-v-' + idx + '" class="bsz-input" value="' + vval + '" placeholder="0" oninput="bszSzamol(' + idx + ');bszAutoSave(' + idx + ',' + rid + ')">' +
                     '</div>' +
                 '</div>' +
@@ -693,7 +700,7 @@ function bszSzamol(idx) {
         mEl.className = 'bsz-maradek ' + (mr === null ? 'semleges' : (mr >= 0 ? 'pozitiv' : 'negativ'));
         mEl.innerText = mr === null
             ? 'Add meg a vásárolt mennyiséget'
-            : (mr >= 0 ? '+' : '') + kerekitSzam(mr) + ' ' + eg + ' maradék';
+            : (mr >= 0 ? '+' : '') + kerekitSzam(mr) + ' ' + (eg || 'kg') + ' maradék';
     }
     var kEl = document.getElementById('bsz-k-' + idx);
     if (kEl) {
