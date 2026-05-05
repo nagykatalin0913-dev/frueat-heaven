@@ -329,6 +329,75 @@
         }
         textarea:focus { border-color: var(--green); background: #fff; }
 
+        /* KOSÁR FAB GOMB */
+        #cart-fab {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1000;
+            width: 52px;
+            height: 52px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 4px 16px rgba(46,125,50,0.35);
+            display: none; /* csak main-app-ban látszik */
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.15s, background 0.15s;
+        }
+        #cart-fab:active { transform: scale(0.92); background: var(--green-dark); }
+        #cart-fab svg { width: 26px; height: 26px; fill: white; }
+        #cart-fab-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--red);
+            color: white;
+            font-size: 12px;
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            border: 2px solid white;
+            animation: badgePop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes badgePop {
+            0%   { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        /* Repülő elem animáció */
+        .fly-to-cart {
+            position: fixed;
+            width: 36px;
+            height: 36px;
+            background: var(--green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 9999;
+            transition: none;
+        }
+        /* Kosár ikon rázás amikor hozzáadunk */
+        @keyframes cartShake {
+            0%,100% { transform: rotate(0deg) scale(1); }
+            20%      { transform: rotate(-12deg) scale(1.15); }
+            40%      { transform: rotate(10deg) scale(1.15); }
+            60%      { transform: rotate(-8deg) scale(1.1); }
+            80%      { transform: rotate(6deg) scale(1.05); }
+        }
+        .cart-fab-shake { animation: cartShake 0.45s ease; }
+
         .reset-link {
             display: block;
             text-align: center;
@@ -501,6 +570,14 @@
             <button class="btn" onclick="zarasEsFrissites()">Rendben</button>
         </div>
     </div>
+
+    <!-- KOSÁR FAB GOMB -->
+    <button id="cart-fab" onclick="scrollToKosar()" aria-label="Kosár">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
+        </svg>
+        <span id="cart-fab-badge">0</span>
+    </button>
 
     <div class="wrapper">
         <div class="header">
@@ -783,6 +860,7 @@
                 }
 
                 document.getElementById("main-app").style.display = "block";
+                document.getElementById("cart-fab").style.display = "flex";
 
                 // Zóna adatok kiolvasása
                 const atvetelIgen = zonaErtek(aktualisZonaAdat, "atvetel_lehetseges").toString().toLowerCase().trim() === "igen";
@@ -1054,8 +1132,71 @@
             }
             if(kosar[nev]) kosar[nev].qty += qty;
             else kosar[nev] = { qty: qty, ar: t.ar, egyseg: t.egyseg };
-            inputField.value = ""; 
+            inputField.value = "";
+
+            // Animáció: repülő elem a kosár gombhoz
+            repulKosarba(inputField);
+
             frissitKosarUI();
+        }
+
+        function repulKosarba(forrasEl) {
+            const fab = document.getElementById("cart-fab");
+            if(!fab || !forrasEl) return;
+
+            // Forrás pozíció
+            const src = forrasEl.getBoundingClientRect();
+            const dst = fab.getBoundingClientRect();
+
+            // Repülő elem létrehozása
+            const fly = document.createElement("div");
+            fly.className = "fly-to-cart";
+            fly.textContent = "🛒";
+            fly.style.left = (src.left + src.width/2 - 18) + "px";
+            fly.style.top  = (src.top  + src.height/2 - 18) + "px";
+            document.body.appendChild(fly);
+
+            // Animáció: repül a FAB-hoz
+            requestAnimationFrame(() => {
+                fly.style.transition = "all 0.55s cubic-bezier(0.4, 0, 0.2, 1)";
+                fly.style.left    = (dst.left + dst.width/2  - 18) + "px";
+                fly.style.top     = (dst.top  + dst.height/2 - 18) + "px";
+                fly.style.opacity = "0";
+                fly.style.transform = "scale(0.3)";
+            });
+
+            // FAB rázás amikor megérkezik
+            setTimeout(() => {
+                document.body.removeChild(fly);
+                fab.classList.remove("cart-fab-shake");
+                void fab.offsetWidth; // reflow
+                fab.classList.add("cart-fab-shake");
+                setTimeout(() => fab.classList.remove("cart-fab-shake"), 450);
+            }, 520);
+        }
+
+        function scrollToKosar() {
+            const formEl = document.querySelector(".form");
+            if(formEl) formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function frissitFabBadge() {
+            const fab   = document.getElementById("cart-fab");
+            const badge = document.getElementById("cart-fab-badge");
+            if(!fab || !badge) return;
+            const db = Object.keys(kosar).length;
+            if(db > 0) {
+                fab.style.display   = "flex";
+                badge.style.display = "flex";
+                badge.textContent   = db;
+                // Badge újra-animál ha változott
+                badge.style.animation = "none";
+                void badge.offsetWidth;
+                badge.style.animation = "";
+            } else {
+                badge.style.display = "none";
+                badge.textContent   = "0";
+            }
         }
 
         function frissitKosarUI() {
@@ -1074,6 +1215,8 @@
                     </div>
                 `;
             }
+
+            frissitFabBadge();
 
             if(!vanTermek) {
                 document.getElementById("cart-content").innerHTML = "<i style='color:#999;'>Még nincs termék a kosaradban.</i>";
@@ -1117,11 +1260,15 @@
             `;
             document.getElementById("cart-content").innerHTML = html;
             document.getElementById("btn-submit").disabled = false;
+            frissitFabBadge();
         }
 
         function kosarUrites() {
             kosar = {};
             frissitKosarUI();
+            const fab = document.getElementById("cart-fab");
+            const badge = document.getElementById("cart-fab-badge");
+            if(badge) badge.style.display = "none";
         }
 
         function kuldes() {
