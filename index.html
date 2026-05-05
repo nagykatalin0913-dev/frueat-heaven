@@ -53,17 +53,20 @@
             background: url('bg.png') center top / cover no-repeat;
             z-index: -1;
         }
-        .wrapper { max-width: 600px; margin: auto; padding: 14px; }
+        .wrapper { max-width: 600px; margin: auto; padding: 14px; background: transparent; }
+        /* Minden kártya mögött látsszon a háttér */
+        .wrapper > * { position: relative; z-index: 1; }
 
         /* HEADER – logó a bg-n van, elrejtjük a HTML-es logót */
         .header { display: none; }
 
         /* Felső spacer hogy a tartalom ne takarja a logót */
-        /* A bg.png 853x1844px, a logó kb az első 42%-on van */
+        /* bg.png arány: 853x1844 = 1:2.16 → teljes kép magassága 216vw */
+        /* Logó a kép ~45%-ánál ér véget → 216vw * 0.45 = 97vw */
         .top-spacer {
-            height: 44vw;
-            max-height: 260px;
-            min-height: 160px;
+            height: 97vw;
+            max-height: 420px;
+            min-height: 220px;
         }
 
         /* KÖSZÖNTŐ */
