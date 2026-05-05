@@ -367,6 +367,60 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
+        /* CÍM-KÉRŐ MODAL */
+        #cim-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .cim-modal-content {
+            background: white;
+            padding: 28px 22px 24px;
+            border-radius: 24px;
+            width: 92%;
+            max-width: 380px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .cim-modal-content h3 {
+            margin: 0 0 6px;
+            font-family: 'Playfair Display', serif;
+            color: var(--green);
+            font-size: 20px;
+        }
+        .cim-modal-content p { color: #777; font-size: 14px; margin: 0 0 16px; }
+        .cim-modal-content input {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #e0e0e0;
+            font-size: 15px;
+            font-family: 'Nunito', sans-serif;
+            background: #fafafa;
+            outline: none;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+        .cim-modal-content input:focus { border-color: var(--green); background: #fff; }
+        .cim-modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+        .btn-cim-cancel {
+            background: #f5f5f5;
+            color: #666;
+            border: none;
+            padding: 13px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            font-family: 'Nunito', sans-serif;
+            cursor: pointer;
+        }
+
         /* LIGHTBOX */
         #lightbox {
             display: none;
@@ -455,12 +509,24 @@
                 <input id="p-vnev" placeholder="Vezetéknév">
                 <input id="p-knev" placeholder="Keresztnév">
                 <input id="p-tel" type="tel" class="full" placeholder="Telefonszám (pl. 0630...)">
-                <input id="p-irsz" type="number" placeholder="Irányítószám">
-                <input id="p-varos" placeholder="Település">
-                <input id="p-utca" class="full" placeholder="Utca, házszám, emelet/ajtó">
+                <input id="p-irsz" type="number" class="full" placeholder="Irányítószám">
+                <input id="p-varos" class="full" placeholder="Település (automatikus)">
             </div>
 
             <button class="btn" onclick="saveProfile()">Mentés és Tovább →</button>
+        </div>
+
+        <!-- CÍM-KÉRŐ MODAL (házhozszállításhoz) -->
+        <div id="cim-modal">
+            <div class="cim-modal-content">
+                <h3>📍 Szállítási cím</h3>
+                <p>Házhozszállításhoz kérjük add meg a pontos címedet!</p>
+                <input id="modal-utca" placeholder="Utca, házszám, emelet/ajtó" autocomplete="street-address">
+                <div class="cim-modal-btns">
+                    <button class="btn-cim-cancel" onclick="cimModalMegse()">Mégsem</button>
+                    <button class="btn" onclick="cimModalMentes()">Mentés ✓</button>
+                </div>
+            </div>
         </div>
 
         <div id="out-of-zone">
@@ -487,7 +553,7 @@
                 <small style="color:#888; font-weight:600;">Szállítási adataid:</small>
                 <div class="address-block">
                     Név: <b id="show-nev"></b><br>
-                    Cím: <b id="show-cim"></b><br>
+                    <span id="show-cim-sor" style="display:none;">Cím: <b id="show-cim"></b><br></span>
                     Körzet: <b id="show-zona"></b>
                 </div>
 
@@ -570,8 +636,60 @@
         szinkronizalRendelesek();
 
         function modValtas(mod) {
+            // Ha házhozszállítást választ és nincs cím → modalt mutatunk
+            if(mod === "hazhoz" && (!userProfile || !userProfile.utca)) {
+                cimModalMegnyit(function() {
+                    atveteliMod = "hazhoz";
+                    frissitKosarUI();
+                    frissitCimBlokk();
+                });
+                // Visszaállítjuk a rádiógombot ha van (nem változtatjuk a módot még)
+                return;
+            }
             atveteliMod = mod;
-            frissitKosarUI(); 
+            frissitCimBlokk();
+            frissitKosarUI();
+        }
+
+        // Cím blokk frissítése (mutatja/elrejti a cím sort)
+        function frissitCimBlokk() {
+            const cimSor = document.getElementById("show-cim-sor");
+            const cimEl  = document.getElementById("show-cim");
+            if(atveteliMod === "hazhoz" && userProfile && userProfile.utca) {
+                if(cimSor) cimSor.style.display = "inline";
+                if(cimEl)  cimEl.innerText = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
+            } else {
+                if(cimSor) cimSor.style.display = "none";
+            }
+        }
+
+        // CÍM MODAL
+        let cimModalCallback = null;
+        function cimModalMegnyit(callback) {
+            cimModalCallback = callback || null;
+            const mezo = document.getElementById("modal-utca");
+            if(mezo && userProfile && userProfile.utca) mezo.value = userProfile.utca;
+            document.getElementById("cim-modal").style.display = "flex";
+            setTimeout(() => { if(mezo) mezo.focus(); }, 300);
+        }
+        function cimModalMegse() {
+            document.getElementById("cim-modal").style.display = "none";
+            // Ha volt aktív házhozszállítás választás, visszaállunk személyesre ha van, egyébként marad
+            if(atveteliMod === "hazhoz" && (!userProfile || !userProfile.utca)) {
+                // Visszaállítjuk a rádiógombot személyesre ha lehetséges
+                const szemEl = document.querySelector('input[name="atvetel"][value="szemelyes"]');
+                if(szemEl) { szemEl.checked = true; atveteliMod = "szemelyes"; frissitKosarUI(); }
+            }
+        }
+        function cimModalMentes() {
+            const utca = (document.getElementById("modal-utca").value || "").trim();
+            if(!utca) { alert("Kérlek add meg az utcát, házszámot!"); return; }
+            userProfile.utca = utca;
+            localStorage.setItem("frueat_profile", JSON.stringify(userProfile));
+            document.getElementById("cim-modal").style.display = "none";
+            frissitCimBlokk();
+            if(cimModalCallback) { cimModalCallback(); cimModalCallback = null; }
+            else { atveteliMod = "hazhoz"; frissitKosarUI(); }
         }
 
         document.getElementById("p-irsz").addEventListener("input", function() {
@@ -594,14 +712,21 @@
                 tel: document.getElementById("p-tel").value.trim().replace(/\s+/g, '').replace(/-/g, ''),
                 irsz: document.getElementById("p-irsz").value.trim(),
                 varos: document.getElementById("p-varos").value.trim(),
-                utca: document.getElementById("p-utca").value.trim()
+                utca: ""  // csak házhozszállításnál kell, ott kérjük be
             };
 
-            if(!p.vnev || !p.knev || !p.tel || !p.irsz || !p.varos || !p.utca) {
-                alert("Kérlek, minden mezőt tölts ki!"); return;
+            if(!p.vnev || !p.knev || !p.tel || !p.irsz) {
+                alert("Kérlek, töltsd ki a kötelező mezőket (név, telefon, irányítószám)!"); return;
+            }
+            if(!p.irsz.match(/^\d{4}$/)) {
+                alert("Kérlek, adj meg érvényes 4 jegyű irányítószámot!"); return;
             }
             if(p.tel.startsWith("06")) p.tel = "+36" + p.tel.substring(2);
             if(!p.tel.startsWith("+")) p.tel = "+36" + p.tel;
+
+            // Ha korábban már megadott utcát, azt megőrizzük
+            const regiProfil = JSON.parse(localStorage.getItem("frueat_profile") || "{}");
+            if(regiProfil.utca) p.utca = regiProfil.utca;
 
             localStorage.setItem("frueat_profile", JSON.stringify(p));
             userProfile = p;
@@ -667,8 +792,8 @@
 
                 document.getElementById("greet-name").innerText = userProfile.knev;
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
-                document.getElementById("show-cim").innerText = userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca;
                 document.getElementById("show-zona").innerText = zonaAzonosito;
+                frissitCimBlokk();
 
                 // ── ÚJ LOGIKA: Kínálat szűrése zóna + dátum alapján ──
                 const ma = new Date();
@@ -991,6 +1116,11 @@
         }
 
         function kuldes() {
+            // Házhozszállításnál kötelező a cím – ha nincs, modal felugrik
+            if(atveteliMod === "hazhoz" && (!userProfile || !userProfile.utca)) {
+                cimModalMegnyit(null);
+                return;
+            }
             const btn = document.getElementById("btn-submit");
             btn.innerText = "Küldés folyamatban...";
             btn.disabled = true;
@@ -1004,7 +1134,9 @@
             const params = new URLSearchParams({
                 nev: userProfile.vnev + " " + userProfile.knev,
                 tel: userProfile.tel,
-                cim: userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca,
+                cim: userProfile.utca
+                    ? userProfile.irsz + " " + userProfile.varos + ", " + userProfile.utca
+                    : userProfile.irsz + " " + userProfile.varos,
                 zona: zonaAzonosito,
                 termek: termekLista,
                 vegosszeg: vegszamlaHUF,
