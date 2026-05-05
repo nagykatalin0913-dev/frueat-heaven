@@ -48,8 +48,8 @@
         body::before {
             content: '';
             position: fixed;
-            top: -5%; left: 0;
-            width: 100%; height: 110%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: url('bg.png') center top / cover no-repeat;
             z-index: -1;
         }
@@ -57,17 +57,31 @@
         /* Minden kártya mögött látsszon a háttér */
         .wrapper > * { position: relative; z-index: 1; }
 
-        /* HEADER – logó a bg-n van, elrejtjük a HTML-es logót */
+        /* HEADER – elrejtve, top-hero veszi át */
         .header { display: none; }
 
-        /* Felső spacer hogy a tartalom ne takarja a logót */
-        /* bg.png arány: 853x1844 = 1:2.16 → teljes kép magassága 216vw */
-        /* Logó a kép ~45%-ánál ér véget → 216vw * 0.45 = 97vw */
-        .top-spacer {
-            height: 110vw;
-            max-height: 480px;
-            min-height: 260px;
+        /* Top hero: a bg.png felső részét img-ként jelenítjük meg */
+        /* Így minden telefonon arányos – a kép természetes arányát követi */
+        .top-hero {
+            display: block;
+            width: 100%;
+            /* A bg.png 853x1844px, a logó az első ~48%-on van */
+            /* Megmutatjuk az első 48%-ot: padding-top trick */
+            position: relative;
+            overflow: hidden;
+            margin: 0 -14px; /* wrapper padding kompenzálás */
+            width: calc(100% + 28px);
         }
+        .top-hero img {
+            width: 100%;
+            display: block;
+            /* Csak a felső 48%-ot mutatjuk */
+            max-height: 48vw;
+            object-fit: cover;
+            object-position: center top;
+        }
+        /* Régi spacer – már nem kell */
+        .top-spacer { display: none; }
 
         /* KÖSZÖNTŐ */
         .greeting {
@@ -654,7 +668,9 @@
             <img src="Frueatheaven_kepek/frueatheavenlogo.jpg" alt="Fru'eat Heaven Logo">
         </div>
 
-        <div class="top-spacer"></div>
+        <div class="top-hero">
+            <img src="bg.png" alt="" aria-hidden="true">
+        </div>
         <!-- AKTUÁLIS RENDELÉSEK (rendelés után jelenik meg, több is lehet) -->
         <div id="aktualis-rendeles-container"></div>
 
