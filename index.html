@@ -75,8 +75,10 @@
         .top-hero img {
             width: 100%;
             display: block;
-            /* Csak a felső 48%-ot mutatjuk */
-            max-height: 48vw;
+            /* bg.png 853x1844px → teljes szélesség esetén a kép magassága 216vw */
+            /* Logó alja a kép ~47%-ánál van → 216vw * 0.47 ≈ 102vw */
+            /* De max 460px hogy nagy képernyőn ne legyen túl nagy */
+            max-height: min(102vw, 460px);
             object-fit: cover;
             object-position: center top;
         }
@@ -792,16 +794,26 @@
         async function szinkronizalRendelesek() {
             const profil = JSON.parse(localStorage.getItem("frueat_profile"));
             if(!profil || !profil.tel) return;
+            const tarolt = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
+            if(!tarolt.length) return; // nincs mit szinkronizálni
             try {
                 const resp = await fetch(API_URL + "?admin=true", { redirect: "follow" });
-                const aktiv = await resp.json();
-                const aktivTelok = aktiv
-                    .filter(r => (r.statusz || "").toLowerCase().includes("aktív"))
-                    .map(r => (r.telefon || "").replace(/\s+/g,'').replace(/-/g,''));
+                const osszes = await resp.json(); // MINDEN sor (aktív + lezárt)
                 const sajatTel = profil.tel.replace(/\s+/g,'').replace(/-/g,'');
-                const sajatAktiv = aktivTelok.some(t => t === sajatTel || t.endsWith(sajatTel.slice(-9)) || sajatTel.endsWith(t.slice(-9)));
-                if(!sajatAktiv) {
-                    // Ha nincs aktív rendelés a sheet-ben, töröljük a local storage-t
+                
+                // Keressük a saját aktív rendeléseket
+                const sajatAktiv = osszes.filter(r => {
+                    const rTel = (r.telefon || "").replace(/\s+/g,'').replace(/-/g,'');
+                    const telEgyezik = rTel === sajatTel 
+                        || rTel.endsWith(sajatTel.slice(-9)) 
+                        || sajatTel.endsWith(rTel.slice(-9));
+                    const aktiv = (r.statusz || "").toString().toLowerCase().includes("aktív") 
+                        || (r.statusz || "").toString().toLowerCase().includes("aktiv");
+                    return telEgyezik && aktiv;
+                });
+
+                // Ha nincs egyetlen aktív rendelése sem → töröljük a local storage-t
+                if(sajatAktiv.length === 0) {
                     localStorage.removeItem("frueat_rendelesek");
                     renderAktualisRendelesek();
                 }
