@@ -17,103 +17,137 @@
 
     <style>
         :root {
-            --green: #2e7d32;
-            --green-light: #e8f5e9;
-            --green-mid: #4caf50;
-            --green-dark: #1b5e20;
-            --red: #d32f2f;
-            --yellow: #fff9c4;
-            --shadow: 0 4px 16px rgba(46,125,50,0.10);
-            --radius: 18px;
+            --gold:        #c9a84c;
+            --gold-light:  #f0d080;
+            --gold-dim:    #7a6230;
+            --dark-bg:     #0d0d0d;
+            --dark-card:   rgba(18,18,18,0.92);
+            --dark-card2:  rgba(28,28,28,0.95);
+            --dark-border: rgba(201,168,76,0.25);
+            --dark-input:  rgba(255,255,255,0.06);
+            --text-main:   #f0ece0;
+            --text-dim:    rgba(240,236,224,0.55);
+            --green:       #3a7d44;
+            --green-mid:   #4caf50;
+            --green-dark:  #1b5e20;
+            --red:         #e53935;
+            --shadow:      0 4px 24px rgba(0,0,0,0.45);
+            --shadow-gold: 0 4px 20px rgba(201,168,76,0.18);
+            --radius:      18px;
         }
         * { box-sizing: border-box; }
         body {
             font-family: 'Nunito', sans-serif;
-            background: #f0f4f1;
+            background: var(--dark-bg) url('bg.png') center top / cover no-repeat fixed;
             margin: 0;
-            color: #333;
-            padding-bottom: 40px;
+            color: var(--text-main);
+            padding-bottom: 60px;
+            min-height: 100vh;
         }
         .wrapper { max-width: 600px; margin: auto; padding: 14px; }
 
-        /* HEADER */
-        .header {
-            text-align: center;
-            margin: 16px 0 20px 0;
-            padding: 10px 0;
+        /* HEADER – logó a bg-n van, elrejtjük a HTML-es logót */
+        .header { display: none; }
+
+        /* Felső spacer hogy a tartalom ne takarja a logót */
+        .top-spacer {
+            height: 52vw;
+            max-height: 320px;
+            min-height: 180px;
         }
-        .header img { max-width: 94%; width: 94%; height: auto; display: block; margin: 0 auto; }
 
         /* KÖSZÖNTŐ */
         .greeting {
             font-family: 'Playfair Display', serif;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 700;
-            margin-bottom: 16px;
-            color: var(--green-dark);
+            margin-bottom: 18px;
+            color: var(--gold-light);
             text-align: center;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+        }
+
+        /* ELVÁLASZTÓ LEVÉL MOTÍVUM */
+        .leaf-divider {
+            text-align: center;
+            color: var(--gold-dim);
+            font-size: 18px;
+            margin: 6px 0 18px;
+            letter-spacing: 8px;
+            opacity: 0.7;
         }
 
         /* PROFIL PANEL */
         #profile-setup {
-            background: white;
-            padding: 28px 22px;
+            background: var(--dark-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 28px 22px 24px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow), 0 0 0 1px var(--dark-border);
             text-align: center;
+            border: 1px solid var(--dark-border);
         }
         #profile-setup h3 {
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
             font-family: 'Playfair Display', serif;
-            color: var(--green);
+            color: var(--gold-light);
             font-size: 22px;
         }
-        #profile-setup p { color: #777; font-size: 14px; margin-bottom: 18px; }
+        #profile-setup p { color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         .input-grid .full { grid-column: 1 / -1; }
         #profile-setup input {
             width: 100%;
             padding: 13px 14px;
             border-radius: 12px;
-            border: 1.5px solid #e0e0e0;
+            border: 1px solid var(--dark-border);
             font-size: 15px;
             font-family: 'Nunito', sans-serif;
-            background: #fafafa;
-            transition: border-color 0.2s;
+            background: var(--dark-input);
+            color: var(--text-main);
+            transition: border-color 0.2s, background 0.2s;
             outline: none;
         }
-        #profile-setup input:focus { border-color: var(--green); background: #fff; }
+        #profile-setup input::placeholder { color: var(--text-dim); }
+        #profile-setup input:focus {
+            border-color: var(--gold);
+            background: rgba(255,255,255,0.09);
+        }
         #main-app { display: none; }
 
         /* AKTUÁLIS RENDELÉSEK PANEL */
         .ar-card {
-            background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-            color: white;
+            background: linear-gradient(135deg, #1a2e1a 0%, #0d1a0d 100%);
+            border: 1px solid rgba(201,168,76,0.3);
+            color: var(--text-main);
             padding: 18px 20px;
             border-radius: var(--radius);
             margin-bottom: 12px;
-            box-shadow: 0 6px 20px rgba(46,125,50,0.25);
+            box-shadow: var(--shadow);
         }
         .ar-card h4 {
             margin: 0 0 10px 0;
             font-size: 16px;
             font-family: 'Playfair Display', serif;
-            opacity: 0.95;
+            color: var(--gold-light);
         }
-        .ar-items { font-size: 13px; opacity: 0.9; line-height: 1.8; }
-        .ar-total { font-size: 18px; font-weight: 800; margin-top: 10px; letter-spacing: 0.3px; }
+        .ar-items { font-size: 13px; opacity: 0.85; line-height: 1.8; }
+        .ar-total { font-size: 18px; font-weight: 800; margin-top: 10px; color: var(--gold-light); }
         .ar-atvetel {
             font-size: 12px;
-            opacity: 0.85;
+            opacity: 0.75;
             margin-top: 8px;
             padding-top: 8px;
-            border-top: 1px solid rgba(255,255,255,0.25);
+            border-top: 1px solid rgba(201,168,76,0.2);
             line-height: 1.6;
         }
         .ar-status {
             display: inline-block;
-            background: rgba(255,255,255,0.25);
+            background: rgba(201,168,76,0.15);
+            border: 1px solid rgba(201,168,76,0.3);
+            color: var(--gold-light);
             padding: 3px 10px;
             border-radius: 20px;
             font-size: 12px;
@@ -123,7 +157,10 @@
 
         /* KÍNÁLAT POSZT */
         .post {
-            background: white;
+            background: var(--dark-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--dark-border);
             border-radius: var(--radius);
             padding: 18px 16px 14px;
             margin-bottom: 16px;
@@ -132,13 +169,13 @@
         .post-title {
             font-family: 'Playfair Display', serif;
             font-size: 20px;
-            color: var(--green-dark);
+            color: var(--gold-light);
             margin-bottom: 10px;
         }
         .post-text {
             font-size: 15px;
             line-height: 1.65;
-            color: #444;
+            color: var(--text-dim);
             text-align: justify;
         }
         .post-image {
@@ -148,27 +185,31 @@
             display: block;
         }
         .info-box {
-            background: var(--green-light);
+            background: rgba(201,168,76,0.08);
             padding: 14px 16px;
             border-radius: 12px;
             margin-top: 14px;
             font-size: 14px;
             line-height: 1.8;
-            border-left: 4px solid var(--green);
-            color: #333;
+            border-left: 3px solid var(--gold);
+            color: var(--text-main);
         }
-        .info-box strong { color: var(--green-dark); }
+        .info-box strong { color: var(--gold-light); }
 
         /* TERMÉKEK */
         .section-title {
             font-family: 'Playfair Display', serif;
             font-size: 20px;
-            color: var(--green-dark);
+            color: var(--gold-light);
             margin: 22px 0 12px;
             padding-left: 4px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
         }
         .product {
-            background: white;
+            background: var(--dark-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--dark-border);
             padding: 16px;
             border-radius: var(--radius);
             margin-bottom: 14px;
@@ -187,54 +228,59 @@
             object-fit: cover;
             border-radius: 12px;
             cursor: pointer;
-            border: 2px solid #f0f0f0;
+            border: 1.5px solid var(--dark-border);
             flex-shrink: 0;
             transition: transform 0.15s, border-color 0.15s;
         }
-        .product-images img:hover { transform: scale(1.05); border-color: var(--green-mid); }
+        .product-images img:hover { transform: scale(1.05); border-color: var(--gold); }
         .product-top { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px; }
-        .product-info b { font-size: 17px; display: block; margin-bottom: 2px; }
-        .product-price { color: #555; font-size: 15px; }
+        .product-info b { font-size: 17px; display: block; margin-bottom: 2px; color: var(--text-main); }
+        .product-price { color: var(--gold); font-size: 15px; font-weight: 700; }
         .product-min { color: var(--red); font-size: 13px; font-weight: 700; margin-top: 3px; }
         .product-cart { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
         .product-cart input {
             width: 68px;
             padding: 10px 8px;
             border-radius: 10px;
-            border: 1.5px solid #ddd;
+            border: 1px solid var(--dark-border);
             text-align: center;
             font-size: 16px;
             font-family: 'Nunito', sans-serif;
-            background: #fafafa;
+            background: var(--dark-input);
+            color: var(--text-main);
             outline: none;
             transition: border-color 0.2s;
         }
-        .product-cart input:focus { border-color: var(--green); }
+        .product-cart input:focus { border-color: var(--gold); }
 
         /* GOMBOK */
         .btn {
-            background: var(--green);
-            color: white;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+            color: #0d0d0d;
             border: none;
             padding: 13px 20px;
             border-radius: 12px;
             cursor: pointer;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 15px;
             font-family: 'Nunito', sans-serif;
-            transition: background 0.2s, transform 0.1s;
-            box-shadow: 0 3px 8px rgba(46,125,50,0.2);
+            transition: opacity 0.2s, transform 0.1s;
+            box-shadow: var(--shadow-gold);
             width: 100%;
+            letter-spacing: 0.3px;
         }
-        .btn:hover { background: var(--green-mid); }
-        .btn:active { transform: scale(0.97); background: var(--green-dark); }
-        .btn:disabled { background: #b0bec5; cursor: not-allowed; box-shadow: none; }
+        .btn:hover { opacity: 0.88; }
+        .btn:active { transform: scale(0.97); opacity: 0.75; }
+        .btn:disabled { background: #2a2a2a; color: #555; cursor: not-allowed; box-shadow: none; }
         .btn-small { width: auto; padding: 10px 16px; font-size: 14px; }
         .btn-submit { font-size: 17px; padding: 16px; margin-top: 14px; }
 
         /* KOSÁR ÉS RENDELÉS PANEL */
         .form {
-            background: white;
+            background: var(--dark-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--dark-border);
             padding: 20px;
             border-radius: var(--radius);
             margin-top: 20px;
@@ -243,15 +289,15 @@
         .form-section-title {
             font-size: 17px;
             font-weight: 800;
-            color: var(--green-dark);
+            color: var(--gold-light);
             margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
         .cart-summary {
-            background: #f8faf8;
-            border: 1.5px dashed #c8e6c9;
+            background: rgba(255,255,255,0.04);
+            border: 1px dashed var(--dark-border);
             padding: 14px;
             border-radius: 12px;
             margin-bottom: 16px;
@@ -262,6 +308,7 @@
             margin-bottom: 8px;
             font-size: 15px;
             align-items: center;
+            color: var(--text-main);
         }
         .cart-total {
             display: flex;
@@ -269,22 +316,23 @@
             font-weight: 800;
             font-size: 19px;
             margin-top: 12px;
-            border-top: 2px solid #e8f5e9;
+            border-top: 1px solid var(--dark-border);
             padding-top: 12px;
+            color: var(--gold-light);
         }
-        .free-delivery { color: var(--green); font-weight: 700; }
+        .free-delivery { color: var(--gold-light); font-weight: 700; }
 
         /* SZÁLLÍTÁS VÁLASZTÓ */
         #szallitas-valaszto {
             display: block;
             margin-bottom: 18px;
             padding: 16px;
-            border: 1.5px solid #c8e6c9;
+            border: 1px solid var(--dark-border);
             border-radius: 14px;
-            background: var(--green-light);
+            background: rgba(201,168,76,0.06);
         }
         #szallitas-valaszto b {
-            color: var(--green-dark);
+            color: var(--gold-light);
             display: block;
             margin-bottom: 12px;
             font-size: 15px;
@@ -298,36 +346,42 @@
             font-weight: 600;
             padding: 10px 12px;
             border-radius: 10px;
-            border: 1.5px solid transparent;
+            border: 1px solid transparent;
+            color: var(--text-main);
             transition: all 0.18s;
         }
-        .radio-option input { width: 18px; height: 18px; margin-right: 10px; accent-color: var(--green); }
+        .radio-option:hover { background: rgba(201,168,76,0.08); border-color: var(--dark-border); }
+        .radio-option input { width: 18px; height: 18px; margin-right: 10px; accent-color: var(--gold); }
         .radio-option:last-child { margin-bottom: 0; }
 
         /* CÍM BLOKK */
         .address-block {
-            background: #f5f5f5;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--dark-border);
             padding: 12px 14px;
             border-radius: 10px;
             margin: 8px 0 16px;
             font-size: 14px;
             line-height: 1.6;
+            color: var(--text-dim);
         }
-        .address-block b { color: var(--green-dark); }
+        .address-block b { color: var(--gold-light); }
 
         textarea {
             width: 100%;
             padding: 13px;
             border-radius: 12px;
-            border: 1.5px solid #e0e0e0;
+            border: 1px solid var(--dark-border);
             font-family: 'Nunito', sans-serif;
             font-size: 15px;
-            background: #fafafa;
+            background: var(--dark-input);
+            color: var(--text-main);
             resize: none;
             outline: none;
             transition: border-color 0.2s;
         }
-        textarea:focus { border-color: var(--green); background: #fff; }
+        textarea::placeholder { color: var(--text-dim); }
+        textarea:focus { border-color: var(--gold); }
 
         /* KOSÁR FAB GOMB */
         #cart-fab {
@@ -337,7 +391,7 @@
             z-index: 1000;
             width: 52px;
             height: 52px;
-            background: var(--green);
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
             border-radius: 50%;
             box-shadow: 0 4px 16px rgba(46,125,50,0.35);
             display: none; /* csak main-app-ban látszik */
@@ -347,8 +401,8 @@
             border: none;
             transition: transform 0.15s, background 0.15s;
         }
-        #cart-fab:active { transform: scale(0.92); background: var(--green-dark); }
-        #cart-fab svg { width: 26px; height: 26px; fill: white; }
+        #cart-fab:active { transform: scale(0.92); opacity: 0.8; }
+        #cart-fab svg { width: 26px; height: 26px; fill: #0d0d0d; }
         #cart-fab-badge {
             position: absolute;
             top: -4px;
@@ -402,7 +456,7 @@
             display: block;
             text-align: center;
             margin-top: 18px;
-            color: var(--red);
+            color: rgba(229,57,53,0.8);
             font-size: 13px;
             text-decoration: underline;
             cursor: pointer;
@@ -423,23 +477,24 @@
             backdrop-filter: blur(4px);
         }
         .modal-content {
-            background: white;
+            background: var(--dark-card2);
+            border: 1px solid var(--dark-border);
             padding: 36px 24px 28px;
             border-radius: 24px;
             text-align: center;
             width: 88%;
             max-width: 360px;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6);
             animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .modal-icon { font-size: 64px; line-height: 1; margin-bottom: 12px; }
         .modal-content h3 {
             margin: 0 0 10px;
             font-family: 'Playfair Display', serif;
-            color: var(--green);
+            color: var(--gold-light);
             font-size: 24px;
         }
-        .modal-content p { color: #666; margin: 0 0 22px; font-size: 15px; line-height: 1.5; }
+        .modal-content p { color: var(--text-dim); margin: 0 0 22px; font-size: 15px; line-height: 1.5; }
         @keyframes popIn {
             0% { transform: scale(0.75); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -458,39 +513,42 @@
             backdrop-filter: blur(4px);
         }
         .cim-modal-content {
-            background: white;
+            background: var(--dark-card2);
+            border: 1px solid var(--dark-border);
             padding: 28px 22px 24px;
             border-radius: 24px;
             width: 92%;
             max-width: 380px;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6);
             animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .cim-modal-content h3 {
             margin: 0 0 6px;
             font-family: 'Playfair Display', serif;
-            color: var(--green);
+            color: var(--gold-light);
             font-size: 20px;
         }
-        .cim-modal-content p { color: #777; font-size: 14px; margin: 0 0 16px; }
+        .cim-modal-content p { color: var(--text-dim); font-size: 14px; margin: 0 0 16px; }
         .cim-modal-content input {
             width: 100%;
             padding: 13px 14px;
             border-radius: 12px;
-            border: 1.5px solid #e0e0e0;
+            border: 1px solid var(--dark-border);
             font-size: 15px;
             font-family: 'Nunito', sans-serif;
-            background: #fafafa;
+            background: var(--dark-input);
+            color: var(--text-main);
             outline: none;
             margin-bottom: 10px;
             transition: border-color 0.2s;
         }
-        .cim-modal-content input:focus { border-color: var(--green); background: #fff; }
+        .cim-modal-content input::placeholder { color: var(--text-dim); }
+        .cim-modal-content input:focus { border-color: var(--gold); }
         .cim-modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
         .btn-cim-cancel {
-            background: #f5f5f5;
-            color: #666;
-            border: none;
+            background: rgba(255,255,255,0.07);
+            color: var(--text-dim);
+            border: 1px solid var(--dark-border);
             padding: 13px;
             border-radius: 12px;
             font-weight: 700;
@@ -517,26 +575,25 @@
         /* HIBA */
         #out-of-zone {
             display: none;
-            background: #ffebee;
-            color: #c62828;
+            background: rgba(229,57,53,0.12);
+            border: 1px solid rgba(229,57,53,0.3);
+            color: #ff8a80;
             padding: 22px;
             border-radius: var(--radius);
             text-align: center;
             margin-top: 20px;
             font-weight: 700;
             line-height: 1.6;
+            backdrop-filter: blur(12px);
         }
-        .product-closed {
-            opacity: 0.6;
-            background: #f9f9f9;
-        }
+        .product-closed { opacity: 0.4; }
         .rendeles-lezarult {
-            color: var(--red);
+            color: #ff8a80;
             font-weight: 800;
             font-size: 13px;
             margin-top: 6px;
             padding: 5px 10px;
-            background: #ffebee;
+            background: rgba(229,57,53,0.15);
             border-radius: 8px;
             display: inline-block;
         }
@@ -584,12 +641,14 @@
             <img src="Frueatheaven_kepek/frueatheavenlogo.jpg" alt="Fru'eat Heaven Logo">
         </div>
 
+        <div class="top-spacer"></div>
         <!-- AKTUÁLIS RENDELÉSEK (rendelés után jelenik meg, több is lehet) -->
         <div id="aktualis-rendeles-container"></div>
 
         <div id="profile-setup">
             <h3>Üdvözlünk nálunk! 👋</h3>
             <p>Kérlek, add meg az adataidat a kínálat megjelenítéséhez!</p>
+            <div class="leaf-divider">🍃 · 🍃</div>
 
             <div class="input-grid">
                 <input id="p-vnev" placeholder="Vezetéknév">
