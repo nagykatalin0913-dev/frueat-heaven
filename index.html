@@ -60,30 +60,19 @@
         /* HEADER – elrejtve, top-hero veszi át */
         .header { display: none; }
 
-        /* Top hero: a bg.png felső részét img-ként jelenítjük meg */
-        /* Így minden telefonon arányos – a kép természetes arányát követi */
-        .top-hero {
+        /* TOP SPACER: átlátszó hely a fix háttér logójának */
+        /* JS dinamikusan állítja be a magasságát a képernyő szélessége alapján */
+        /* bg.png: 853x1844px, logó alja a kép ~47%-ánál */
+        /* Képernyő szélességén a kép magassága = screenW * (1844/853) */
+        /* Spacer = teljesKépMagasság * 0.47 */
+        .top-spacer {
+            /* Alap érték JS előtt: 100vw * 1844/853 * 0.47 ≈ 101.5vw */
+            height: 101.5vw;
+            max-height: 460px;
+            min-height: 200px;
             display: block;
-            width: 100%;
-            /* A bg.png 853x1844px, a logó az első ~48%-on van */
-            /* Megmutatjuk az első 48%-ot: padding-top trick */
-            position: relative;
-            overflow: hidden;
-            margin: 0 -14px; /* wrapper padding kompenzálás */
-            width: calc(100% + 28px);
+            pointer-events: none;
         }
-        .top-hero img {
-            width: 100%;
-            display: block;
-            /* bg.png 853x1844px → teljes szélesség esetén a kép magassága 216vw */
-            /* Logó alja a kép ~47%-ánál van → 216vw * 0.47 ≈ 102vw */
-            /* De max 460px hogy nagy képernyőn ne legyen túl nagy */
-            max-height: min(102vw, 460px);
-            object-fit: cover;
-            object-position: center top;
-        }
-        /* Régi spacer – már nem kell */
-        .top-spacer { display: none; }
 
         /* KÖSZÖNTŐ */
         .greeting {
@@ -670,9 +659,7 @@
             <img src="Frueatheaven_kepek/frueatheavenlogo.jpg" alt="Fru'eat Heaven Logo">
         </div>
 
-        <div class="top-hero">
-            <img src="bg.png" alt="" aria-hidden="true">
-        </div>
+        <div class="top-spacer" id="top-spacer"></div>
         <!-- AKTUÁLIS RENDELÉSEK (rendelés után jelenik meg, több is lehet) -->
         <div id="aktualis-rendeles-container"></div>
 
@@ -887,6 +874,21 @@
                 .catch(() => {});
             }
         });
+
+        // Dinamikus spacer: a fix bg.png logójának megfelelő magasság
+        // bg.png: 853x1844px, logó alja a kép ~47%-ánál
+        (function() {
+            const IMG_W = 853, IMG_H = 1844, LOGO_RATIO = 0.47;
+            function beallitSpacer() {
+                const sw = Math.min(window.innerWidth, 600); // max wrapper szélesség
+                const imgH = sw * (IMG_H / IMG_W);
+                const spacerH = Math.round(imgH * LOGO_RATIO);
+                const el = document.getElementById("top-spacer");
+                if(el) el.style.height = spacerH + "px";
+            }
+            beallitSpacer();
+            window.addEventListener("resize", beallitSpacer);
+        })();
 
         let userProfile = JSON.parse(localStorage.getItem("frueat_profile"));
         if(userProfile) adatokBetoltese();
