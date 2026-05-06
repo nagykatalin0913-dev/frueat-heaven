@@ -22,7 +22,7 @@
         .header small{opacity:0.8;font-size:12px}
 
         /* MODE SELECTOR */
-        .mode-selector{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+        .mode-selector{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px}
         .mode-btn{padding:14px 10px;border:2px solid #e0e0e0;border-radius:12px;font-weight:700;font-size:14px;font-family:'Nunito',sans-serif;cursor:pointer;background:white;color:#666;transition:all 0.2s}
         .mode-btn.active{background:var(--green);color:white;border-color:var(--green);box-shadow:0 3px 10px rgba(46,125,50,0.25)}
 
@@ -77,6 +77,20 @@
         #beszerzes-view{display:none}
 
         .bsz-frissit-btn{width:100%;padding:14px;background:var(--green);color:white;border:none;border-radius:12px;font-size:16px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:14px;box-shadow:0 3px 10px rgba(46,125,50,0.25);transition:background 0.2s}
+
+        /* PUSH SZEKCIÓ */
+        #push-view{display:none}
+        .push-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;border-left:5px solid #ff9800}
+        .push-card h3{margin:0 0 8px;font-size:17px;color:#e65100;font-weight:800}
+        .push-card p{margin:0 0 12px;font-size:13px;color:#777;line-height:1.5}
+        .push-input{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:15px;font-family:'Nunito',sans-serif;margin-bottom:10px;outline:none;transition:border-color 0.2s}
+        .push-input:focus{border-color:#ff9800}
+        .push-btn{width:100%;padding:13px;border:none;border-radius:10px;background:#ff9800;color:white;font-weight:800;font-size:15px;font-family:'Nunito',sans-serif;cursor:pointer;transition:background 0.2s}
+        .push-btn:hover{background:#f57c00}
+        .push-btn:disabled{background:#b0bec5;cursor:not-allowed}
+        .push-result{margin-top:10px;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:700;display:none}
+        .push-result.ok{background:#e8f5e9;color:#2e7d32}
+        .push-result.err{background:#ffebee;color:#c62828}
         .bsz-frissit-btn:active{background:var(--green-dark)}
 
         /* Összesítő sáv */
@@ -148,6 +162,7 @@
     <button id="btn-atvetel"   class="mode-btn active" onclick="setMode('atvetel')">&#127968; Átvétel</button>
     <button id="btn-szallitas" class="mode-btn"        onclick="setMode('szallitas')">&#128666; Kiszállítás</button>
     <button id="btn-beszerzes" class="mode-btn"        onclick="setMode('beszerzes')">&#128722; Beszerz.</button>
+    <button id="btn-push"      class="mode-btn"        onclick="setMode('push')" style="border-color:#ff9800;color:#e65100;">&#128276; Push</button>
 </div>
 
 <div id="szallitas-szurok" style="display:none;">
@@ -164,6 +179,46 @@
 </div>
 
 <!-- BESZERZES NÉZET -->
+<!-- PUSH NÉZET -->
+<div id="push-view">
+    <!-- Zóna választó (közös minden push típushoz) -->
+    <div class="push-card" style="border-left-color:#9c27b0;">
+        <h3>🗺️ Zóna szűrő</h3>
+        <p>Válaszd ki kinek szól az értesítés. Ha "Mindenki" van kiválasztva, minden feliratkozott megkapja.</p>
+        <select id="push-zona" class="push-input" style="cursor:pointer;">
+            <option value="all">🌍 Mindenki</option>
+        </select>
+        <small style="color:#aaa;font-size:12px;">A zónák automatikusan töltődnek be a rendelések alapján.</small>
+    </div>
+
+    <div class="push-card">
+        <h3>🍓 Új kínálat értesítő</h3>
+        <p>Küldj értesítést a kiválasztott zónának az új kínálatról.</p>
+        <input type="text" id="push-cim1" class="push-input" placeholder="Cím" value="Új kínálat érkezett! 🍓">
+        <input type="text" id="push-uzenet1" class="push-input" placeholder="Üzenet (pl. Nézd meg mit hoztunk ezen a héten!)">
+        <button class="push-btn" onclick="pushKuldes('kinalat')">📤 Értesítés küldése</button>
+        <div id="push-result1" class="push-result"></div>
+    </div>
+
+    <div class="push-card" style="border-left-color:#1565c0;">
+        <h3>⏰ Rendelési határidő emlékeztető</h3>
+        <p>Emlékeztető a kiválasztott zónának a rendelési határidőről.</p>
+        <input type="text" id="push-cim2" class="push-input" placeholder="Cím" value="⏰ Ma éjfélig rendelhetsz!">
+        <input type="text" id="push-uzenet2" class="push-input" placeholder="Üzenet" value="Ne felejtsd el leadni a rendelésed, ma éjfélig lehet!">
+        <button class="push-btn" style="background:#1565c0;" onclick="pushKuldes('hatarido')">📤 Értesítés küldése</button>
+        <div id="push-result2" class="push-result"></div>
+    </div>
+
+    <div class="push-card" style="border-left-color:#2e7d32;">
+        <h3>📦 Szállítás/átvétel emlékeztető</h3>
+        <p>Emlékeztető a kiválasztott zónának — csak az aktív rendelésűeknek.</p>
+        <input type="text" id="push-cim3" class="push-input" placeholder="Cím" value="📦 Ma érkezik a rendelésed!">
+        <input type="text" id="push-uzenet3" class="push-input" placeholder="Üzenet" value="Ma hozzuk a friss gyümölcsödet! Készülj fel az átvételre.">
+        <button class="push-btn" style="background:#2e7d32;" onclick="pushKuldes('szallitas')">📤 Értesítés küldése</button>
+        <div id="push-result3" class="push-result"></div>
+    </div>
+</div>
+
 <div id="beszerzes-view">
     <button class="bsz-frissit-btn" onclick="fetchBeszerzes()">&#128260; Beszerz. lista frissítése</button>
     <div class="bsz-osszesito" id="bsz-osszesito" style="display:none;">
@@ -286,14 +341,33 @@ function setMode(mode) {
     currentMode = mode; activeCardId = null;
     document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('active'); });
     document.getElementById('btn-' + mode).classList.add('active');
-    var isBsz = mode === 'beszerzes';
-    document.getElementById('beszerzes-view').style.display   = isBsz ? 'block' : 'none';
-    document.getElementById('main-list').style.display         = isBsz ? 'none'  : 'block';
-    document.getElementById('searchInput').style.display       = isBsz ? 'none'  : 'block';
-    document.getElementById('summary-bar-wrap').style.display  = isBsz ? 'none'  : 'flex';
+    var isBsz  = mode === 'beszerzes';
+    var isPush = mode === 'push';
+    var isNorm = !isBsz && !isPush;
+    document.getElementById('beszerzes-view').style.display   = isBsz  ? 'block' : 'none';
+    document.getElementById('push-view').style.display        = isPush ? 'block' : 'none';
+    document.getElementById('main-list').style.display        = isNorm ? 'block' : 'none';
+    document.getElementById('searchInput').style.display      = isNorm ? 'block' : 'none';
+    document.getElementById('summary-bar-wrap').style.display = isNorm ? 'flex'  : 'none';
     document.getElementById('szallitas-szurok').style.display  = mode === 'szallitas' ? 'block' : 'none';
     document.getElementById('atvetel-pont-szuro').style.display = mode === 'atvetel'   ? 'flex'  : 'none';
-    if (!isBsz) { buildFilterChips(); render(); }
+    if (isNorm) { buildFilterChips(); render(); }
+    if (isPush) { betoltPushZonak(); }
+}
+
+function betoltPushZonak() {
+    var select = document.getElementById('push-zona');
+    if(!select) return;
+    // Zónák összegyűjtése az aktív rendelésekből
+    var zonak = new Set();
+    orders.forEach(function(o){ if(o.zona) zonak.add(o.zona); });
+    // Megtartjuk az "összes" opciót, hozzáadjuk a zónákat
+    select.innerHTML = '<option value="all">🌍 Mindenki</option>';
+    zonak.forEach(function(z) {
+        var opt = document.createElement('option');
+        opt.value = z; opt.textContent = '📍 ' + z;
+        select.appendChild(opt);
+    });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -778,6 +852,89 @@ function htmlEsc(s) {
 // ══════════════════════════════════════════════════════════════
 fetchData();
 setInterval(fetchData, 60000);
+
+// ══════════════════════════════════════════════════════════════
+//  PUSH ÉRTESÍTÉS KÜLDÉS
+// ══════════════════════════════════════════════════════════════
+var ONESIGNAL_APP_ID = "2cb423d1-8af5-4f8f-bfe4-7019b6149cd2";
+var ONESIGNAL_API_KEY = "os_v2_app_fs2chumk6vhy7p7eoam3mfe42kwl2beputfuvbf3gnhaykxgt6bxsequ2lsq4b2j5ejpit2n7xuz6ffy4fdj35vl3ntmnqoffqrputi";
+
+async function pushKuldes(tipus) {
+    var cim, uzenet, resultEl, btn;
+    if(tipus === 'kinalat') {
+        cim = document.getElementById('push-cim1').value.trim();
+        uzenet = document.getElementById('push-uzenet1').value.trim();
+        resultEl = document.getElementById('push-result1');
+    } else if(tipus === 'hatarido') {
+        cim = document.getElementById('push-cim2').value.trim();
+        uzenet = document.getElementById('push-uzenet2').value.trim();
+        resultEl = document.getElementById('push-result2');
+    } else {
+        cim = document.getElementById('push-cim3').value.trim();
+        uzenet = document.getElementById('push-uzenet3').value.trim();
+        resultEl = document.getElementById('push-result3');
+    }
+    btn = resultEl ? resultEl.previousElementSibling : null;
+
+    if(!cim || !uzenet) { alert('Töltsd ki a címet és az üzenetet!'); return; }
+    if(btn) { btn.disabled = true; btn.innerText = '⏳ Küldés...'; }
+    if(resultEl) resultEl.style.display = 'none';
+
+    try {
+        var zona = document.getElementById('push-zona') ?
+                    document.getElementById('push-zona').value : 'all';
+
+        var body = {
+            app_id: ONESIGNAL_APP_ID,
+            headings: { en: cim, hu: cim },
+            contents: { en: uzenet, hu: uzenet },
+            url: "https://nagykatalin0913-dev.github.io/frueat-heaven/",
+        };
+
+        // Zóna alapú szűrés
+        if(zona === 'all') {
+            body.included_segments = ["All"];
+        } else {
+            // Csak az adott zónában lévő felhasználóknak
+            body.filters = [
+                { field: "tag", key: "zona", relation: "=", value: zona }
+            ];
+        }
+
+        var resp = await fetch("https://onesignal.com/api/v1/notifications", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Basic " + ONESIGNAL_API_KEY
+            },
+            body: JSON.stringify(body)
+        });
+
+        var data = await resp.json();
+
+        if(resultEl) {
+            if(data.id) {
+                resultEl.className = 'push-result ok';
+                resultEl.innerText = '✓ Elküldve! ' + (data.recipients || '?') + ' feliratkozónak.';
+            } else {
+                resultEl.className = 'push-result err';
+                resultEl.innerText = 'Hiba: ' + JSON.stringify(data.errors || data);
+            }
+            resultEl.style.display = 'block';
+        }
+    } catch(e) {
+        if(resultEl) {
+            resultEl.className = 'push-result err';
+            resultEl.innerText = 'Hálózati hiba: ' + e.message;
+            resultEl.style.display = 'block';
+        }
+    }
+
+    if(btn) {
+        btn.disabled = false;
+        btn.innerText = tipus === 'szallitas' ? '📤 Küldés aktív rendelésűeknek' : '📤 Küldés mindenkinek';
+    }
+}
 </script>
 </body>
 </html>
