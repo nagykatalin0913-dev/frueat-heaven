@@ -781,7 +781,7 @@
                 const atvetelInfo = r.atvetelInfo ? `<div class="ar-atvetel">${r.atvetelInfo}</div>` : '';
                 return `
                     <div class="ar-card">
-                        <h4>📦 Aktuális rendelésed${tarolt.length > 1 ? ' (' + (idx+1) + '/' + tarolt.length + ')' : ''}</h4>
+                        <h4>📦 Aktuális rendelésed${tarolt.length > 1 ? ' (' + (idx+1) + '/' + tarolt.length + ')' : ''}${r.id ? ' <span style="font-size:12px;opacity:0.7;">#' + r.id + '</span>' : ''}</h4>
                         <div class="ar-items">${termekSorok}</div>
                         <div class="ar-total">Fizetendő: ${r.vegosszeg} Ft</div>
                         ${atvetelInfo}
