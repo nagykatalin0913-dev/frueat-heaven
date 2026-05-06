@@ -330,7 +330,7 @@ function render() {
         card.innerHTML =
             '<div class="card-header">' +
                 '<div>' +
-                    '<div class="card-name">'  + (o.nev||'Névtelen') + '</div>' +
+                    '<div class="card-name">'  + (o.nev||'Névtelen') + ' <span style="font-size:12px;color:#aaa;font-weight:600;">#' + (o.id||o.rowid||'?') + '</span></div>' +
                     '<div class="card-address">' + (o.cim||'Nincs cím') + '</div>' +
                     (tel ? '<a href="tel:' + tel + '" class="phone-link" onclick="event.stopPropagation()">&#128222; ' + tel + '</a>' : '') +
                 '</div>' +
