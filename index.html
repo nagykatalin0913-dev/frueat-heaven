@@ -795,35 +795,38 @@
         // Rendelések szinkronizálása a sheet-tel (lezárt rendelések eltávolítása)
         // Ezt a telefon/telszám alapján azonosítjuk
         async function szinkronizalRendelesek() {
-            const profil = JSON.parse(localStorage.getItem("frueat_profile"));
-            if(!profil || !profil.tel) return;
             const tarolt = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
             if(!tarolt.length) return;
             try {
-                // Az ?admin=true csak az AKTÍV rendeléseket adja vissza
-                // Ha a telefonszámra nincs találat → a rendelés lezárult → töröljük
+                // Aktív rendelések lekérése
                 const resp = await fetch(API_URL + "?admin=true", { redirect: "follow" });
                 const aktivak = await resp.json();
-                const sajatTel = profil.tel.replace(/\s+/g,'').replace(/-/g,'');
-                
-                // Keressük a saját telefonszámot az aktív rendelések között
-                const vanAktiv = aktivak.some(r => {
-                    const rTel = (r.telefon || "").replace(/\s+/g,'').replace(/-/g,'');
-                    return rTel === sajatTel 
-                        || rTel.endsWith(sajatTel.slice(-9)) 
-                        || sajatTel.endsWith(rTel.slice(-9));
+                // Aktív sor ID-k halmaza
+                const aktivIdk = new Set(aktivak.map(r => r.rowid));
+
+                // Csak azokat tartjuk meg amelyek még aktívak a sheetben
+                const megmaradok = tarolt.filter(r => {
+                    // Ha van ID → ID alapján ellenőrzünk (pontos!)
+                    if(r.id) return aktivIdk.has(r.id);
+                    // Ha nincs ID (régi rendelés) → telefonszám alapján (fallback)
+                    const profil = JSON.parse(localStorage.getItem("frueat_profile") || "{}");
+                    const sajatVege = (profil.tel || "").replace(/\D/g,'').slice(-7);
+                    return aktivak.some(a => {
+                        const aTel = (a.telefon || "").replace(/\D/g,'');
+                        return aTel.slice(-7) === sajatVege;
+                    });
                 });
 
-                // Ha nincs aktív rendelés ezzel a telefonnal → töröljük a helyi adatot
-                if(!vanAktiv) {
-                    localStorage.removeItem("frueat_rendelesek");
+                if(megmaradok.length !== tarolt.length) {
+                    // Volt változás → frissítjük
+                    localStorage.setItem("frueat_rendelesek", JSON.stringify(megmaradok));
                     renderAktualisRendelesek();
                 }
             } catch(e) { /* ha nem sikerül, marad ahogy van */ }
         }
         szinkronizalRendelesek();
-        // Rendszeres szinkron: 5 percenként ellenőriz
-        setInterval(szinkronizalRendelesek, 5 * 60 * 1000);
+        // Rendszeres szinkron: 3 percenként
+        setInterval(szinkronizalRendelesek, 3 * 60 * 1000);
 
         function modValtas(mod) {
             // Ha házhozszállítást választ és nincs cím → modalt mutatunk
@@ -1439,8 +1442,13 @@
             .then(r => r.text())
             .then(res => {
                 // Csak sikeres "ok" válasz esetén mentjük és mutatjuk a modalt
-                if(res.trim() === "ok") {
-                    // Kiszállítási/átvételi infó összeállítása a megjelenítéshez
+                // Válasz: "ok:SORID" formátumban jön
+                const resTrim = res.trim();
+                const okMatch = resTrim.match(/^ok:?(\d+)?$/);
+                if(okMatch) {
+                    const rendelesId = okMatch[1] ? parseInt(okMatch[1]) : null;
+
+                    // Kiszállítási/átvételi infó összeállítása
                     let atvetelInfo = "";
                     if(atveteliMod === "szemelyes") {
                         atvetelInfo = "📦 Személyes átvétel";
@@ -1451,9 +1459,15 @@
                         atvetelInfo = "🛵 Házhozszállítás";
                         if(aktualisSzallitasInfo && aktualisSzallitasInfo.kiszallitasIdeje) atvetelInfo += "<br>" + aktualisSzallitasInfo.kiszallitasIdeje;
                     }
-                    // Tömbbe adjuk hozzá (nem felülírjuk)
+                    // Rendelés mentése ID-val együtt
                     const meglevo = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
-                    meglevo.push({ termekek: termekLista, vegosszeg: vegszamlaHUF, atvetelInfo: atvetelInfo, datum: new Date().toISOString() });
+                    meglevo.push({
+                        id: rendelesId,          // ← ez a kulcs! sheet sor száma
+                        termekek: termekLista,
+                        vegosszeg: vegszamlaHUF,
+                        atvetelInfo: atvetelInfo,
+                        datum: new Date().toISOString()
+                    });
                     localStorage.setItem("frueat_rendelesek", JSON.stringify(meglevo));
                     kosar = {};
                     document.getElementById("success-modal").style.display = "flex";
