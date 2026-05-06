@@ -13,6 +13,22 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Fru'eat">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- OneSignal Push Notifications -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+                appId: "2cb423d1-8af5-4f8f-bfe4-7019b6149cd2",
+                safari_web_id: "web.onesignal.auto.456a4abd-b5a3-4365-958f-9af6b49613be",
+                notifyButton: {
+                    enable: false,  // Mi magunk kérjük be a hozzájárulást
+                },
+                allowLocalhostAsSecureOrigin: true,
+            });
+        });
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -963,6 +979,18 @@
 
                 document.getElementById("main-app").style.display = "block";
                 document.getElementById("cart-fab").style.display = "flex";
+
+                // Push értesítés engedély kérése
+                setTimeout(function() {
+                    if(window.OneSignalDeferred) {
+                        OneSignalDeferred.push(async function(OneSignal) {
+                            const permission = await OneSignal.Notifications.permission;
+                            if(!permission) {
+                                await OneSignal.Slidedown.promptPush();
+                            }
+                        });
+                    }
+                }, 2000); // 2 mp késleltetés hogy ne azonnal ugorjon fel
 
                 // Zóna adatok kiolvasása
                 const atvetelIgen = zonaErtek(aktualisZonaAdat, "atvetel_lehetseges").toString().toLowerCase().trim() === "igen";
