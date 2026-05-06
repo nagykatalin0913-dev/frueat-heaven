@@ -1016,6 +1016,15 @@
                 document.getElementById("show-zona").innerText = zonaAzonosito;
                 frissitCimBlokk();
 
+                // OneSignal zóna tag beállítása
+                // Így csak a megfelelő zónának lehet majd értesítést küldeni
+                if(window.OneSignalDeferred && zonaAzonosito) {
+                    OneSignalDeferred.push(async function(OneSignal) {
+                        await OneSignal.User.addTag("zona", zonaAzonosito);
+                        await OneSignal.User.addTag("irsz", userProfile.irsz);
+                    });
+                }
+
                 // ── ÚJ LOGIKA: Kínálat szűrése zóna + dátum alapján ──
                 const ma = new Date();
                 ma.setHours(0,0,0,0);
