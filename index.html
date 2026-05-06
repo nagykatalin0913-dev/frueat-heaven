@@ -798,31 +798,32 @@
             const profil = JSON.parse(localStorage.getItem("frueat_profile"));
             if(!profil || !profil.tel) return;
             const tarolt = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
-            if(!tarolt.length) return; // nincs mit szinkronizálni
+            if(!tarolt.length) return;
             try {
+                // Az ?admin=true csak az AKTÍV rendeléseket adja vissza
+                // Ha a telefonszámra nincs találat → a rendelés lezárult → töröljük
                 const resp = await fetch(API_URL + "?admin=true", { redirect: "follow" });
-                const osszes = await resp.json(); // MINDEN sor (aktív + lezárt)
+                const aktivak = await resp.json();
                 const sajatTel = profil.tel.replace(/\s+/g,'').replace(/-/g,'');
                 
-                // Keressük a saját aktív rendeléseket
-                const sajatAktiv = osszes.filter(r => {
+                // Keressük a saját telefonszámot az aktív rendelések között
+                const vanAktiv = aktivak.some(r => {
                     const rTel = (r.telefon || "").replace(/\s+/g,'').replace(/-/g,'');
-                    const telEgyezik = rTel === sajatTel 
+                    return rTel === sajatTel 
                         || rTel.endsWith(sajatTel.slice(-9)) 
                         || sajatTel.endsWith(rTel.slice(-9));
-                    const aktiv = (r.statusz || "").toString().toLowerCase().includes("aktív") 
-                        || (r.statusz || "").toString().toLowerCase().includes("aktiv");
-                    return telEgyezik && aktiv;
                 });
 
-                // Ha nincs egyetlen aktív rendelése sem → töröljük a local storage-t
-                if(sajatAktiv.length === 0) {
+                // Ha nincs aktív rendelés ezzel a telefonnal → töröljük a helyi adatot
+                if(!vanAktiv) {
                     localStorage.removeItem("frueat_rendelesek");
                     renderAktualisRendelesek();
                 }
             } catch(e) { /* ha nem sikerül, marad ahogy van */ }
         }
         szinkronizalRendelesek();
+        // Rendszeres szinkron: 5 percenként ellenőriz
+        setInterval(szinkronizalRendelesek, 5 * 60 * 1000);
 
         function modValtas(mod) {
             // Ha házhozszállítást választ és nincs cím → modalt mutatunk
