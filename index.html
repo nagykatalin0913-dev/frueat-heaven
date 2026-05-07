@@ -21,6 +21,13 @@
         OneSignalDeferred.push(async function(OneSignal) {
             await OneSignal.init({
                 appId: "2cb423d1-8af5-4f8f-bfe4-7019b6149cd2",
+                serviceWorkerPath: "push/OneSignalSDKWorker.js",
+                serviceWorkerParam: {
+                    scope: "/frueat-heaven/push/"
+                },
+                notifyButton: {
+                    enable: false
+                }
             });
         });
     </script>
