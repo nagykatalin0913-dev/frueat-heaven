@@ -1250,14 +1250,35 @@
                     return zonaEgyezik && datumOK;
                 });
 
-                // Rendezés: legközelebbi dátum először, majd csak az ELSŐ kínálat
-                sajatKinalatok.sort((a, b) => {
+                // Rendezés: legközelebbi dátum először
+                // Piszkozatokat kiszűrjük
+                const aktKinalatok = sajatKinalatok.filter(k => {
+                    const st = (k.statusz || k["statusz"] || "").toString().trim().toLowerCase();
+                    return st !== "piszkozat";
+                });
+                aktKinalatok.sort((a, b) => {
                     const da = parseDatum(a.datum) || new Date("9999-12-31");
                     const db = parseDatum(b.datum) || new Date("9999-12-31");
                     return da - db;
                 });
-                // Csak a legközelebbi kínálatot mutatjuk
-                const megjelenitekKinalat = sajatKinalatok.slice(0, 1);
+                // Ha azonos napon több kínálat van (gyermek kínálatok),
+                // mutasd mindet. Ha különböző napon, csak a legközelebbit.
+                let megjelenitekKinalat = [];
+                if(aktKinalatok.length > 0) {
+                    const elsoNap = parseDatum(aktKinalatok[0].datum);
+                    if(elsoNap) {
+                        // Azonos napra eső összes kínálat
+                        megjelenitekKinalat = aktKinalatok.filter(k => {
+                            const kd = parseDatum(k.datum);
+                            if(!kd) return false;
+                            return kd.toDateString() === elsoNap.toDateString();
+                        });
+                        // Legújabb sor lesz felül (gyermek = később beírva = nagyobb rowid)
+                        megjelenitekKinalat.sort((a, b) => (b.rowid||0) - (a.rowid||0));
+                    } else {
+                        megjelenitekKinalat = aktKinalatok.slice(0, 1);
+                    }
+                }
 
                 if(sajatKinalatok.length === 0) {
                     document.getElementById("kinalat-poszt").innerHTML = `
