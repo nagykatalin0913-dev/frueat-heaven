@@ -102,6 +102,94 @@
             text-shadow: 0 2px 12px rgba(0,0,0,0.8);
         }
 
+        /* ÉRTESÍTÉS INFO MODAL */
+        #notif-info-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .notif-info-content {
+            background: var(--dark-card2);
+            border: 1px solid var(--dark-border);
+            padding: 28px 22px 24px;
+            border-radius: 24px;
+            width: 88%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .notif-info-content .icon { font-size: 48px; margin-bottom: 12px; }
+        .notif-info-content h3 {
+            margin: 0 0 10px;
+            font-family: 'Playfair Display', serif;
+            color: var(--gold-light);
+            font-size: 20px;
+        }
+        .notif-info-content p {
+            color: var(--text-dim);
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0 0 20px;
+        }
+        .notif-info-content ul {
+            text-align: left;
+            color: var(--text-main);
+            font-size: 14px;
+            line-height: 2;
+            margin: 0 0 20px;
+            padding-left: 20px;
+        }
+        .notif-i-btn {
+            background: none;
+            border: 1px solid var(--dark-border);
+            color: var(--gold);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 6px;
+            vertical-align: middle;
+            font-family: serif;
+        }
+
+        /* ÉRTESÍTÉS ENGEDÉLY GOMB */
+        .notif-btn {
+            width: 100%;
+            padding: 13px;
+            border-radius: 12px;
+            border: 1.5px solid var(--dark-border);
+            background: rgba(201,168,76,0.08);
+            color: var(--text-main);
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .notif-btn.engedelyezve {
+            background: rgba(46,125,50,0.15);
+            border-color: rgba(46,125,50,0.4);
+            color: #4caf50;
+        }
+        .notif-btn:hover { background: rgba(201,168,76,0.15); }
+
         /* ELVÁLASZTÓ LEVÉL MOTÍVUM */
         .leaf-divider {
             text-align: center;
@@ -692,6 +780,39 @@
                 <input id="p-varos" class="full" placeholder="Település (automatikus)">
             </div>
 
+            <!-- Értesítés info modal -->
+            <div id="notif-info-modal">
+                <div class="notif-info-content">
+                    <div class="icon">🔔</div>
+                    <h3>Miért érdemes engedélyezni?</h3>
+                    <p>Ha nem engedélyezed az értesítéseket, lemaradhatsz:</p>
+                    <ul>
+                        <li>🍓 Friss heti kínálatokról</li>
+                        <li>⏰ Rendelési határidő emlékeztetőkről</li>
+                        <li>📦 Szállítás/átvétel értesítőkről</li>
+                    </ul>
+                    <p style="color:#ff8a80;font-weight:700;">Értesítés nélkül csak akkor tudsz rendelni, ha rendszeresen megnyitod az appot!</p>
+                    <button class="btn" onclick="document.getElementById('notif-info-modal').style.display='none';ertesitesEngedelyez()">
+                        🔔 Engedélyezem!
+                    </button>
+                    <div style="margin-top:10px;">
+                        <span onclick="document.getElementById('notif-info-modal').style.display='none'"
+                              style="color:var(--text-dim);font-size:13px;cursor:pointer;text-decoration:underline;">
+                            Kihagyom
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+                <button id="notif-btn" class="notif-btn" onclick="ertesitesEngedelyez()">
+                    🔔 Értesítések engedélyezése
+                    <button class="notif-i-btn" onclick="event.stopPropagation();document.getElementById('notif-info-modal').style.display='flex'" title="Miért kell ez?">i</button>
+                </button>
+                <small id="notif-info" style="color:var(--text-dim);font-size:12px;display:block;text-align:center;margin-bottom:8px;">
+                    Értesülj elsőként az új kínálatokról!
+                </small>
+            </div>
             <button class="btn" onclick="saveProfile()">Mentés és Tovább →</button>
         </div>
 
@@ -912,6 +1033,51 @@
 
         let userProfile = JSON.parse(localStorage.getItem("frueat_profile"));
         if(userProfile) adatokBetoltese();
+
+        // Értesítés engedélyezés gomb
+        async function ertesitesEngedelyez() {
+            var btn  = document.getElementById('notif-btn');
+            var info = document.getElementById('notif-info');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Kérés küldése...';
+
+            try {
+                if(window.OneSignalDeferred) {
+                    await new Promise(function(resolve) {
+                        OneSignalDeferred.push(async function(OneSignal) {
+                            try {
+                                await OneSignal.Notifications.requestPermission();
+                            } catch(e) {}
+                            resolve();
+                        });
+                    });
+                }
+
+                // Ellenőrzés
+                var engedelyezve = false;
+                if(window.OneSignalDeferred) {
+                    await new Promise(function(resolve) {
+                        OneSignalDeferred.push(async function(OneSignal) {
+                            engedelyezve = await OneSignal.Notifications.permission;
+                            resolve();
+                        });
+                    });
+                }
+
+                if(engedelyezve) {
+                    btn.innerHTML = '✅ Értesítések engedélyezve!';
+                    btn.className = 'notif-btn engedelyezve';
+                    if(info) info.innerText = 'Köszönjük! Értesíteni fogunk az új kínálatokról.';
+                } else {
+                    btn.innerHTML = '🔔 Értesítések engedélyezése';
+                    btn.disabled = false;
+                    if(info) info.innerText = 'Sajnos nem engedélyezted. A Tovább gombbal engedély nélkül is beléphetsz.';
+                }
+            } catch(e) {
+                btn.innerHTML = '🔔 Értesítések engedélyezése';
+                btn.disabled = false;
+            }
+        }
 
         function saveProfile() {
             let p = {
