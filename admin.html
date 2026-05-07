@@ -856,22 +856,22 @@ setInterval(fetchData, 60000);
 // ══════════════════════════════════════════════════════════════
 //  PUSH ÉRTESÍTÉS KÜLDÉS
 // ══════════════════════════════════════════════════════════════
-var ONESIGNAL_APP_ID = "2cb423d1-8af5-4f8f-bfe4-7019b6149cd2";
-var ONESIGNAL_API_KEY = "os_v2_app_fs2chumk6vhy7p7eoam3mfe42kwl2beputfuvbf3gnhaykxgt6bxsequ2lsq4b2j5ejpit2n7xuz6ffy4fdj35vl3ntmnqoffqrputi";
+// API kulcs a Google Apps Scriptben van elrejtve!
+// Az admin csak a saját scriptünkön keresztül küld push-t
 
 async function pushKuldes(tipus) {
     var cim, uzenet, resultEl, btn;
     if(tipus === 'kinalat') {
-        cim = document.getElementById('push-cim1').value.trim();
-        uzenet = document.getElementById('push-uzenet1').value.trim();
+        cim      = document.getElementById('push-cim1').value.trim();
+        uzenet   = document.getElementById('push-uzenet1').value.trim();
         resultEl = document.getElementById('push-result1');
     } else if(tipus === 'hatarido') {
-        cim = document.getElementById('push-cim2').value.trim();
-        uzenet = document.getElementById('push-uzenet2').value.trim();
+        cim      = document.getElementById('push-cim2').value.trim();
+        uzenet   = document.getElementById('push-uzenet2').value.trim();
         resultEl = document.getElementById('push-result2');
     } else {
-        cim = document.getElementById('push-cim3').value.trim();
-        uzenet = document.getElementById('push-uzenet3').value.trim();
+        cim      = document.getElementById('push-cim3').value.trim();
+        uzenet   = document.getElementById('push-uzenet3').value.trim();
         resultEl = document.getElementById('push-result3');
     }
     btn = resultEl ? resultEl.previousElementSibling : null;
@@ -882,34 +882,16 @@ async function pushKuldes(tipus) {
 
     try {
         var zona = document.getElementById('push-zona') ?
-                    document.getElementById('push-zona').value : 'all';
+                   document.getElementById('push-zona').value : 'all';
 
-        var body = {
-            app_id: ONESIGNAL_APP_ID,
-            headings: { en: cim, hu: cim },
-            contents: { en: uzenet, hu: uzenet },
-            url: "https://nagykatalin0913-dev.github.io/frueat-heaven/",
-        };
+        // A push kérés a saját Apps Scriptünkön megy át
+        // Az API kulcs ott van biztonságban, nem a HTML-ben
+        var url = API_URL + '?push=true'
+            + '&cim='    + encodeURIComponent(cim)
+            + '&uzenet=' + encodeURIComponent(uzenet)
+            + '&zona='   + encodeURIComponent(zona);
 
-        // Zóna alapú szűrés
-        if(zona === 'all') {
-            body.included_segments = ["All"];
-        } else {
-            // Csak az adott zónában lévő felhasználóknak
-            body.filters = [
-                { field: "tag", key: "zona", relation: "=", value: zona }
-            ];
-        }
-
-        var resp = await fetch("https://onesignal.com/api/v1/notifications", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Basic " + ONESIGNAL_API_KEY
-            },
-            body: JSON.stringify(body)
-        });
-
+        var resp = await fetch(url, { redirect: 'follow' });
         var data = await resp.json();
 
         if(resultEl) {
