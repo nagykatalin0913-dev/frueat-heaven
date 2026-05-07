@@ -241,14 +241,43 @@
 
     <div class="kin-section">
         <div class="kin-section-title">📅 Dátumok</div>
+
         <label class="kin-label">Rendelési határidő</label>
         <input type="datetime-local" id="kin-hatarido" class="kin-input">
-        <label class="kin-label">Kiszállítás ideje (pl. 05.12. Kedd 12:00-15:00)</label>
-        <input type="text" id="kin-kiszallitas" class="kin-input" placeholder="pl. 05.19. Kedd 12:00-15:00">
-        <label class="kin-label">Átvétel dátuma</label>
-        <input type="text" id="kin-atvetel-datum" class="kin-input" placeholder="pl. 2026.05.19. Kedd">
-        <label class="kin-label">Átvétel időpontja (tól-ig)</label>
-        <input type="text" id="kin-atvetel-toltig" class="kin-input" placeholder="pl. 16:00-18:00">
+
+        <label class="kin-label">Kiszállítás napja + időpontja</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Dátum</div>
+            <input type="date" id="kin-kiszallitas-datum" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitKiszallitas()"></div>
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Nap (pl. Kedd)</div>
+            <input type="text" id="kin-kiszallitas-nap" class="kin-input" style="margin-bottom:0;" placeholder="Kedd" oninput="kinFrissitKiszallitas()"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Időtől</div>
+            <input type="time" id="kin-kiszallitas-tol" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitKiszallitas()"></div>
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Időig</div>
+            <input type="time" id="kin-kiszallitas-ig" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitKiszallitas()"></div>
+        </div>
+        <div id="kin-kiszallitas-prev" style="font-size:12px;color:var(--green-dark);background:var(--green-light);border-radius:8px;padding:6px 10px;margin-bottom:10px;display:none;"></div>
+        <input type="hidden" id="kin-kiszallitas">
+
+        <label class="kin-label">Átvétel napja + időpontja</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Dátum</div>
+            <input type="date" id="kin-atvetel-datum-pick" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitAtvetel()"></div>
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Nap (pl. Kedd)</div>
+            <input type="text" id="kin-atvetel-nap" class="kin-input" style="margin-bottom:0;" placeholder="Kedd" oninput="kinFrissitAtvetel()"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Időtől</div>
+            <input type="time" id="kin-atvetel-tol" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitAtvetel()"></div>
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Időig</div>
+            <input type="time" id="kin-atvetel-ig" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitAtvetel()"></div>
+        </div>
+        <div id="kin-atvetel-prev" style="font-size:12px;color:var(--green-dark);background:var(--green-light);border-radius:8px;padding:6px 10px;margin-bottom:10px;display:none;"></div>
+        <input type="hidden" id="kin-atvetel-datum">
+        <input type="hidden" id="kin-atvetel-toltig">
+
         <label class="kin-label">Kínálat dátuma (melyik napra szól)</label>
         <input type="date" id="kin-datum" class="kin-input">
     </div>
@@ -963,6 +992,47 @@ setInterval(fetchData, 60000);
 var kinSelectedZona = "";
 var kinSelectedTermekek = {}; // { id: { nev, ar, egyseg } }
 
+function kinFrissitKiszallitas() {
+    var d   = document.getElementById('kin-kiszallitas-datum').value;
+    var nap = document.getElementById('kin-kiszallitas-nap').value.trim();
+    var tol = document.getElementById('kin-kiszallitas-tol').value;
+    var ig  = document.getElementById('kin-kiszallitas-ig').value;
+    var str = '';
+    if(d) {
+        var parts = d.split('-');
+        str += parts[1] + '.' + parts[2] + '.';
+    }
+    if(nap) str += (str ? ' ' : '') + nap;
+    if(tol) str += (str ? ' ' : '') + tol;
+    if(ig)  str += (tol ? '-' : (str ? ' ' : '')) + ig;
+    document.getElementById('kin-kiszallitas').value = str;
+    var prev = document.getElementById('kin-kiszallitas-prev');
+    if(str) { prev.style.display='block'; prev.textContent = '📦 ' + str; }
+    else    { prev.style.display='none'; }
+}
+
+function kinFrissitAtvetel() {
+    var d   = document.getElementById('kin-atvetel-datum-pick').value;
+    var nap = document.getElementById('kin-atvetel-nap').value.trim();
+    var tol = document.getElementById('kin-atvetel-tol').value;
+    var ig  = document.getElementById('kin-atvetel-ig').value;
+    var datStr = '';
+    if(d) {
+        var parts = d.split('-');
+        datStr = parts[0] + '.' + parts[1] + '.' + parts[2] + '.';
+        if(nap) datStr += ' ' + nap;
+    } else if(nap) { datStr = nap; }
+    var toltigStr = '';
+    if(tol) toltigStr += tol;
+    if(ig)  toltigStr += (tol ? '-' : '') + ig;
+    document.getElementById('kin-atvetel-datum').value   = datStr;
+    document.getElementById('kin-atvetel-toltig').value  = toltigStr;
+    var prev = document.getElementById('kin-atvetel-prev');
+    var full = (datStr + (toltigStr ? ' ' + toltigStr : '')).trim();
+    if(full) { prev.style.display='block'; prev.textContent = '📦 ' + full; }
+    else     { prev.style.display='none'; }
+}
+
 function kinZonaValaszt(el) {
     document.querySelectorAll('.kin-zona-chip').forEach(function(c){ c.classList.remove('active'); });
     el.classList.add('active');
@@ -1003,15 +1073,19 @@ async function kinBetoltTermekek() {
                     ? '<img src="' + kep + '" onerror="this.style.display=\'none\'" style="width:100%;height:70px;object-fit:cover;border-radius:8px;margin-bottom:6px;">'
                     : '<div style="height:70px;background:#f0f0f0;border-radius:8px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:24px;">🛒</div>';
 
-                html += '<div class="kin-termek-card" id="ktc-' + safeId + '"'
-                    + ' onclick="kinTermekValaszt(' + JSON.stringify(id) + ',' + nevJson + ',' + ar + ',' + egJson + ',' + JSON.stringify(safeId) + ')">'
+                var isSelected = !!kinSelectedTermekek[id];
+                html += '<div class="kin-termek-card' + (isSelected ? ' selected' : '') + '" id="ktc-' + safeId + '">'
                     + '<div class="kin-check">✓</div>'
                     + kepHtml
                     + '<div class="kin-termek-nev">' + nev + '</div>'
                     + '<div class="kin-termek-ar">' + ar + ' Ft / ' + eg + '</div>'
+                    + '<div style="display:flex;gap:4px;margin-top:6px;" onclick="event.stopPropagation()">'
                     + '<input type="number" class="kin-termek-ar-input" id="kar-' + safeId + '" value="' + aktAr + '" placeholder="Ár"'
-                    + ' onclick="event.stopPropagation()"'
-                    + ' oninput="kinArModosit(' + JSON.stringify(id) + ',' + JSON.stringify(safeId) + ')">'
+                    + ' oninput="kinArModosit(' + JSON.stringify(id) + ',' + JSON.stringify(safeId) + ')" style="flex:1;">'
+                    + '<button style="padding:6px 10px;border-radius:6px;border:none;background:' + (isSelected ? 'var(--red)' : 'var(--green)') + ';color:white;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;" id="kbtn-' + safeId + '"'
+                    + ' onclick="kinTermekValaszt(' + JSON.stringify(id) + ',' + nevJson + ',' + ar + ',' + egJson + ',' + JSON.stringify(safeId) + ')">'
+                    + (isSelected ? '✕' : '+ Add') + '</button>'
+                    + '</div>'
                     + '</div>';
             });
             grid.innerHTML = html || '<div style="color:#999;padding:10px;">Nincsenek termékek.</div>';
@@ -1032,15 +1106,18 @@ async function kinBetoltTermekek() {
 
 function kinTermekValaszt(id, nev, ar, eg, safeId) {
     var card = document.getElementById('ktc-' + safeId);
+    var btn  = document.getElementById('kbtn-' + safeId);
     if(!card) return;
     if(kinSelectedTermekek[id]) {
         delete kinSelectedTermekek[id];
         card.classList.remove('selected');
+        if(btn) { btn.textContent = '+ Add'; btn.style.background = 'var(--green)'; }
     } else {
         var arInput = document.getElementById('kar-' + safeId);
         var aktAr = arInput ? parseFloat(arInput.value) || ar : ar;
         kinSelectedTermekek[id] = { nev: nev, ar: aktAr, egyseg: eg };
         card.classList.add('selected');
+        if(btn) { btn.textContent = '✕'; btn.style.background = 'var(--red)'; }
     }
 }
 
@@ -1163,9 +1240,21 @@ function kinUrit() {
     document.getElementById('kin-cim').value = '';
     document.getElementById('kin-uzenet').value = '';
     document.getElementById('kin-hatarido').value = '';
+    // kiszállítás pickers
+    document.getElementById('kin-kiszallitas-datum').value = '';
+    document.getElementById('kin-kiszallitas-nap').value = '';
+    document.getElementById('kin-kiszallitas-tol').value = '';
+    document.getElementById('kin-kiszallitas-ig').value = '';
     document.getElementById('kin-kiszallitas').value = '';
+    document.getElementById('kin-kiszallitas-prev').style.display = 'none';
+    // átvétel pickers
+    document.getElementById('kin-atvetel-datum-pick').value = '';
+    document.getElementById('kin-atvetel-nap').value = '';
+    document.getElementById('kin-atvetel-tol').value = '';
+    document.getElementById('kin-atvetel-ig').value = '';
     document.getElementById('kin-atvetel-datum').value = '';
     document.getElementById('kin-atvetel-toltig').value = '';
+    document.getElementById('kin-atvetel-prev').style.display = 'none';
     document.getElementById('kin-datum').value = '';
     document.getElementById('kin-fokep').value = '';
     kinSelectedTermekek = {};
