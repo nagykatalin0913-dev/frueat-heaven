@@ -1069,8 +1069,7 @@ function kinElonezet() {
     var html = '<div class="kin-preview-box">';
     html += '<div style="font-size:11px;color:#aaa;margin-bottom:8px;">🗺️ Zóna: ' + zona + '</div>';
     if(cim) html += '<div class="kin-preview-title">' + cim + '</div>';
-    if(uzenet) html += '<div class="kin-preview-text">' + uzenet.replace(/
-/g,'<br>') + '</div>';
+    if(uzenet) html += '<div class="kin-preview-text">' + uzenet.replace(/\n/g,'<br>') + '</div>';
     if(termekSorok) html += '<div style="font-size:13px;color:#555;margin-bottom:10px;">' + termekSorok + '</div>';
     html += '<div class="kin-preview-info">';
     if(hatarido) html += '<strong>⏳ Határidő:</strong> ' + hatarido + '<br>';
