@@ -792,22 +792,22 @@
                         <li>📦 Szállítás/átvétel értesítőkről</li>
                     </ul>
                     <p style="color:#ff8a80;font-weight:700;">Értesítés nélkül csak akkor tudsz rendelni, ha rendszeresen megnyitod az appot!</p>
-                    <button class="btn" onclick="document.getElementById('notif-info-modal').style.display='none';ertesitesEngedelyez()">
+                    <button class="btn" onclick="notifEngedelyez()">
                         🔔 Engedélyezem!
                     </button>
                     <div style="margin-top:10px;">
-                        <span onclick="document.getElementById('notif-info-modal').style.display='none'"
+                        <span onclick="notifKihagyom()"
                               style="color:var(--text-dim);font-size:13px;cursor:pointer;text-decoration:underline;">
-                            Kihagyom
+                            Kihagyom, belépek értesítések nélkül
                         </span>
                     </div>
                 </div>
             </div>
 
             <div style="margin-bottom:10px;">
-                <button id="notif-btn" class="notif-btn" onclick="ertesitesEngedelyez()">
+                <button id="notif-btn" class="notif-btn" onclick="document.getElementById('notif-info-modal').style.display='flex'">
                     🔔 Értesítések engedélyezése
-                    <button class="notif-i-btn" onclick="event.stopPropagation();document.getElementById('notif-info-modal').style.display='flex'" title="Miért kell ez?">i</button>
+                    <span class="notif-i-btn" onclick="event.stopPropagation();document.getElementById('notif-info-modal').style.display='flex'" title="Miért kell ez?">i</span>
                 </button>
                 <small id="notif-info" style="color:var(--text-dim);font-size:12px;display:block;text-align:center;margin-bottom:8px;">
                     Értesülj elsőként az új kínálatokról!
@@ -1034,59 +1034,73 @@
         let userProfile = JSON.parse(localStorage.getItem("frueat_profile"));
         if(userProfile) adatokBetoltese();
 
-        // Értesítés engedélyezés gomb
-        async function ertesitesEngedelyez() {
-            var btn  = document.getElementById('notif-btn');
-            var info = document.getElementById('notif-info');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Kérés küldése...';
+        async function notifEngedelyez() {
+            document.getElementById('notif-info-modal').style.display = 'none';
+            ertesitesDontott = true;
 
+            // Értesítés engedély kérés
             try {
                 if(window.OneSignalDeferred) {
-                    await new Promise(function(resolve) {
-                        OneSignalDeferred.push(async function(OneSignal) {
-                            try {
-                                await OneSignal.Notifications.requestPermission();
-                            } catch(e) {}
-                            resolve();
-                        });
+                    OneSignalDeferred.push(async function(OneSignal) {
+                        try {
+                            await OneSignal.Notifications.requestPermission();
+                            // Gomb frissítés
+                            var btn = document.getElementById('notif-btn');
+                            var info = document.getElementById('notif-info');
+                            var engedelyezve = await OneSignal.Notifications.permission;
+                            if(engedelyezve && btn) {
+                                btn.innerHTML = '✅ Értesítések engedélyezve!';
+                                btn.className = 'notif-btn engedelyezve';
+                            }
+                        } catch(e) {}
                     });
                 }
+            } catch(e) {}
 
-                // Ellenőrzés
-                var engedelyezve = false;
-                if(window.OneSignalDeferred) {
-                    await new Promise(function(resolve) {
-                        OneSignalDeferred.push(async function(OneSignal) {
-                            engedelyezve = await OneSignal.Notifications.permission;
-                            resolve();
-                        });
-                    });
-                }
-
-                if(engedelyezve) {
-                    btn.innerHTML = '✅ Értesítések engedélyezve!';
-                    btn.className = 'notif-btn engedelyezve';
-                    if(info) info.innerText = 'Köszönjük! Értesíteni fogunk az új kínálatokról.';
-                } else {
-                    btn.innerHTML = '🔔 Értesítések engedélyezése';
-                    btn.disabled = false;
-                    if(info) info.innerText = 'Sajnos nem engedélyezted. A Tovább gombbal engedély nélkül is beléphetsz.';
-                }
-            } catch(e) {
-                btn.innerHTML = '🔔 Értesítések engedélyezése';
-                btn.disabled = false;
+            // Ha a Tovább gomb miatt jött ide → folytatja a mentést
+            if(window._mentendoProfil) {
+                window._mentendoProfil = false;
+                saveProfile();
             }
         }
 
+        function notifKihagyom() {
+            document.getElementById('notif-info-modal').style.display = 'none';
+            ertesitesDontott = true;
+            var btn = document.getElementById('notif-btn');
+            var info = document.getElementById('notif-info');
+            if(btn) { btn.innerHTML = '🔕 Értesítések kihagyva'; btn.style.opacity = '0.5'; }
+            if(info) info.innerText = 'Kihagytad — a Mentés gombbal beléphetsz.';
+
+            // Ha a Tovább gomb miatt jött ide → folytatja a mentést
+            if(window._mentendoProfil) {
+                window._mentendoProfil = false;
+                saveProfile();
+            }
+        }
+
+        async function ertesitesEngedelyez() {
+            document.getElementById('notif-info-modal').style.display = 'flex';
+        }
+
+        var ertesitesDontott = false; // megnyomta-e az engedélyez vagy kihagyom gombot
+
         function saveProfile() {
+            // Ha még nem döntött az értesítésről → feldobjuk a modalt
+            if(!ertesitesDontott) {
+                // Eltároljuk az adatokat hogy a modal után folytassa
+                window._mentendoProfil = true;
+                document.getElementById('notif-info-modal').style.display = 'flex';
+                return;
+            }
+
             let p = {
                 vnev: document.getElementById("p-vnev").value.trim(),
                 knev: document.getElementById("p-knev").value.trim(),
                 tel: document.getElementById("p-tel").value.trim().replace(/\s+/g, '').replace(/-/g, ''),
                 irsz: document.getElementById("p-irsz").value.trim(),
                 varos: document.getElementById("p-varos").value.trim(),
-                utca: ""  // csak házhozszállításnál kell, ott kérjük be
+                utca: ""
             };
 
             if(!p.vnev || !p.knev || !p.tel || !p.irsz) {
