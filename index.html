@@ -736,12 +736,31 @@
         }
     
         /* CHAT GOMBOK */
-        #chat-buttons { position:fixed; bottom:90px; right:16px; display:none; flex-direction:column; gap:10px; z-index:1000; }
-        .chat-btn { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,0,0,0.4); transition:transform 0.15s; text-decoration:none; }
-        .chat-btn:active { transform:scale(0.92); }
-        .chat-btn svg { width:28px; height:28px; }
-        .chat-btn-wa  { background:#25D366; }
-        .chat-btn-msg { background:#0084FF; }
+        #chat-buttons {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            display: none;
+            flex-direction: row;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .chat-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+            transition: transform 0.15s, opacity 0.15s;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        .chat-btn:active { transform: scale(0.92); opacity: 0.8; }
+        .chat-btn svg { width: 26px; height: 26px; fill: #0d0d0d; }
 </style>
 </head>
 
