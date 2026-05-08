@@ -1098,45 +1098,49 @@ async function kinListaBetolt() {
             var rowid    = k.rowid || k['rowid'] || '';
             kinListaAdatok[rowid] = k; // eltároljuk részletezéshez
 
-            // Státusz ikonok
-            var isKozzeTett  = statusz === 'közzétett' || statusz === 'kozzetett';
-            var isErtesitve  = statusz === 'értesítve' || statusz === 'ertesitve';
-            var isPiszkozat  = !isKozzeTett && !isErtesitve;
+            var isKozzeTett = statusz === 'közzétett' || statusz === 'kozzetett';
+            var isErtesitve = statusz === 'értesítve' || statusz === 'ertesitve';
+            var isPiszkozat = !isKozzeTett && !isErtesitve;
 
-            var statuszHtml = '';
+            // Státusz sor: ikon + szöveg, 1-3 opció közül a megfelelő
+            var statuszHtml;
             if(isPiszkozat) {
-                statuszHtml = '<span style="font-size:11px;font-weight:700;color:#888;">📝 Piszkozat</span>';
+                statuszHtml = '<span style="font-size:13px;font-weight:700;color:#999;">📝 Piszkozat</span>';
+            } else if(isKozzeTett && !isErtesitve) {
+                statuszHtml = '<span style="font-size:13px;font-weight:700;color:#2e7d32;">✅ Közzétett</span>';
             } else {
-                statuszHtml  = '<span title="Közzétéve" style="font-size:15px;">✅</span>';
-                if(isErtesitve) statuszHtml += ' <span title="Értesítve" style="font-size:15px;">🔔</span>';
+                statuszHtml = '<div style="display:flex;flex-direction:column;gap:2px;">'
+                    + '<span style="font-size:13px;font-weight:700;color:#2e7d32;">✅ Közzétett</span>'
+                    + '<span style="font-size:13px;font-weight:700;color:#1565c0;">✅ 🔔 Értesítve</span>'
+                    + '</div>';
             }
 
             var cardBorder = isPiszkozat ? '#e0e0e0' : isErtesitve ? '#a5d6a7' : '#c8e6c9';
 
             html += '<div style="background:#f9fdf9;border-radius:10px;padding:12px;margin-bottom:8px;border:1.5px solid ' + cardBorder + ';">';
 
-            // Fejléc sor: cím + státusz ikonok
-            html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;cursor:pointer;" onclick="kinReszlet(' + rowid + ')">';
+            // 1. sor: cím + státusz
+            html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">';
             html += '<div style="flex:1;min-width:0;">';
             html += '<div style="font-weight:800;font-size:14px;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + cim + '</div>';
             if(datum) html += '<div style="font-size:11px;color:#aaa;margin-top:2px;">' + datum + (zona ? ' · ' + zona : '') + '</div>';
-            if(hatarido) html += '<div style="font-size:11px;color:#888;margin-top:1px;">⏳ Határidő: ' + hatarido + '</div>';
+            if(hatarido) html += '<div style="font-size:11px;color:#888;margin-top:1px;">⏳ ' + hatarido + '</div>';
             html += '</div>';
-            html += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">';
-            html += statuszHtml;
-            html += '<span style="font-size:10px;color:#bbb;">👁 megtekint</span>';
-            html += '</div>';
+            html += '<div style="flex-shrink:0;text-align:right;">' + statuszHtml + '</div>';
             html += '</div>';
 
-            // Gombok
-            html += '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">';
+            // 2. sor: akció gombok
+            html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;">';
             if(isPiszkozat) {
-                html += '<button onclick="kinKozzetes(' + rowid + ')" style="padding:6px 12px;border-radius:8px;background:var(--green);color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;">🚀 Közzétesz + Értesít</button>';
-                html += '<button onclick="kinCsakErtesit(' + rowid + ')" style="padding:6px 12px;border-radius:8px;background:#1565c0;color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;">🔔 Csak értesít</button>';
+                html += '<button onclick="kinKozzetes(' + rowid + ')" style="padding:6px 11px;border-radius:8px;background:var(--green);color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;">🚀 Közzétesz + Értesít</button>';
+                html += '<button onclick="kinCsakErtesit(' + rowid + ')" style="padding:6px 11px;border-radius:8px;background:#1565c0;color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;">🔔 Csak értesít</button>';
             } else {
-                html += '<button onclick="kinCsakErtesit(' + rowid + ')" style="padding:6px 12px;border-radius:8px;background:#ff9800;color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;">🔔 Újra értesít</button>';
+                html += '<button onclick="kinCsakErtesit(' + rowid + ')" style="padding:6px 11px;border-radius:8px;background:#ff9800;color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;">🔔 Újra értesít</button>';
             }
-            html += '<button onclick="kinTorol(' + rowid + ',event)" style="margin-left:auto;padding:6px 10px;border-radius:8px;background:none;border:1.5px solid #e57373;color:#e57373;font-size:12px;font-weight:700;cursor:pointer;">🗑 Töröl</button>';
+            html += '<div style="margin-left:auto;display:flex;gap:6px;">';
+            html += '<button onclick="kinReszlet(' + rowid + ')" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid var(--green);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;">👁 Megtekint</button>';
+            html += '<button onclick="kinTorol(' + rowid + ',event)" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid #e57373;color:#e57373;font-size:12px;font-weight:700;cursor:pointer;">🗑</button>';
+            html += '</div>';
             html += '</div>';
             html += '</div>';
         });
@@ -1150,19 +1154,42 @@ function kinReszlet(rowid) {
     var k = kinListaAdatok[rowid];
     if(!k) return;
     var baseUrl = 'https://nagykatalin0913-dev.github.io/frueat-heaven/';
-    var fokep = (k.fokep || k['fokep'] || '').toString().trim();
-    var kepUrl = fokep ? (fokep.startsWith('http') ? fokep : baseUrl + fokep) : '';
-    var uzenet = (k.uzenet || k['uzenet'] || '').toString();
+    var fokep       = (k.fokep || k['fokep'] || '').toString().trim();
+    var kepUrl      = fokep ? (fokep.startsWith('http') ? fokep : baseUrl + fokep) : '';
+    var uzenet      = (k.uzenet || k['uzenet'] || '').toString();
     var kiszallitas = k.kiszallitas_ideje || k['kiszallitas_ideje'] || '';
     var atvetelDat  = k.atvetel_datum || k['atvetel_datum'] || '';
     var atvetelIdo  = k.atvetel_tol_ig || k['atvetel_tol_ig'] || '';
     var hatarido    = k.hatarido || k['hatarido'] || '';
     var statusz     = (k.statusz || k['statusz'] || 'piszkozat').toString().trim();
+    var termekIdkStr = (k.termek_idk || k['termek_idk'] || '').toString();
 
     var html = '<div style="padding:4px 0;">';
     html += '<div style="font-size:11px;color:#aaa;margin-bottom:4px;">' + (k.zona||'Mindenki') + ' · ' + (k.datum||'') + '</div>';
     html += '<div style="font-size:18px;font-weight:800;color:#1b5e20;margin-bottom:8px;">' + (k.cim||'') + '</div>';
     if(uzenet) html += '<div style="font-size:14px;color:#444;line-height:1.6;margin-bottom:10px;">' + uzenet.replace(/\n/g,'<br>') + '</div>';
+
+    // Termékek a termek_idk alapján
+    if(termekIdkStr && Object.keys(kinAdatbazis).length > 0) {
+        var termekIdLista = termekIdkStr.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        if(termekIdLista.length > 0) {
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">';
+            termekIdLista.forEach(function(tid) {
+                var t = kinAdatbazis[tid];
+                if(!t) return;
+                var kep = t.kep ? (t.kep.startsWith('http') ? t.kep : baseUrl + t.kep) : '';
+                html += '<div style="background:#f9fdf9;border-radius:10px;padding:8px;border:1px solid #e8f5e9;text-align:center;">';
+                if(kep) html += '<img src="' + kep + '" style="width:100%;height:60px;object-fit:cover;border-radius:7px;margin-bottom:5px;">';
+                html += '<div style="font-size:13px;font-weight:800;color:#1b5e20;">' + t.nev + '</div>';
+                html += '<div style="font-size:12px;color:#555;">' + t.ar + ' Ft / ' + t.egyseg + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+    } else if(termekIdkStr) {
+        // kinAdatbazis még nem töltődött be – egyszerű lista
+        html += '<div style="font-size:13px;color:#555;margin-bottom:10px;">Termék ID-k: ' + termekIdkStr + '</div>';
+    }
 
     if(hatarido || kiszallitas || atvetelDat) {
         html += '<div style="background:#e8f5e9;border-radius:8px;padding:10px;font-size:13px;line-height:1.8;margin-bottom:10px;">';
