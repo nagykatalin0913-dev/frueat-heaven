@@ -1240,12 +1240,18 @@
                     const kZona = zonaErtek(k, "zona").toString().trim();
                     const zonaEgyezik = kZona === "" || normZona(kZona) === normZona(zonaAzonosito);
 
-                    // Dátum: a kiszállítás dátuma nem lehet múltbeli (ma vagy jövő OK)
-                    const kDatum = parseDatum(k.datum);
-                    if(kDatum) kDatum.setHours(0,0,0,0);
-                    const datumOK = !kDatum || kDatum >= ma;
+                    // Státusz szűrés
+                    const kSt = (k.statusz || k["statusz"] || "").toString().trim().toLowerCase();
+                    if(kSt === "piszkozat" || kSt === "törölt" || kSt === "torolt") return false;
 
-                    console.log("Kínálat szűrés:", kZona, "->", normZona(kZona), "vs", normZona(zonaAzonosito), "zona:", zonaEgyezik, "| datum:", k.datum, "->", kDatum, "ok:", datumOK);
+                    // Dátum: aznap este 8-ig látszik, utána eltűnik
+                    const kDatum = parseDatum(k.datum);
+                    let datumOK = true;
+                    if(kDatum) {
+                        const eltunes = new Date(kDatum);
+                        eltunes.setHours(20, 0, 0, 0); // este 8
+                        datumOK = new Date() < eltunes;
+                    }
 
                     return zonaEgyezik && datumOK;
                 });
@@ -1254,7 +1260,7 @@
                 // Piszkozatokat kiszűrjük
                 const aktKinalatok = sajatKinalatok.filter(k => {
                     const st = (k.statusz || k["statusz"] || "").toString().trim().toLowerCase();
-                    return st !== "piszkozat";
+                    return st !== "piszkozat" && st !== "törölt" && st !== "torolt";
                 });
                 aktKinalatok.sort((a, b) => {
                     const da = parseDatum(a.datum) || new Date("9999-12-31");
