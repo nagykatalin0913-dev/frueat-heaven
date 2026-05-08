@@ -1086,7 +1086,10 @@ async function kinListaBetolt() {
             container.innerHTML = '<div style="color:#aaa;font-size:13px;">Még nincs mentett kínálat.</div>';
             return;
         }
-        lista = lista.slice().reverse();
+        lista = lista.slice().reverse().filter(function(k) {
+            var st = (k.statusz || k['statusz'] || '').toString().trim().toLowerCase();
+            return st !== 'törölt' && st !== 'torolt';
+        });
         kinListaAdatok = {};
         var html = '';
         lista.forEach(function(k) {
@@ -1100,7 +1103,8 @@ async function kinListaBetolt() {
 
             var isKozzeTett = statusz === 'közzétett' || statusz === 'kozzetett';
             var isErtesitve = statusz === 'értesítve' || statusz === 'ertesitve';
-            var isPiszkozat = !isKozzeTett && !isErtesitve;
+            var isTorolt    = statusz === 'törölt' || statusz === 'torolt';
+            var isPiszkozat = !isKozzeTett && !isErtesitve && !isTorolt;
 
             // Státusz sor: ikon + szöveg, 1-3 opció közül a megfelelő
             var statuszHtml;
@@ -1232,15 +1236,15 @@ async function kinCsakErtesit(rowid) {
 
 async function kinTorol(rowid, ev) {
     if(ev) ev.stopPropagation();
-    if(!confirm('Biztosan törlöd ezt a kínálatot? Ez nem visszavonható.')) return;
+    if(!confirm('Biztosan törlöd ezt a kínálatot? A sheetben "törölt" státuszra vált, de megmarad.')) return;
     try {
-        var url = API_URL + '?deleteKinalat=true&rowId=' + rowid;
+        var url = API_URL + '?updateKinalat=true&rowId=' + rowid + '&statusz=' + encodeURIComponent('törölt');
         var r = await fetch(url, { redirect: 'follow' });
         var res = await r.text();
         if(res.trim().startsWith('ok')) {
             kinListaBetolt();
         } else {
-            alert('Hiba a törléskor: ' + res);
+            alert('Hiba: ' + res);
         }
     } catch(e) { alert('Hiba: ' + e.message); }
 }
