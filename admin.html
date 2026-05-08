@@ -240,8 +240,9 @@
 
     <div class="kin-section">
         <div class="kin-section-title">🗺️ Zóna</div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:8px;">Több zóna is választható – "Mindenki" mindent felülír</div>
         <div class="kin-zona-grid" id="kin-zona-grid">
-            <div class="kin-zona-chip active" data-zona="" onclick="kinZonaValaszt(this)">🌍 Mindenki</div>
+            <div class="kin-zona-chip" data-zona="MINDENKI" onclick="kinZonaValaszt(this)" style="grid-column:1/-1;">🌍 Mindenki</div>
             <div class="kin-zona-chip" data-zona="Pécel" onclick="kinZonaValaszt(this)">Pécel</div>
             <div class="kin-zona-chip" data-zona="Maglód" onclick="kinZonaValaszt(this)">Maglód</div>
             <div class="kin-zona-chip" data-zona="Gyömrő" onclick="kinZonaValaszt(this)">Gyömrő</div>
@@ -251,6 +252,7 @@
             <div class="kin-zona-chip" data-zona="XVIII" onclick="kinZonaValaszt(this)">XVIII. ker.</div>
             <div class="kin-zona-chip" data-zona="Dunaharaszti" onclick="kinZonaValaszt(this)">Dunaharaszti</div>
         </div>
+        <div id="kin-zona-preview" style="font-size:12px;color:var(--green-dark);margin-top:6px;font-weight:700;"></div>
     </div>
 
     <div class="kin-section">
@@ -264,24 +266,8 @@
     <div class="kin-section">
         <div class="kin-section-title">📅 Dátumok</div>
 
-        <label class="kin-label">Rendelési határidő</label>
-        <input type="datetime-local" id="kin-hatarido" class="kin-input">
-
-        <label class="kin-label">Kiszállítás napja + időpontja</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Dátum</div>
-            <input type="date" id="kin-kiszallitas-datum" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitKiszallitas()"></div>
-            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Nap (pl. Kedd)</div>
-            <input type="text" id="kin-kiszallitas-nap" class="kin-input" style="margin-bottom:0;" placeholder="Kedd" oninput="this.dataset.manuallySet='1';kinFrissitKiszallitas()"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
-            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Időtől</div>
-            <input type="time" id="kin-kiszallitas-tol" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitKiszallitas()"></div>
-            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Időig</div>
-            <input type="time" id="kin-kiszallitas-ig" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitKiszallitas()"></div>
-        </div>
-        <div id="kin-kiszallitas-prev" style="font-size:12px;color:var(--green-dark);background:var(--green-light);border-radius:8px;padding:6px 10px;margin-bottom:10px;display:none;"></div>
-        <input type="hidden" id="kin-kiszallitas">
+        <label class="kin-label">Kínálat dátuma (melyik napra szól)</label>
+        <input type="date" id="kin-datum" class="kin-input">
 
         <label class="kin-label">Átvétel napja + időpontja</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
@@ -300,8 +286,24 @@
         <input type="hidden" id="kin-atvetel-datum">
         <input type="hidden" id="kin-atvetel-toltig">
 
-        <label class="kin-label">Kínálat dátuma (melyik napra szól)</label>
-        <input type="date" id="kin-datum" class="kin-input">
+        <label class="kin-label">Kiszállítás napja + időpontja</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Dátum</div>
+            <input type="date" id="kin-kiszallitas-datum" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitKiszallitas()"></div>
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Nap (pl. Kedd)</div>
+            <input type="text" id="kin-kiszallitas-nap" class="kin-input" style="margin-bottom:0;" placeholder="Kedd" oninput="this.dataset.manuallySet='1';kinFrissitKiszallitas()"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Időtől</div>
+            <input type="time" id="kin-kiszallitas-tol" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitKiszallitas()"></div>
+            <div><div style="font-size:11px;color:#aaa;margin-bottom:3px;">Időig</div>
+            <input type="time" id="kin-kiszallitas-ig" class="kin-input" style="margin-bottom:0;" oninput="kinFrissitKiszallitas()"></div>
+        </div>
+        <div id="kin-kiszallitas-prev" style="font-size:12px;color:var(--green-dark);background:var(--green-light);border-radius:8px;padding:6px 10px;margin-bottom:10px;display:none;"></div>
+        <input type="hidden" id="kin-kiszallitas">
+
+        <label class="kin-label">Rendelési határidő</label>
+        <input type="datetime-local" id="kin-hatarido" class="kin-input">
     </div>
 
     <div class="kin-section">
@@ -845,6 +847,7 @@ function renderBszerzes() {
                 '<div class="bsz-header-left">' +
                     '<div class="bsz-nev">' + htmlEsc(nev) + '</div>' +
                     '<div class="bsz-osszesen-badge">Összesen: ' + kerekitSzam(t.osszes_mennyiseg || bsuly) + ' ' + dispEgy + '</div>' +
+                    (mgvan && mr !== null ? '<div id="bsz-mfej-' + idx + '" style="font-size:13px;font-weight:800;margin-top:4px;color:' + (mr >= 0 ? '#2e7d32' : '#c62828') + ';">Maradék: ' + (mr >= 0 ? '+' : '') + kerekitSzam(mr) + ' ' + dispEgy + '</div>' : '<div id="bsz-mfej-' + idx + '" style="display:none;"></div>') +
                 '</div>' +
                 '<div class="bsz-megvan-indicator">' + (mgvan ? '✅' : '') + '</div>' +
             '</div>' +
@@ -985,6 +988,30 @@ function bszMgChange(idx, rid) {
     }
     if (bszKartyak[idx]) bszKartyak[idx].megvan = cb.checked;
     bszSave(idx, rid);
+    // Maradék megjelenítése a fejlécben ha megvan
+    var fejMarEl = document.getElementById('bsz-mfej-' + idx);
+    if(fejMarEl) {
+        var mEl = document.getElementById('bsz-m-' + idx);
+        var mText = mEl ? mEl.textContent : '';
+        var t = bszKartyak[idx];
+        if(cb.checked && t) {
+            var vv = parseFloat(document.getElementById('bsz-v-' + idx) ? document.getElementById('bsz-v-' + idx).value : 0) || t.vasarolt_mennyiseg || 0;
+            var tv = parseFloat(document.getElementById('bsz-t-' + idx) ? document.getElementById('bsz-t-' + idx).value : 0) || t.tenyleges_suly || 0;
+            var bv = t.becsult_suly || 0;
+            var hasz = tv > 0 ? tv : bv;
+            var mr = vv > 0 && hasz > 0 ? Math.round((vv - hasz) * 100) / 100 : null;
+            var egy = t.egyseg || 'kg';
+            if(mr !== null) {
+                fejMarEl.style.display = '';
+                fejMarEl.style.color = mr >= 0 ? '#2e7d32' : '#c62828';
+                fejMarEl.textContent = 'Maradék: ' + (mr >= 0 ? '+' : '') + mr + ' ' + egy;
+            } else {
+                fejMarEl.style.display = 'none';
+            }
+        } else {
+            fejMarEl.style.display = 'none';
+        }
+    }
     // Összesítő frissítés
     var mgv = bszKartyak.filter(function(t){ return t.megvan; }).length;
     document.getElementById('bsz-db-megvan').innerText = mgv + ' / ' + bszKartyak.length;
@@ -1013,8 +1040,12 @@ setInterval(fetchData, 60000);
 //  KÍNÁLAT SZERKESZTŐ
 // ══════════════════════════════════════════════════════════════
 
-var kinSelectedZona = "";
-var kinSelectedTermekek = {}; // { id: { nev, ar, egyseg } }
+var kinSelectedZonak = []; // több zóna
+var kinSelectedTermekek = {};
+
+Object.defineProperty(window, 'kinSelectedZona', {
+    get: function() { return kinSelectedZonak.length === 0 ? '' : kinSelectedZonak.join(','); }
+}); // { id: { nev, ar, egyseg } }
 
 var NAPNEVEK = ['Vasárnap','Hétfő','Kedd','Szerda','Csütörtök','Péntek','Szombat'];
 function kinFrissitKiszallitas() {
@@ -1250,9 +1281,24 @@ async function kinTorol(rowid, ev) {
 }
 
 function kinZonaValaszt(el) {
-    document.querySelectorAll('.kin-zona-chip').forEach(function(c){ c.classList.remove('active'); });
-    el.classList.add('active');
-    kinSelectedZona = el.dataset.zona || "";
+    var zona = el.dataset.zona;
+    if(zona === 'MINDENKI') {
+        kinSelectedZonak = [];
+        document.querySelectorAll('.kin-zona-chip').forEach(function(c){ c.classList.remove('active'); });
+        el.classList.add('active');
+    } else {
+        var mindenkiEl = document.querySelector('.kin-zona-chip[data-zona="MINDENKI"]');
+        if(mindenkiEl) mindenkiEl.classList.remove('active');
+        if(el.classList.contains('active')) {
+            el.classList.remove('active');
+            kinSelectedZonak = kinSelectedZonak.filter(function(z){ return z !== zona; });
+        } else {
+            el.classList.add('active');
+            kinSelectedZonak.push(zona);
+        }
+    }
+    var prev = document.getElementById('kin-zona-preview');
+    if(prev) prev.textContent = kinSelectedZonak.length > 0 ? '✓ Kiválasztva: ' + kinSelectedZonak.join(', ') : '';
 }
 
 // kinAdatbazis: id -> {nev, ar, egyseg, kep, kep2}
@@ -1389,7 +1435,7 @@ function kinElonezet() {
     var atvetelDatum = document.getElementById('kin-atvetel-datum').value.trim();
     var atvetelToltig = document.getElementById('kin-atvetel-toltig').value.trim();
     var fokep = document.getElementById('kin-fokep').value.trim();
-    var zona = kinSelectedZona || 'Mindenki';
+    var zona = kinSelectedZonak.length === 0 ? 'Mindenki' : kinSelectedZonak.join(', ');
 
     // Sync ar values from live inputs before preview
     document.querySelectorAll('#kin-kivalasztott-lista input[type=number]').forEach(function(inp) {
@@ -1404,33 +1450,31 @@ function kinElonezet() {
     if(cim) html += '<div class="kin-preview-title">' + cim + '</div>';
     if(uzenet) html += '<div class="kin-preview-text">' + uzenet.replace(/\n/g,'<br>') + '</div>';
 
-    // Termékek kártyák az előnézetben
+    // 3. Főkép
+    if(fokep) {
+        var kepUrl = fokep.startsWith('http') ? fokep : baseUrl + fokep;
+        html += '<img src="' + kepUrl + '" style="width:100%;border-radius:10px;margin-bottom:12px;">';
+    }
+    // 4. Termékek egymás alatt
     var ids = Object.keys(kinSelectedTermekek);
     if(ids.length > 0) {
-        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">';
         ids.forEach(function(id) {
             var t  = kinSelectedTermekek[id];
             var db = kinAdatbazis[id] || {};
             var kep = db.kep ? (db.kep.startsWith('http') ? db.kep : baseUrl + db.kep) : '';
-            html += '<div style="background:white;border-radius:10px;padding:8px;border:1px solid #e8f5e9;text-align:center;">';
-            if(kep) html += '<img src="' + kep + '" style="width:100%;height:60px;object-fit:cover;border-radius:7px;margin-bottom:5px;">';
-            html += '<div style="font-size:13px;font-weight:800;color:#1b5e20;">' + t.nev + '</div>';
-            html += '<div style="font-size:12px;color:#555;">' + t.ar + ' Ft / ' + t.egyseg + '</div>';
+            html += '<div style="background:white;border-radius:10px;padding:10px;border:1px solid #e8f5e9;margin-bottom:8px;display:flex;align-items:center;gap:10px;">';
+            if(kep) html += '<img src="' + kep + '" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0;">';
+            html += '<div><div style="font-size:14px;font-weight:800;color:#1b5e20;">' + t.nev + '</div>';
+            html += '<div style="font-size:13px;color:#555;">' + t.ar + ' Ft / ' + t.egyseg + '</div></div>';
             html += '</div>';
         });
-        html += '</div>';
     }
-
+    // 5. Dátumok
     html += '<div class="kin-preview-info">';
     if(hatarido) html += '<strong>⏳ Határidő:</strong> ' + hatarido + '<br>';
     if(kiszallitas) html += '<strong>🛵 Kiszállítás:</strong> ' + kiszallitas + '<br>';
     if(atvetelDatum || atvetelToltig) html += '<strong>📦 Átvétel:</strong> ' + atvetelDatum + (atvetelToltig ? ' ' + atvetelToltig : '');
     html += '</div>';
-
-    if(fokep) {
-        var kepUrl = fokep.startsWith('http') ? fokep : baseUrl + fokep;
-    html += '<img src="' + kepUrl + '" style="width:100%;border-radius:10px;margin-top:10px;">';
-    }
     html += '</div>';
 
     preview.innerHTML = html;
@@ -1475,9 +1519,12 @@ async function kinMentes(publikal) {
     resultEl.style.display = 'block';
 
     try {
-        // Kínálat mentése a sheetbe
         var statusz = publikal ? 'közzétett' : 'piszkozat';
-        var url = API_URL + '?ujKinalat=true' +
+
+        // Zónák meghatározása: ha üres = Mindenki (1 sor), különben minden zónának külön sor
+        var mentendoZonak = kinSelectedZonak.length === 0 ? [''] : kinSelectedZonak;
+
+        var baseParams = '?ujKinalat=true' +
             '&cim=' + encodeURIComponent(cim) +
             '&uzenet=' + encodeURIComponent(uzenet) +
             '&hatarido=' + encodeURIComponent(hatarido) +
@@ -1486,29 +1533,38 @@ async function kinMentes(publikal) {
             '&atvetel_tol_ig=' + encodeURIComponent(atvetelToltig) +
             '&datum=' + encodeURIComponent(datum) +
             '&fokep=' + encodeURIComponent(fokep) +
-            '&zona=' + encodeURIComponent(kinSelectedZona) +
             '&termek_idk=' + encodeURIComponent(termekIdk) +
             '&statusz=' + encodeURIComponent(statusz);
 
-        var r = await fetch(url, { redirect: 'follow' });
-        var res = await r.text();
+        // Minden zónának külön API hívás → külön sor a sheetben
+        var mentesOk = true;
+        for(var zi = 0; zi < mentendoZonak.length; zi++) {
+            var zonaParam = mentendoZonak[zi];
+            var url = API_URL + baseParams + '&zona=' + encodeURIComponent(zonaParam);
+            var r = await fetch(url, { redirect: 'follow' });
+            var res = await r.text();
+            if(!res.trim().startsWith('ok')) { mentesOk = false; break; }
+        }
 
-        if(res.trim().startsWith('ok')) {
+        if(mentesOk) {
             if(publikal) {
-                // Push értesítés küldése
+                // Push értesítés küldése – minden érintett zónának
                 var pushCim = 'Új kínálat érkezett! 🍓';
                 var pushUzenet = cim || 'Nézd meg a heti friss kínálatunkat!';
-                var pushUrl = API_URL + '?push=true' +
-                    '&cim=' + encodeURIComponent(pushCim) +
-                    '&uzenet=' + encodeURIComponent(pushUzenet) +
-                    '&zona=' + encodeURIComponent(kinSelectedZona);
-                await fetch(pushUrl, { redirect: 'follow' });
-
+                for(var pi = 0; pi < mentendoZonak.length; pi++) {
+                    var pushUrl = API_URL + '?push=true' +
+                        '&cim=' + encodeURIComponent(pushCim) +
+                        '&uzenet=' + encodeURIComponent(pushUzenet) +
+                        '&zona=' + encodeURIComponent(mentendoZonak[pi] || 'all');
+                    await fetch(pushUrl, { redirect: 'follow' });
+                }
+                var zSzam = mentendoZonak.length;
                 resultEl.className = 'kin-result ok';
-                resultEl.innerText = '✅ Kínálat közzétéve és értesítés elküldve!';
+                resultEl.innerText = '✅ Kínálat közzétéve ' + (zSzam > 1 ? zSzam + ' zónában' : '') + ' és értesítés elküldve!';
             } else {
+                var zSzam = mentendoZonak.length;
                 resultEl.className = 'kin-result ok';
-                resultEl.innerText = '✅ Kínálat mentve (közzététel nélkül)!';
+                resultEl.innerText = '✅ Kínálat mentve' + (zSzam > 1 ? ' (' + zSzam + ' zóna, külön sorokba)' : '') + '!';
             }
             // Mezők ürítése
             kinListaBetolt();
@@ -1550,8 +1606,8 @@ function kinUrit() {
     kinRajzolKivalasztottak();
     kinFrissitDropdown();
     document.querySelectorAll('.kin-zona-chip').forEach(function(c){ c.classList.remove('active'); });
-    document.querySelector('.kin-zona-chip[data-zona=""]').classList.add('active');
-    kinSelectedZona = '';
+    kinSelectedZonak = [];
+    var zprev = document.getElementById('kin-zona-preview'); if(zprev) zprev.textContent = '';
     document.getElementById('kin-preview').style.display = 'none';
     document.getElementById('kin-result').style.display = 'none';
 }
