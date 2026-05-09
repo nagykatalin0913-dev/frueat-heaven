@@ -946,7 +946,7 @@
         let kosar = {}; 
         let aktualisZonaAdat = null;
         let zonaAzonosito = "";  // globális, a kuldes() is eléri
-        let atveteliMod = "hazhoz";
+        let atveteliMod = "szemelyes"; // személyes az alapértelmezett ha van
         let vegszamlaHUF = 0;
         let aktualisSzallitasInfo = {}; // kiszállítási/átvételi adatok a mentéshez
 
@@ -1446,36 +1446,38 @@
 
                     if(kIdx === 0) {
                         if(vanKiszallitas && vanAtvetel) {
-                            // Mindkét lehetőség
-                            atveteliMod = "hazhoz";
+                            // Mindkét lehetőség – személyes átvétel az alapértelmezett
+                            atveteliMod = "szemelyes";
                             valasztoEl.innerHTML = `
                                 <b>Hogyan szeretnéd megkapni?</b>
                                 <label class="radio-option">
-                                    <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')">
-                                    🛵 Házhozszállítás – ${dijCimke}
+                                    <input type="radio" name="atvetel" value="szemelyes" checked onchange="modValtas('szemelyes')">
+                                    📦 Személyes átvétel – Ingyenes${atveteli_pont ? ` <small style="color:#666">(${atveteli_pont})</small>` : ''}
                                 </label>
                                 <label class="radio-option">
-                                    <input type="radio" name="atvetel" value="szemelyes" onchange="modValtas('szemelyes')">
-                                    📦 Személyes átvétel – Ingyenes${atveteli_pont ? ` <small style="color:#666">(${atveteli_pont})</small>` : ''}
+                                    <input type="radio" name="atvetel" value="hazhoz" onchange="modValtas('hazhoz')">
+                                    🛵 Házhozszállítás – ${dijCimke}
                                 </label>
                             `;
                         } else if(vanKiszallitas && !vanAtvetel) {
                             // Csak házhozszállítás
                             atveteliMod = "hazhoz";
                             valasztoEl.innerHTML = `
-                                <b>Szállítás módja</b>
-                                <div class="radio-option" style="cursor:default; background:#f0f0f0; border-color:#e0e0e0;">
+                                <b>Hogyan szeretnéd megkapni?</b>
+                                <label class="radio-option">
+                                    <input type="radio" name="atvetel" value="hazhoz" checked onchange="modValtas('hazhoz')" style="display:none;">
                                     🛵 Házhozszállítás – ${dijCimke}
-                                </div>
+                                </label>
                             `;
                         } else if(!vanKiszallitas && vanAtvetel) {
                             // Csak személyes átvétel
                             atveteliMod = "szemelyes";
                             valasztoEl.innerHTML = `
-                                <b>Szállítás módja</b>
-                                <div class="radio-option" style="cursor:default; background:var(--green-light); border-color:var(--green);">
+                                <b>Hogyan szeretnéd megkapni?</b>
+                                <label class="radio-option">
+                                    <input type="radio" name="atvetel" value="szemelyes" checked onchange="modValtas('szemelyes')" style="display:none;">
                                     📦 Személyes átvétel – Ingyenes${atveteli_pont ? ` <small style="color:#666">(${atveteli_pont})</small>` : ''}
-                                </div>
+                                </label>
                             `;
                         } else {
                             // Egyik sem (pl. nincs még adat)
