@@ -735,6 +735,49 @@
             width: auto;
         }
     
+        /* ÜZENET POPUP */
+        #uzenet-popup {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #uzenet-popup-box {
+            background: var(--dark-card2);
+            border: 1.5px solid var(--dark-border);
+            border-radius: 20px;
+            padding: 28px 22px 24px;
+            max-width: 420px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+        }
+        #uzenet-popup-zar {
+            position: absolute;
+            top: 14px; right: 16px;
+            background: none; border: none;
+            color: var(--text-dim);
+            font-size: 22px; cursor: pointer; line-height: 1;
+        }
+        #uzenet-popup-cim {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            color: var(--gold);
+            margin-bottom: 12px;
+            margin-top: 4px;
+            padding-right: 24px;
+        }
+        #uzenet-popup-szoveg {
+            font-size: 14px;
+            color: var(--text-main);
+            line-height: 1.7;
+        }
+
         /* CHAT GOMBOK */
         #chat-buttons {
             position: fixed;
@@ -1224,6 +1267,29 @@
                 document.getElementById("show-nev").innerText = userProfile.vnev + " " + userProfile.knev;
                 document.getElementById("show-zona").innerText = zonaAzonosito;
                 frissitCimBlokk();
+
+                // Üzenet popup megjelenítése
+                if(data.uzenetek && data.uzenetek.length > 0) {
+                    var isUjVevo = !localStorage.getItem('frueat_profile_seen');
+                    // Jelöljük hogy látta már
+                    localStorage.setItem('frueat_profile_seen', '1');
+
+                    // Szűrés: melyik üzenet jelenik meg
+                    var megjelenito = data.uzenetek.find(function(u) {
+                        var aktiv = (u.aktiv || '').toString().trim().toLowerCase() === 'igen';
+                        if(!aktiv) return false;
+                        var cel = (u.cel || 'mindenki').toString().trim().toLowerCase();
+                        if(cel === 'mindenki') return true;
+                        if(cel === 'uj' && isUjVevo) return true;
+                        if(cel === 'visszatero' && !isUjVevo) return true;
+                        return false;
+                    });
+                    if(megjelenito) {
+                        document.getElementById('uzenet-popup-cim').textContent   = megjelenito.cim || '';
+                        document.getElementById('uzenet-popup-szoveg').innerHTML  = (megjelenito.szoveg || '').toString().replace(/\n/g,'<br>');
+                        document.getElementById('uzenet-popup').style.display = 'flex';
+                    }
+                }
 
                 // Chat gombok beállítása zóna alapján
                 const waNum   = zonaErtek(aktualisZonaAdat, "whatsapp").toString().trim().replace(/[^0-9]/g,'');
@@ -1777,6 +1843,15 @@
             });
         }
     </script>
+<!-- ÜZENET POPUP -->
+<div id="uzenet-popup">
+    <div id="uzenet-popup-box">
+        <button id="uzenet-popup-zar" onclick="uzenetPopupZar()">✕</button>
+        <div id="uzenet-popup-cim"></div>
+        <div id="uzenet-popup-szoveg"></div>
+    </div>
+</div>
+
 <!-- CHAT GOMBOK -->
 <div id="chat-buttons">
     <a id="chat-wa" class="chat-btn chat-btn-wa" target="_blank" title="WhatsApp">
