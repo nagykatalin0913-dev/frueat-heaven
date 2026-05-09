@@ -119,6 +119,7 @@
 
         /* PUSH SZEKCIÓ */
         #push-view{display:none}
+        #uzenetek-view{display:none}
         .push-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;border-left:5px solid #ff9800}
         .push-card h3{margin:0 0 8px;font-size:17px;color:#e65100;font-weight:800}
         .push-card p{margin:0 0 12px;font-size:13px;color:#777;line-height:1.5}
@@ -205,6 +206,7 @@
 <div class="mode-selector-2">
     <button id="btn-push"      class="mode-btn"        onclick="setMode('push')" style="border-color:#ff9800;color:#e65100;">&#128276; Értesítés</button>
     <button id="btn-kinalat"   class="mode-btn"        onclick="setMode('kinalat')" style="border-color:#9c27b0;color:#6a1b9a;">&#127827; Kínálat</button>
+    <button id="btn-uzenetek"  class="mode-btn"        onclick="setMode('uzenetek')" style="border-color:#0288d1;color:#01579b;">&#128172; Üzenetek</button>
 </div>
 
 <div id="szallitas-szurok" style="display:none;">
@@ -335,6 +337,62 @@
 </div>
 
 <!-- PUSH NÉZET -->
+<!-- ÜZENETEK NÉZET -->
+<div id="uzenetek-view" style="padding:12px;">
+
+    <!-- MENTETT ÜZENETEK LISTA -->
+    <div class="kin-section">
+        <div class="kin-section-title" style="justify-content:space-between;">
+            📋 Mentett üzenetek
+            <button onclick="uzenetListaBetolt()" style="font-size:12px;padding:4px 10px;border-radius:8px;border:1px solid #0288d1;background:white;color:#0288d1;font-weight:700;cursor:pointer;">↺ Frissít</button>
+        </div>
+        <div id="uzenet-lista-container">
+            <div style="color:#aaa;font-size:13px;">Betöltés...</div>
+        </div>
+    </div>
+
+    <div style="height:2px;background:linear-gradient(to right,#0288d1,transparent);margin:4px 0 16px;border-radius:2px;"></div>
+    <div style="font-size:13px;font-weight:800;color:#01579b;margin-bottom:12px;">✏️ Új üzenet</div>
+
+    <div class="kin-section">
+        <div class="kin-section-title">🎯 Célközönség</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div class="kin-zona-chip active" id="ucel-uj"        onclick="uzenetCelValaszt('uj')"        style="text-align:center;">👋 Új vevő</div>
+            <div class="kin-zona-chip"        id="ucel-visszatero" onclick="uzenetCelValaszt('visszatero')" style="text-align:center;">🔄 Visszatérő</div>
+            <div class="kin-zona-chip"        id="ucel-mindenki"  onclick="uzenetCelValaszt('mindenki')"  style="text-align:center;">🌍 Mindenki</div>
+        </div>
+        <div style="font-size:11px;color:#aaa;">
+            Új vevő = csak az első látogatáskor jelenik meg · Visszatérő = csak ha már regisztrált · Mindenki = minden alkalommal amíg aktív
+        </div>
+    </div>
+
+    <div class="kin-section">
+        <div class="kin-section-title">📝 Üzenet szövege</div>
+        <label class="kin-label">Cím</label>
+        <input type="text" id="uzenet-cim" class="kin-input" placeholder="pl. Üdvözlünk a Fru'eat Heaven-ben! 🍓">
+        <label class="kin-label">Szöveg</label>
+        <textarea id="uzenet-szoveg" class="kin-textarea" rows="5" placeholder="Írd le az üzenetet..."></textarea>
+    </div>
+
+    <div class="kin-section">
+        <div class="kin-section-title">⚙️ Beállítások</div>
+        <label class="kin-label">Státusz</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div class="kin-zona-chip active" id="ustat-aktiv"   onclick="uzenetStatuszValaszt('aktiv')"   style="text-align:center;">✅ Aktív</div>
+            <div class="kin-zona-chip"        id="ustat-inaktiv" onclick="uzenetStatuszValaszt('inaktiv')" style="text-align:center;">⏸ Inaktív</div>
+        </div>
+    </div>
+
+    <div id="uzenet-result" style="display:none;" class="kin-result"></div>
+
+    <button style="width:100%;padding:14px;border-radius:12px;background:#0288d1;color:white;font-weight:800;font-size:16px;font-family:Nunito,sans-serif;border:none;cursor:pointer;margin-bottom:12px;" onclick="uzenetMentes()">
+        💾 Mentés
+    </button>
+    <button style="width:100%;padding:12px;border-radius:12px;background:none;border:1.5px solid #aaa;color:#aaa;font-weight:700;font-size:14px;font-family:Nunito,sans-serif;cursor:pointer;" onclick="uzenetUrit()">
+        🗑 Mezők ürítése
+    </button>
+</div>
+
 <div id="push-view">
     <!-- Zóna választó (közös minden push típushoz) -->
     <div class="push-card" style="border-left-color:#9c27b0;">
@@ -499,10 +557,12 @@ function setMode(mode) {
     var isBsz  = mode === 'beszerzes';
     var isPush = mode === 'push';
     var isKin  = mode === 'kinalat';
-    var isNorm = !isBsz && !isPush && !isKin;
+    var isUz   = mode === 'uzenetek';
+    var isNorm = !isBsz && !isPush && !isKin && !isUz;
     document.getElementById('beszerzes-view').style.display   = isBsz  ? 'block' : 'none';
     document.getElementById('push-view').style.display        = isPush ? 'block' : 'none';
     document.getElementById('kinalat-view').style.display     = isKin  ? 'block' : 'none';
+    document.getElementById('uzenetek-view').style.display    = isUz   ? 'block' : 'none';
     document.getElementById('main-list').style.display        = isNorm ? 'block' : 'none';
     document.getElementById('searchInput').style.display      = isNorm ? 'block' : 'none';
     document.getElementById('summary-bar-wrap').style.display = isNorm ? 'flex'  : 'none';
@@ -511,6 +571,7 @@ function setMode(mode) {
     if (isNorm) { buildFilterChips(); render(); }
     if (isPush) { betoltPushZonak(); }
     if (isKin)  { kinBetoltTermekek(); kinListaBetolt(); }
+    if (isUz)   { uzenetListaBetolt(); }
 }
 
 function betoltPushZonak() {
@@ -1039,6 +1100,162 @@ setInterval(fetchData, 60000);
 // ══════════════════════════════════════════════════════════════
 //  KÍNÁLAT SZERKESZTŐ
 // ══════════════════════════════════════════════════════════════
+
+
+// ══════════════════════════════════════════════════════════════
+//  ÜZENETEK
+// ══════════════════════════════════════════════════════════════
+
+var uzenetSelectedCel = 'uj';
+var uzenetSelectedStatusz = 'aktiv';
+var uzenetListaAdatok = {};
+
+function uzenetCelValaszt(cel) {
+    uzenetSelectedCel = cel;
+    ['uj','visszatero','mindenki'].forEach(function(c) {
+        var el = document.getElementById('ucel-' + c);
+        if(el) el.classList.toggle('active', c === cel);
+    });
+}
+
+function uzenetStatuszValaszt(st) {
+    uzenetSelectedStatusz = st;
+    ['aktiv','inaktiv'].forEach(function(s) {
+        var el = document.getElementById('ustat-' + s);
+        if(el) el.classList.toggle('active', s === st);
+    });
+}
+
+async function uzenetListaBetolt() {
+    var container = document.getElementById('uzenet-lista-container');
+    if(!container) return;
+    container.innerHTML = '<div style="color:#aaa;font-size:13px;">Betöltés...</div>';
+    try {
+        var r = await fetch(API_URL, { redirect: 'follow' });
+        var d = await r.json();
+        var lista = (d && d.uzenetek) ? d.uzenetek : [];
+        uzenetListaAdatok = {};
+        if(lista.length === 0) {
+            container.innerHTML = '<div style="color:#aaa;font-size:13px;">Még nincs mentett üzenet.</div>';
+            return;
+        }
+        lista = lista.slice().reverse();
+        var html = '';
+        lista.forEach(function(u) {
+            var cim     = u.cim || '(cím nélkül)';
+            var cel     = (u.cel || 'mindenki').toString().trim();
+            var aktiv   = (u.aktiv || '').toString().trim().toLowerCase() === 'igen';
+            var rowid   = u.rowid || '';
+            uzenetListaAdatok[rowid] = u;
+
+            var celLabel = cel === 'uj' ? '👋 Új vevő' : cel === 'visszatero' ? '🔄 Visszatérő' : '🌍 Mindenki';
+            var statuszLabel = aktiv ? '✅ Aktív' : '⏸ Inaktív';
+            var statuszSzin  = aktiv ? '#2e7d32' : '#888';
+            var cardBorder   = aktiv ? '#c8e6c9' : '#e0e0e0';
+
+            html += '<div style="background:#f9fdf9;border-radius:10px;padding:12px;margin-bottom:8px;border:1.5px solid ' + cardBorder + ';">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">';
+            html += '<div style="flex:1;min-width:0;">';
+            html += '<div style="font-weight:800;font-size:14px;color:#222;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + cim + '</div>';
+            html += '<div style="font-size:11px;color:#aaa;margin-top:2px;">' + celLabel + '</div>';
+            html += '</div>';
+            html += '<span style="font-size:13px;font-weight:700;color:' + statuszSzin + ';white-space:nowrap;">' + statuszLabel + '</span>';
+            html += '</div>';
+            html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px;">';
+            if(aktiv) {
+                html += '<button onclick="uzenetStatuszValt(' + rowid + ',\'inaktiv\')" style="padding:6px 11px;border-radius:8px;background:#888;color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;">⏸ Inaktív</button>';
+            } else {
+                html += '<button onclick="uzenetStatuszValt(' + rowid + ',\'aktiv\')" style="padding:6px 11px;border-radius:8px;background:#0288d1;color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;">✅ Aktívál</button>';
+            }
+            html += '<div style="margin-left:auto;display:flex;gap:6px;">';
+            html += '<button onclick="uzenetMegtekint(' + rowid + ')" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid #0288d1;color:#0288d1;font-size:12px;font-weight:700;cursor:pointer;">👁 Megtekint</button>';
+            html += '<button onclick="uzenetTorol(' + rowid + ',event)" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid #e57373;color:#e57373;font-size:12px;font-weight:700;cursor:pointer;">🗑</button>';
+            html += '</div>';
+            html += '</div></div>';
+        });
+        container.innerHTML = html;
+    } catch(e) {
+        container.innerHTML = '<div style="color:#c62828;font-size:13px;">Hiba: ' + e.message + '</div>';
+    }
+}
+
+function uzenetMegtekint(rowid) {
+    var u = uzenetListaAdatok[rowid];
+    if(!u) return;
+    var szoveg = (u.szoveg || '').toString().replace(/\n/g,'<br>');
+    var cel = (u.cel || 'mindenki').toString();
+    var celLabel = cel === 'uj' ? '👋 Új vevő' : cel === 'visszatero' ? '🔄 Visszatérő' : '🌍 Mindenki';
+    var html = '<div style="padding:4px 0;">';
+    html += '<div style="font-size:11px;color:#aaa;margin-bottom:4px;">' + celLabel + '</div>';
+    html += '<div style="font-size:18px;font-weight:800;color:#01579b;margin-bottom:8px;">' + (u.cim||'') + '</div>';
+    if(szoveg) html += '<div style="font-size:14px;color:#444;line-height:1.6;">' + szoveg + '</div>';
+    html += '</div>';
+    document.getElementById('kin-modal-tartalom').innerHTML = html;
+    document.getElementById('kin-modal').style.display = 'flex';
+}
+
+async function uzenetStatuszValt(rowid, ujStatusz) {
+    try {
+        var url = API_URL + '?updateUzenet=true&rowId=' + rowid + '&aktiv=' + encodeURIComponent(ujStatusz === 'aktiv' ? 'igen' : 'nem');
+        await fetch(url, { redirect: 'follow' });
+        uzenetListaBetolt();
+    } catch(e) { alert('Hiba: ' + e.message); }
+}
+
+async function uzenetTorol(rowid, ev) {
+    if(ev) ev.stopPropagation();
+    if(!confirm('Biztosan törlöd ezt az üzenetet?')) return;
+    try {
+        var url = API_URL + '?updateUzenet=true&rowId=' + rowid + '&aktiv=' + encodeURIComponent('torolt');
+        await fetch(url, { redirect: 'follow' });
+        uzenetListaBetolt();
+    } catch(e) { alert('Hiba: ' + e.message); }
+}
+
+async function uzenetMentes() {
+    var resultEl = document.getElementById('uzenet-result');
+    var cim    = document.getElementById('uzenet-cim').value.trim();
+    var szoveg = document.getElementById('uzenet-szoveg').value.trim();
+    if(!cim && !szoveg) {
+        resultEl.className = 'kin-result err';
+        resultEl.innerText = 'Add meg legalább a címet vagy a szöveget!';
+        resultEl.style.display = 'block';
+        return;
+    }
+    resultEl.className = 'kin-result';
+    resultEl.innerText = '⏳ Mentés...';
+    resultEl.style.display = 'block';
+    try {
+        var url = API_URL + '?ujUzenet=true' +
+            '&cim='    + encodeURIComponent(cim) +
+            '&szoveg=' + encodeURIComponent(szoveg) +
+            '&cel='    + encodeURIComponent(uzenetSelectedCel) +
+            '&aktiv='  + encodeURIComponent(uzenetSelectedStatusz === 'aktiv' ? 'igen' : 'nem');
+        var r = await fetch(url, { redirect: 'follow' });
+        var res = await r.text();
+        if(res.trim().startsWith('ok')) {
+            resultEl.className = 'kin-result ok';
+            resultEl.innerText = '✅ Üzenet mentve!';
+            uzenetListaBetolt();
+            if(confirm('Mentve! Ürítjük a mezőket?')) uzenetUrit();
+        } else {
+            resultEl.className = 'kin-result err';
+            resultEl.innerText = 'Hiba: ' + res;
+        }
+    } catch(e) {
+        resultEl.className = 'kin-result err';
+        resultEl.innerText = 'Hiba: ' + e.message;
+    }
+}
+
+function uzenetUrit() {
+    document.getElementById('uzenet-cim').value = '';
+    document.getElementById('uzenet-szoveg').value = '';
+    uzenetCelValaszt('uj');
+    uzenetStatuszValaszt('aktiv');
+    var r = document.getElementById('uzenet-result');
+    if(r) r.style.display = 'none';
+}
 
 var kinSelectedZonak = []; // több zóna
 var kinSelectedTermekek = {};
