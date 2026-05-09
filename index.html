@@ -1300,7 +1300,13 @@
                     document.getElementById("chat-wa").href  = "https://wa.me/" + waNum + "?text=" + encodeURIComponent(uzi);
                 }
                 if(msgPage) {
-                    document.getElementById("chat-msg").href = "https://m.me/" + msgPage;
+                    // Messenger deeplink: közvetlenül nyitja meg a chatablakot
+                    // Numerikus ID esetén fb-messenger://user-thread/, egyébként m.me/ fallback
+                    var isNumericId = /^[0-9]+$/.test(msgPage);
+                    var msgHref = isNumericId
+                        ? "fb-messenger://user-thread/" + msgPage
+                        : "https://m.me/" + msgPage;
+                    document.getElementById("chat-msg").href = msgHref;
                 }
                 if(waNum || msgPage) {
                     document.getElementById("chat-buttons").style.display = "flex";
