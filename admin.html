@@ -500,6 +500,15 @@ async function fetchData() {
                 };
             });
         }
+        if (td && td.zonak) {
+            zonaLista = {};
+            td.zonak.forEach(function(z) {
+                var nev = (z.telepules || z['telepules/kerulet'] || z.zona || '').toString().trim();
+                if(nev) zonaLista[nev] = {
+                    szallitasi_dij: parseFloat(z['szallitasi dij'] || z.szallitasi_dij || 0)
+                };
+            });
+        }
         document.getElementById('last-update').innerText = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
         buildFilterChips();
         render();
