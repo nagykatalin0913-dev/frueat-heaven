@@ -991,17 +991,13 @@
             const tarolt = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
             if(!tarolt.length) return;
             try {
-                // Aktív rendelések lekérése
                 const resp = await fetch(API_URL + "?admin=true", { redirect: "follow" });
                 const aktivak = await resp.json();
-                // Aktív sor ID-k halmaza
                 const aktivIdk = new Set(aktivak.map(r => r.rowid));
 
-                // Csak azokat tartjuk meg amelyek még aktívak a sheetben
+                let volt_valtozas = false;
                 const megmaradok = tarolt.filter(r => {
-                    // Ha van ID → ID alapján ellenőrzünk (pontos!)
                     if(r.id) return aktivIdk.has(r.id);
-                    // Ha nincs ID (régi rendelés) → telefonszám alapján (fallback)
                     const profil = JSON.parse(localStorage.getItem("frueat_profile") || "{}");
                     const sajatVege = (profil.tel || "").replace(/\D/g,'').slice(-7);
                     return aktivak.some(a => {
@@ -1010,8 +1006,29 @@
                     });
                 });
 
-                if(megmaradok.length !== tarolt.length) {
-                    // Volt változás → frissítjük
+                if(megmaradok.length !== tarolt.length) volt_valtozas = true;
+
+                // Frissítsük a termékeket és végösszeget is ha az admin módosította
+                megmaradok.forEach((r, i) => {
+                    const aktív = aktivak.find(a => a.rowid === r.id || a.id == r.id);
+                    if(!aktív) return;
+                    // Termékek frissítése
+                    const ujTermek = aktív.termek || aktív.termekek || '';
+                    const regiTermek = r.termekek || r.termek || '';
+                    if(ujTermek && ujTermek !== regiTermek) {
+                        megmaradok[i].termekek = ujTermek;
+                        megmaradok[i].termek = ujTermek;
+                        volt_valtozas = true;
+                    }
+                    // Végösszeg frissítése
+                    const ujVo = aktív.vegosszeg;
+                    if(ujVo && String(ujVo) !== String(r.vegosszeg)) {
+                        megmaradok[i].vegosszeg = ujVo;
+                        volt_valtozas = true;
+                    }
+                });
+
+                if(volt_valtozas) {
                     localStorage.setItem("frueat_rendelesek", JSON.stringify(megmaradok));
                     renderAktualisRendelesek();
                 }
