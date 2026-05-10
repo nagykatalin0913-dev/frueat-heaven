@@ -636,9 +636,12 @@ function render() {
                     '<a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(ca) + '" target="_blank" class="nav-btn gmaps">&#128506; Google Maps</a>' +
                     '<a href="waze://?q=' + encodeURIComponent(ca) + '&navigate=yes" class="nav-btn waze">&#128309; Waze</a>' +
                 '</div>' : '') +
-            '<button class="finish-btn" onclick="event.stopPropagation();completeOrder(' + o.rowid + ')">' +
+            '<div style="display:flex;gap:8px;margin-top:4px;">' +
+                '<button onclick="event.stopPropagation();deleteOrder(' + o.rowid + ')" style="flex-shrink:0;padding:10px 14px;border-radius:10px;background:none;border:1.5px solid #e57373;color:#e57373;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">&#128465; Töröl</button>' +
+                '<button class="finish-btn" style="flex:1;" onclick="event.stopPropagation();completeOrder(' + o.rowid + ')">' +
                 (currentMode === 'atvetel' ? '&#10003; ÁTADVA ÉS FIZETVE' : '&#10003; KISZÁLLÍTVA') +
-            '</button>';
+                '</button>' +
+            '</div>';
         list.appendChild(card);
     });
 }
@@ -717,6 +720,17 @@ async function updateOrderData(rowid, nev, val, eg) {
     if (order.termek !== undefined) order.termek = rt;
     if (order.termekek !== undefined) order.termekek = rt;
     try { await fetch(API_URL + '?update=true&rowId=' + rowid + '&newItems=' + encodeURIComponent(rt) + '&newVegosszeg=' + order.vegosszeg, { redirect: 'follow' }); } catch(e) {}
+}
+
+async function deleteOrder(rowId) {
+    if (!confirm('Biztosan törlöd ezt a rendelést? A sheetben "törölt" státuszra vált.')) return;
+    try {
+        var r = await fetch(API_URL + '?update=true&rowId=' + rowId + '&newStatus=' + encodeURIComponent('törölt'), { redirect: 'follow' });
+        if ((await r.text()).trim() === 'ok') {
+            orders = orders.filter(function(o){ return o.rowid !== rowId; });
+            activeCardId = null; buildFilterChips(); render();
+        } else alert('Hiba a törléskor!');
+    } catch(e) { alert('Hiba: ' + e.message); }
 }
 
 async function completeOrder(rowId) {
@@ -1582,7 +1596,12 @@ function kinFrissitDropdown() {
 function kinTorleTermek(id) {
     delete kinSelectedTermekek[id];
     kinRajzolKivalasztottak();
-    kinFrissitDropdown();
+    // Ha a termék kártyán is látszik (grid nézetben), frissítsük a gombját
+    var safeId = id.replace(/[^a-z0-9]/gi, '') || ('idx' + id);
+    var card = document.getElementById('ktc-' + safeId);
+    var btn  = document.getElementById('kbtn-' + safeId);
+    if(card) card.classList.remove('selected');
+    if(btn)  { btn.textContent = '+ Add'; btn.style.background = 'var(--green)'; }
 }
 
 function kinArValtozas(id, val) {
