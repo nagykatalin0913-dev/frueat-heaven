@@ -675,17 +675,20 @@ function szamolVegosszeg(rowid) {
         var rsEl = document.getElementById('item-rs-' + rowid + '-' + nev);
         if (rsEl) rsEl.innerText = rs + ' Ft';
     });
-    var sd = parseInt(order.szallitasi_dij || 0);
-    if ((order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0 && sd > 0) t += sd;
+    var zona_ = (order.zona || '').toString().trim();
+    var sd = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
+    var isHazhoz_ = (order.atvetel_mod||'').toLowerCase().indexOf('házhoz') >= 0;
+    if (isHazhoz_ && sd > 0) t += sd;
     var el = document.getElementById('total-' + rowid);
-    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft';
+    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft' + (isHazhoz_ && sd > 0 ? ' (+ ' + sd + ' Ft szállítás)' : '');
     order.vegosszeg = Math.round(t);
 }
 
 function renderItemsTable(str, rowid, order) {
     if (!str || !str.trim()) return '<div style="color:#bbb;font-size:14px;padding:10px 0;">Nincs termék adat</div>';
     var items = str.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
-    var sd = parseInt(order.szallitasi_dij || 0);
+    var zona_r = (order.zona || '').toString().trim();
+    var sd = (zonaLista[zona_r] && zonaLista[zona_r].szallitasi_dij) ? zonaLista[zona_r].szallitasi_dij : 0;
     var vs = (order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
     var tot = 0;
     var rows = items.map(function(t) {
