@@ -551,12 +551,12 @@ const ADMIN_VERSION_KEY = "frueat_admin_version";
 
 // ── PIN VÉDELEM ────────────────────────────────────────────────
 const PIN_KEY      = "frueat_admin_pin";
-const PIN_AUTH_KEY = "frueat_admin_auth";
+const PIN_AUTH_KEY = "frueat_admin_auth"; // sessionStorage-ban tároljuk – bezáráskor törlődik
 const DEFAULT_PIN  = "1234"; // Első belépéskor ezt kell megadni, utána változtatható
 
 function pinInditas() {
     var pin = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
-    var auth = localStorage.getItem(PIN_AUTH_KEY);
+    var auth = sessionStorage.getItem(PIN_AUTH_KEY);
     // Ha már be van lépve (ugyanaz a session) → nem kér PIN-t
     if(auth === "1") return;
     document.getElementById("pin-overlay").style.display = "flex";
@@ -567,7 +567,7 @@ function pinEllenorzes() {
     var beirt = document.getElementById("pin-input").value.trim();
     var helyes = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
     if(beirt === helyes) {
-        localStorage.setItem(PIN_AUTH_KEY, "1");
+        sessionStorage.setItem(PIN_AUTH_KEY, "1");
         document.getElementById("pin-overlay").style.display = "none";
         document.getElementById("pin-hiba").style.display = "none";
         document.getElementById("pin-input").value = "";
@@ -579,7 +579,7 @@ function pinEllenorzes() {
 }
 
 function pinValtas() {
-    var auth = localStorage.getItem(PIN_AUTH_KEY);
+    var auth = sessionStorage.getItem(PIN_AUTH_KEY);
     if(auth !== "1") { alert("Először lépj be!"); return; }
     var regi = prompt("Add meg a jelenlegi PIN kódot:");
     var helyes = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
