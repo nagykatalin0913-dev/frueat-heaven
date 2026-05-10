@@ -939,7 +939,25 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxt_vm_W-t_vvScmOEwT7_u7hCfMUOaC0KdZbqVMiosarPUuqhSafeTh0-r6MN96BdPeg/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbxt_vm_W-t_vvScmOEwT7_u7hCfMUOaC0KdZbqVMiosarPUuqhSafeTh0-r6MN96BdPeg/exec";
+        const VERSION_URL = "https://nagykatalin0913-dev.github.io/frueat-heaven/version.txt";
+        const VERSION_KEY = "frueat_app_version";
+
+        // Verzió ellenőrzés – automatikus frissítés ha új verzió van
+        (async function() {
+            try {
+                const resp = await fetch(VERSION_URL + "?t=" + Date.now(), { cache: "no-store" });
+                const ujVerzio = (await resp.text()).trim();
+                const taroltverzio = localStorage.getItem(VERSION_KEY) || "";
+                if(taroltverzio && ujVerzio && taroltverzio !== ujVerzio) {
+                    // Új verzió → eltároljuk és kényszer-újratöltés
+                    localStorage.setItem(VERSION_KEY, ujVerzio);
+                    window.location.reload(true);
+                } else {
+                    localStorage.setItem(VERSION_KEY, ujVerzio);
+                }
+            } catch(e) { /* ha nem érhető el, folytatjuk */ }
+        })(); 
 
         let osszesitettAdatok = {};
         let termekAdatbazis = {};
