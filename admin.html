@@ -121,6 +121,60 @@
         #push-view{display:none}
         #uzenetek-view{display:none}
         #vevok-view{display:none}
+
+        /* PIN VÉDELEM */
+        #pin-overlay {
+            display: none;
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        #pin-box {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 28px;
+            max-width: 320px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+        }
+        #pin-logo { font-size: 32px; margin-bottom: 8px; }
+        #pin-cim { font-size: 20px; font-weight: 800; color: #1b5e20; margin-bottom: 4px; }
+        #pin-alcim { font-size: 13px; color: #888; margin-bottom: 20px; }
+        #pin-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            outline: none;
+            font-family: Nunito, sans-serif;
+            margin-bottom: 12px;
+            -webkit-text-security: disc;
+        }
+        #pin-input:focus { border-color: #2e7d32; }
+        #pin-btn {
+            width: 100%;
+            padding: 14px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: Nunito, sans-serif;
+        }
+        #pin-btn:active { opacity: 0.85; }
+        #pin-hiba { color: #c62828; font-size: 13px; margin-top: 8px; display: none; }
+        #pin-valtas { font-size: 12px; color: #aaa; margin-top: 12px; cursor: pointer; text-decoration: underline; }
         .push-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;border-left:5px solid #ff9800}
         .push-card h3{margin:0 0 8px;font-size:17px;color:#e65100;font-weight:800}
         .push-card p{margin:0 0 12px;font-size:13px;color:#777;line-height:1.5}
@@ -477,6 +531,71 @@
 //  KONFIG
 // ══════════════════════════════════════════════════════════════
 var API_URL = "https://script.google.com/macros/s/AKfycbxt_vm_W-t_vvScmOEwT7_u7hCfMUOaC0KdZbqVMiosarPUuqhSafeTh0-r6MN96BdPeg/exec";
+
+// ── VERZIÓELLENŐRZÉS (admin is automatikusan frissül) ──────────
+const ADMIN_VERSION_URL = "https://nagykatalin0913-dev.github.io/frueat-heaven/version.txt";
+const ADMIN_VERSION_KEY = "frueat_admin_version";
+(async function() {
+    try {
+        const resp = await fetch(ADMIN_VERSION_URL + "?t=" + Date.now(), { cache: "no-store" });
+        const ujVerzio = (await resp.text()).trim();
+        const tarolt = localStorage.getItem(ADMIN_VERSION_KEY) || "";
+        if(tarolt && ujVerzio && tarolt !== ujVerzio) {
+            localStorage.setItem(ADMIN_VERSION_KEY, ujVerzio);
+            window.location.reload(true);
+        } else {
+            localStorage.setItem(ADMIN_VERSION_KEY, ujVerzio);
+        }
+    } catch(e) {}
+})();
+
+// ── PIN VÉDELEM ────────────────────────────────────────────────
+const PIN_KEY      = "frueat_admin_pin";
+const PIN_AUTH_KEY = "frueat_admin_auth";
+const DEFAULT_PIN  = "1234"; // Első belépéskor ezt kell megadni, utána változtatható
+
+function pinInditas() {
+    var pin = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
+    var auth = localStorage.getItem(PIN_AUTH_KEY);
+    // Ha már be van lépve (ugyanaz a session) → nem kér PIN-t
+    if(auth === "1") return;
+    document.getElementById("pin-overlay").style.display = "flex";
+    setTimeout(function(){ document.getElementById("pin-input").focus(); }, 300);
+}
+
+function pinEllenorzes() {
+    var beirt = document.getElementById("pin-input").value.trim();
+    var helyes = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
+    if(beirt === helyes) {
+        localStorage.setItem(PIN_AUTH_KEY, "1");
+        document.getElementById("pin-overlay").style.display = "none";
+        document.getElementById("pin-hiba").style.display = "none";
+        document.getElementById("pin-input").value = "";
+    } else {
+        document.getElementById("pin-hiba").style.display = "block";
+        document.getElementById("pin-input").value = "";
+        document.getElementById("pin-input").focus();
+    }
+}
+
+function pinValtas() {
+    var auth = localStorage.getItem(PIN_AUTH_KEY);
+    if(auth !== "1") { alert("Először lépj be!"); return; }
+    var regi = prompt("Add meg a jelenlegi PIN kódot:");
+    var helyes = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
+    if(regi !== helyes) { alert("Hibás PIN!"); return; }
+    var uj = prompt("Add meg az új PIN kódot (minimum 4 szám):");
+    if(!uj || uj.length < 4 || isNaN(uj)) { alert("Érvénytelen PIN! Minimum 4 szám kell."); return; }
+    var ujMegint = prompt("Add meg újra az új PIN kódot:");
+    if(uj !== ujMegint) { alert("A két PIN nem egyezik!"); return; }
+    localStorage.setItem(PIN_KEY, uj);
+    alert("✅ PIN sikeresen megváltoztatva!");
+}
+
+// PIN ellenőrzés az oldal betöltésekor
+window.addEventListener("load", function() {
+    pinInditas();
+});
 
 // ══════════════════════════════════════════════════════════════
 //  GLOBÁLIS ÁLLAPOT
