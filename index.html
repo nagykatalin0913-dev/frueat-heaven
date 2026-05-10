@@ -1011,11 +1011,15 @@
             try {
                 const resp = await fetch(API_URL + "?admin=true", { redirect: "follow" });
                 const aktivak = await resp.json();
-                const aktivIdk = new Set(aktivak.map(r => r.rowid));
 
                 let volt_valtozas = false;
                 const megmaradok = tarolt.filter(r => {
-                    if(r.id) return aktivIdk.has(r.id);
+                    // Az egyedi rendelési ID (pl. 27) alapján keresünk
+                    // aktivak[].id tartalmazza az egyedi számot
+                    if(r.id) {
+                        return aktivak.some(a => String(a.id) === String(r.id));
+                    }
+                    // Fallback: telefonszám alapján (régi rendeléseknél)
                     const profil = JSON.parse(localStorage.getItem("frueat_profile") || "{}");
                     const sajatVege = (profil.tel || "").replace(/\D/g,'').slice(-7);
                     return aktivak.some(a => {
@@ -1026,21 +1030,23 @@
 
                 if(megmaradok.length !== tarolt.length) volt_valtozas = true;
 
-                // Frissítsük a termékeket és végösszeget is ha az admin módosította
+                // Termékek és végösszeg frissítése ha admin módosított
                 megmaradok.forEach((r, i) => {
-                    const aktív = aktivak.find(a => a.rowid === r.id || a.id == r.id);
-                    if(!aktív) return;
+                    // Egyedi ID alapján keressük meg az aktív rendelést
+                    const aktiv = aktivak.find(a => String(a.id) === String(r.id));
+                    if(!aktiv) return;
+
                     // Termékek frissítése
-                    const ujTermek = aktív.termek || aktív.termekek || '';
-                    const regiTermek = r.termekek || r.termek || '';
+                    const ujTermek = (aktiv.termek || aktiv.termekek || '').toString().trim();
+                    const regiTermek = (r.termekek || r.termek || '').toString().trim();
                     if(ujTermek && ujTermek !== regiTermek) {
                         megmaradok[i].termekek = ujTermek;
-                        megmaradok[i].termek = ujTermek;
+                        megmaradok[i].termek   = ujTermek;
                         volt_valtozas = true;
                     }
                     // Végösszeg frissítése
-                    const ujVo = aktív.vegosszeg;
-                    if(ujVo && String(ujVo) !== String(r.vegosszeg)) {
+                    const ujVo = aktiv.vegosszeg;
+                    if(ujVo !== undefined && String(ujVo) !== String(r.vegosszeg)) {
                         megmaradok[i].vegosszeg = ujVo;
                         volt_valtozas = true;
                     }
