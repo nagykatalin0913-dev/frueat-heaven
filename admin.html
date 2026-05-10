@@ -120,6 +120,7 @@
         /* PUSH SZEKCIÓ */
         #push-view{display:none}
         #uzenetek-view{display:none}
+        #vevok-view{display:none}
         .push-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;border-left:5px solid #ff9800}
         .push-card h3{margin:0 0 8px;font-size:17px;color:#e65100;font-weight:800}
         .push-card p{margin:0 0 12px;font-size:13px;color:#777;line-height:1.5}
@@ -207,6 +208,7 @@
     <button id="btn-push"      class="mode-btn"        onclick="setMode('push')" style="border-color:#ff9800;color:#e65100;">&#128276; Értesítés</button>
     <button id="btn-kinalat"   class="mode-btn"        onclick="setMode('kinalat')" style="border-color:#9c27b0;color:#6a1b9a;">&#127827; Kínálat</button>
     <button id="btn-uzenetek"  class="mode-btn"        onclick="setMode('uzenetek')" style="border-color:#0288d1;color:#01579b;">&#128172; Üzenetek</button>
+    <button id="btn-vevok"     class="mode-btn"        onclick="setMode('vevok')" style="border-color:#6a1b9a;color:#4a148c;">&#128101; Vevők</button>
 </div>
 
 <div id="szallitas-szurok" style="display:none;">
@@ -337,6 +339,21 @@
 </div>
 
 <!-- PUSH NÉZET -->
+<!-- VEVŐK NÉZET -->
+<div id="vevok-view" style="padding:12px;">
+    <div class="kin-section">
+        <div class="kin-section-title" style="justify-content:space-between;">
+            👥 Vevők
+            <button onclick="vevokBetolt()" style="font-size:12px;padding:4px 10px;border-radius:8px;border:1px solid #6a1b9a;background:white;color:#6a1b9a;font-weight:700;cursor:pointer;">↺ Frissít</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+            <input type="text" id="vevok-szuro" placeholder="🔍 Keresés (név, telefon, zóna)..." oninput="vevokSzur()" style="flex:1;min-width:180px;padding:8px 12px;border-radius:10px;border:1.5px solid #e0e0e0;font-size:13px;font-family:Nunito,sans-serif;">
+        </div>
+        <div id="vevok-osszesito" style="background:#f3e5f5;border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:13px;font-weight:700;color:#4a148c;display:none;"></div>
+        <div id="vevok-lista"></div>
+    </div>
+</div>
+
 <!-- ÜZENETEK NÉZET -->
 <div id="uzenetek-view" style="padding:12px;">
 
@@ -569,11 +586,13 @@ function setMode(mode) {
     var isPush = mode === 'push';
     var isKin  = mode === 'kinalat';
     var isUz   = mode === 'uzenetek';
-    var isNorm = !isBsz && !isPush && !isKin && !isUz;
+    var isVev  = mode === 'vevok';
+    var isNorm = !isBsz && !isPush && !isKin && !isUz && !isVev;
     document.getElementById('beszerzes-view').style.display   = isBsz  ? 'block' : 'none';
     document.getElementById('push-view').style.display        = isPush ? 'block' : 'none';
     document.getElementById('kinalat-view').style.display     = isKin  ? 'block' : 'none';
     document.getElementById('uzenetek-view').style.display    = isUz   ? 'block' : 'none';
+    document.getElementById('vevok-view').style.display       = isVev  ? 'block' : 'none';
     document.getElementById('main-list').style.display        = isNorm ? 'block' : 'none';
     document.getElementById('searchInput').style.display      = isNorm ? 'block' : 'none';
     document.getElementById('summary-bar-wrap').style.display = isNorm ? 'flex'  : 'none';
@@ -583,6 +602,7 @@ function setMode(mode) {
     if (isPush) { betoltPushZonak(); }
     if (isKin)  { kinBetoltTermekek(); kinListaBetolt(); }
     if (isUz)   { uzenetListaBetolt(); }
+    if (isVev)  { vevokBetolt(); }
 }
 
 function betoltPushZonak() {
@@ -1129,6 +1149,88 @@ setInterval(fetchData, 60000);
 //  KÍNÁLAT SZERKESZTŐ
 // ══════════════════════════════════════════════════════════════
 
+
+// ══════════════════════════════════════════════════════════════
+//  VEVŐK
+// ══════════════════════════════════════════════════════════════
+
+var vevokLista = [];
+
+async function vevokBetolt() {
+    var lista = document.getElementById('vevok-lista');
+    var ossz  = document.getElementById('vevok-osszesito');
+    if(!lista) return;
+    lista.innerHTML = '<div style="color:#aaa;font-size:13px;padding:10px;">Betöltés...</div>';
+    ossz.style.display = 'none';
+    try {
+        var r = await fetch(API_URL, { redirect: 'follow' });
+        if(!r.ok) throw new Error("Hiba: " + r.status);
+        var d = await r.json();
+        vevokLista = (d && d.vevok) ? d.vevok : [];
+        vevokMegjelenit(vevokLista);
+    } catch(e) {
+        lista.innerHTML = '<div style="color:#c62828;font-size:13px;">Hiba: ' + e.message + '</div>';
+    }
+}
+
+function vevokSzur() {
+    var q = (document.getElementById('vevok-szuro').value || '').toLowerCase().trim();
+    if(!q) { vevokMegjelenit(vevokLista); return; }
+    var szurt = vevokLista.filter(function(v) {
+        return (v.nev || '').toLowerCase().includes(q) ||
+               (v.telefon || '').toLowerCase().includes(q) ||
+               (v.zona || '').toLowerCase().includes(q);
+    });
+    vevokMegjelenit(szurt);
+}
+
+function vevokMegjelenit(lista) {
+    var el = document.getElementById('vevok-lista');
+    var ossz = document.getElementById('vevok-osszesito');
+    if(!el) return;
+
+    // Összesítő
+    ossz.style.display = 'block';
+    ossz.textContent = '👥 Összesen: ' + lista.length + ' vevő';
+
+    if(lista.length === 0) {
+        el.innerHTML = '<div style="color:#aaa;font-size:13px;padding:10px;">Nincs találat.</div>';
+        return;
+    }
+
+    // Rendezés: legutóbbi rendelés először
+    var rendezett = lista.slice().sort(function(a, b) {
+        var da = a.utolso_rendeles ? new Date(a.utolso_rendeles) : new Date(0);
+        var db = b.utolso_rendeles ? new Date(b.utolso_rendeles) : new Date(0);
+        return db - da;
+    });
+
+    var html = '';
+    rendezett.forEach(function(v) {
+        var nev   = v.nev || '–';
+        var tel   = v.telefon || '–';
+        var zona  = v.zona || '–';
+        var reg   = v.regisztracio ? new Date(v.regisztracio).toLocaleDateString('hu-HU') : '–';
+        var utolso = v.utolso_rendeles ? new Date(v.utolso_rendeles).toLocaleDateString('hu-HU') : '–';
+        var rSzam = v.rendelesek_szama || 0;
+
+        html += '<div style="background:#f9f5ff;border-radius:10px;padding:12px;margin-bottom:8px;border:1.5px solid #e1bee7;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">';
+        html += '<div style="flex:1;min-width:0;">';
+        html += '<div style="font-weight:800;font-size:14px;color:#222;">' + nev + '</div>';
+        html += '<div style="font-size:12px;color:#777;margin-top:2px;">' + zona + '</div>';
+        html += '</div>';
+        html += '<span style="font-size:13px;font-weight:800;color:#6a1b9a;white-space:nowrap;">' + rSzam + ' rendelés</span>';
+        html += '</div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;">';
+        html += '<div style="font-size:11px;color:#aaa;">📱 ' + tel + '</div>';
+        html += '<div style="font-size:11px;color:#aaa;">📅 Reg: ' + reg + '</div>';
+        html += '<div style="font-size:11px;color:#aaa;">🛒 Utolsó: ' + utolso + '</div>';
+        html += '</div>';
+        html += '</div>';
+    });
+    el.innerHTML = html;
+}
 
 // ══════════════════════════════════════════════════════════════
 //  ÜZENETEK
