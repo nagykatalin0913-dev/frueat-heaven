@@ -484,6 +484,8 @@ async function fetchData() {
     try {
         var r1 = await fetch(API_URL + "?admin=true", { redirect: "follow" });
         var r2 = await fetch(API_URL, { redirect: "follow" });
+        if (!r1.ok) throw new Error("Admin API hiba: " + r1.status);
+        if (!r2.ok) throw new Error("Adatok API hiba: " + r2.status);
         var od = await r1.json();
         var td = await r2.json();
         if (od) orders = od;
@@ -738,7 +740,7 @@ async function deleteOrder(rowId) {
     if (!confirm('Biztosan törlöd ezt a rendelést? A sheetben "törölt" státuszra vált.')) return;
     try {
         var r = await fetch(API_URL + '?update=true&rowId=' + rowId + '&newStatus=' + encodeURIComponent('törölt'), { redirect: 'follow' });
-        if ((await r.text()).trim() === 'ok') {
+        if (r.ok && (await r.text()).trim() === 'ok') {
             orders = orders.filter(function(o){ return o.rowid !== rowId; });
             activeCardId = null; buildFilterChips(); render();
         } else alert('Hiba a törléskor!');
@@ -1354,6 +1356,7 @@ async function kinListaBetolt() {
     container.innerHTML = '<div style="color:#aaa;font-size:13px;">Betöltés...</div>';
     try {
         var r = await fetch(API_URL, { redirect: 'follow' });
+        if (!r.ok) throw new Error("Hiba: " + r.status);
         var d = await r.json();
         var lista = (d && d.kinalat) ? d.kinalat : [];
         if(lista.length === 0) {
@@ -1790,6 +1793,7 @@ async function kinMentes(publikal) {
             var zonaParam = mentendoZonak[zi];
             var url = API_URL + baseParams + '&zona=' + encodeURIComponent(zonaParam);
             var r = await fetch(url, { redirect: 'follow' });
+            if(!r.ok) { mentesOk = false; break; }
             var res = await r.text();
             if(!res.trim().startsWith('ok')) { mentesOk = false; break; }
         }
