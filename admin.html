@@ -122,6 +122,24 @@
         #uzenetek-view{display:none}
         #vevok-view{display:none}
 
+        /* ZONA FIGYELMEZTETES MODAL */
+        #zona-figyelm {
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.55); z-index:9000;
+            align-items:center; justify-content:center; padding:20px; box-sizing:border-box;
+        }
+        #zona-figyelm-box {
+            background:white; border-radius:16px; padding:24px 20px;
+            max-width:320px; width:100%; text-align:center;
+            box-shadow:0 8px 30px rgba(0,0,0,0.3);
+        }
+        #zona-figyelm-box h3 { font-size:18px; color:#e65100; margin-bottom:8px; }
+        #zona-figyelm-box p  { font-size:13px; color:#555; line-height:1.5; margin-bottom:16px; }
+        .zona-figyelm-btns   { display:flex; gap:8px; }
+        .zona-figyelm-btns button { flex:1; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:800; cursor:pointer; font-family:Nunito,sans-serif; }
+        #zona-figyelm-vissza { background:#f5f5f5; color:#555; }
+        #zona-figyelm-ok     { background:#2e7d32; color:white; }
+
         /* PIN VÉDELEM */
         #pin-overlay {
             display: none;
@@ -247,6 +265,18 @@
     </style>
 </head>
 <body>
+<!-- ZÓNA FIGYELMEZTETŐ MODAL -->
+<div id="zona-figyelm">
+    <div id="zona-figyelm-box">
+        <h3>⚠️ Nincs zóna kijelölve!</h3>
+        <p>Ha folytatod, a kínálat <strong>MINDENKINEK</strong> megjelenik az összes zónában.</p>
+        <div class="zona-figyelm-btns">
+            <button id="zona-figyelm-vissza" onclick="zonaFigyelmBezar()">← Visszalép</button>
+            <button id="zona-figyelm-ok"     onclick="zonaFigyelmFolytat()">Folytatom ✓</button>
+        </div>
+    </div>
+</div>
+
 <!-- PIN VÉDELEM OVERLAY -->
 <div id="pin-overlay">
     <div id="pin-box">
@@ -775,42 +805,97 @@ function render() {
         return ms && mod.indexOf('h\u00e1zhoz') >= 0 && mz && mn;
     });
     if (currentMode === 'szallitas') filtered.sort(function(a,b){ return String(a.zona||'').localeCompare(String(b.zona||'')); });
-    document.getElementById('summary-count').innerText = filtered.length;
+
+    // ── ÖSSZEVONÁS: azonos telefon + azonos datum → egy kártya ──
+    var csoportok = [];
+    var csoportMap = {};
+    filtered.forEach(function(o) {
+        var tel   = (o.telefon || o.tel || '').toString().trim().replace(/[^0-9]/g,'');
+        var datum = (o.datum || '').toString().trim().split('T')[0];
+        var kulcs = (tel && datum) ? (tel + '|' + datum) : ('egyedi_' + o.rowid);
+        if(csoportMap[kulcs] === undefined) {
+            csoportMap[kulcs] = csoportok.length;
+            csoportok.push([o]);
+        } else {
+            csoportok[csoportMap[kulcs]].push(o);
+        }
+    });
+
+    document.getElementById('summary-count').innerText = csoportok.length;
     document.getElementById('summary-text').innerText  = currentMode === 'atvetel' ? 'Személyes átvétel' : 'Kiszállítás';
     list.innerHTML = '';
-    if (!filtered.length) { list.innerHTML = '<div class="loading">Nincs megjeleníthető rendelés.</div>'; return; }
-    if (!activeCardId || !filtered.find(function(o){ return o.rowid === activeCardId; })) activeCardId = filtered[0].rowid;
-    filtered.forEach(function(o, i) {
-        var isActive = o.rowid === activeCardId;
+    if (!csoportok.length) { list.innerHTML = '<div class="loading">Nincs megjeleníthető rendelés.</div>'; return; }
+    if (!activeCardId || !filtered.find(function(o){ return o.rowid === activeCardId; })) activeCardId = csoportok[0][0].rowid;
+
+    csoportok.forEach(function(csoport, ci) {
+        var fo = csoport[0];
+        var isActive = csoport.some(function(o){ return o.rowid === activeCardId; });
         var card = document.createElement('div');
-        card.className = 'order-card' + (isActive ? ' active-card' : (i === 0 ? ' next-card' : ''));
-        card.onclick = function(){ activeCardId = o.rowid; render(); };
-        var ca  = (o.cim||'').replace(/\r?\n|\r/g, ' ');
-        var tel = o.telefon || o.tel || '';
-        card.innerHTML =
-            '<div class="card-header">' +
-                '<div>' +
-                    '<div class="card-name">'  + (o.nev||'Névtelen') + ' <span style="font-size:12px;color:#aaa;font-weight:600;">#' + (o.id||o.rowid||'?') + '</span></div>' +
-                    '<div class="card-address">' + (o.cim||'Nincs cím') + '</div>' +
-                    (tel ? '<a href="tel:' + tel + '" class="phone-link" onclick="event.stopPropagation()">&#128222; ' + tel + '</a>' : '') +
-                '</div>' +
-                '<span class="zone-tag">' + (o.zona||'Pécel') + '</span>' +
+        card.className = 'order-card' + (isActive ? ' active-card' : (ci === 0 ? ' next-card' : ''));
+        card.onclick = function(){ activeCardId = fo.rowid; render(); };
+        var ca  = (fo.cim||'').replace(/\r?\n|\r/g, ' ');
+        var tel = fo.telefon || fo.tel || '';
+        var idkSzoveg = csoport.map(function(o){ return '#' + (o.id||o.rowid||'?'); }).join(' + ');
+
+        var html = '<div class="card-header">' +
+            '<div>' +
+                '<div class="card-name">' + (fo.nev||'Névtelen') + ' <span style="font-size:12px;color:#aaa;font-weight:600;">' + idkSzoveg + '</span></div>' +
+                '<div class="card-address">' + (fo.cim||'Nincs cím') + '</div>' +
+                (tel ? '<a href="tel:' + tel + '" class="phone-link" onclick="event.stopPropagation()">&#128222; ' + tel + '</a>' : '') +
             '</div>' +
-            (o.megjegyzes ? '<div class="comment-box"><b>Megjegyzés:</b> ' + o.megjegyzes + '</div>' : '') +
-            renderItemsTable(o.termek || o.termekek || '', o.rowid, o) +
-            (currentMode === 'szallitas' ?
-                '<div class="nav-group" onclick="event.stopPropagation()">' +
-                    '<a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(ca) + '" target="_blank" class="nav-btn gmaps">&#128506; Google Maps</a>' +
-                    '<a href="waze://?q=' + encodeURIComponent(ca) + '&navigate=yes" class="nav-btn waze">&#128309; Waze</a>' +
-                '</div>' : '') +
-            '<div style="display:flex;gap:8px;margin-top:4px;">' +
-                '<button onclick="event.stopPropagation();deleteOrder(' + o.rowid + ')" style="flex-shrink:0;padding:10px 14px;border-radius:10px;background:none;border:1.5px solid #e57373;color:#e57373;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">&#128465; Töröl</button>' +
-                '<button class="finish-btn" style="flex:1;" onclick="event.stopPropagation();completeOrder(' + o.rowid + ')">' +
-                (currentMode === 'atvetel' ? '&#10003; ÁTADVA ÉS FIZETVE' : '&#10003; KISZÁLLÍTVA') +
-                '</button>' +
+            '<span class="zone-tag">' + (fo.zona||'') + '</span>' +
+        '</div>';
+
+        csoport.forEach(function(o) {
+            if(o.megjegyzes) html += '<div class="comment-box"><b>Megjegyzés (#' + (o.id||o.rowid) + '):</b> ' + o.megjegyzes + '</div>';
+        });
+
+        if(csoport.length === 1) {
+            html += renderItemsTable(fo.termek || fo.termekek || '', fo.rowid, fo);
+        } else {
+            csoport.forEach(function(o) {
+                html += '<div style="font-size:11px;font-weight:800;color:#888;margin:8px 0 2px;padding:4px 6px;background:#f5f5f5;border-radius:6px;">&#9135; Rendelés #' + (o.id||o.rowid) + ' &#9135;</div>';
+                html += renderItemsTable(o.termek || o.termekek || '', o.rowid, o);
+            });
+            // Összesített végösszeg: 1x szállítási díj
+            var osszes = 0;
+            var zona_ = (fo.zona||'').toString().trim();
+            var sd = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
+            var isHazhoz = (fo.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
+            csoport.forEach(function(o) {
+                var vo = parseInt(o.vegosszeg) || 0;
+                if(isHazhoz && sd > 0) vo -= sd; // levonjuk az egyenkénti szállítási díjat
+                osszes += vo;
+            });
+            if(isHazhoz && sd > 0) osszes += sd; // egyszer adjuk hozzá
+            html += '<div style="padding:8px 6px;font-size:15px;font-weight:800;color:#1b5e20;border-top:2px solid #c8e6c9;margin-top:6px;">Összesített fizetendő: ' + osszes + ' Ft' + (isHazhoz && sd > 0 ? ' (+ ' + sd + ' Ft szállítás egyszeri)' : '') + '</div>';
+        }
+
+        if(currentMode === 'szallitas') {
+            html += '<div class="nav-group" onclick="event.stopPropagation()">' +
+                '<a href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(ca) + '" target="_blank" class="nav-btn gmaps">&#128506; Google Maps</a>' +
+                '<a href="waze://?q=' + encodeURIComponent(ca) + '&navigate=yes" class="nav-btn waze">&#128309; Waze</a>' +
             '</div>';
+        }
+
+        html += '<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">';
+        html += '<button onclick="event.stopPropagation();deleteOrder(' + fo.rowid + ')" style="flex-shrink:0;padding:10px 14px;border-radius:10px;background:none;border:1.5px solid #e57373;color:#e57373;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">&#128465; Töröl</button>';
+        if(csoport.length === 1) {
+            html += '<button class="finish-btn" style="flex:1;" onclick="event.stopPropagation();completeOrder(' + fo.rowid + ')">' + (currentMode === 'atvetel' ? '&#10003; ÁTADVA ÉS FIZETVE' : '&#10003; KISZÁLLÍTVA') + '</button>';
+        } else {
+            var rowIds = '[' + csoport.map(function(o){return o.rowid;}).join(',') + ']';
+            html += '<button class="finish-btn" style="flex:1;" onclick="event.stopPropagation();completeAll(' + rowIds + ')">' + (currentMode === 'atvetel' ? '&#10003; MIND ÁTADVA' : '&#10003; MIND KISZÁLLÍTVA') + '</button>';
+        }
+        html += '</div>';
+        card.innerHTML = html;
         list.appendChild(card);
     });
+}
+
+async function completeAll(rowIds) {
+    for(var i = 0; i < rowIds.length; i++) {
+        await completeOrder(rowIds[i]);
+    }
 }
 
 function parseQtyAndUnit(s) {
@@ -1971,10 +2056,27 @@ function kinElonezet() {
 }
 
 async function kinMentes(publikal) {
-    // Zóna ellenőrzés – ha nincs kijelölve semmi, figyelmeztessen
+    // Zóna ellenőrzés – ha nincs kijelölve semmi, modal figyelmeztetés
     if(kinSelectedZonak.length === 0 && publikal !== false) {
-        if(!confirm('⚠️ Nincs zóna kiválasztva!\n\nHa folytatod, a kínálat MINDENKINEK megjelenik.\n\nFolytassuk?')) return;
+        window._kinMentesFolytat = function() { kinMentesVegrehajt(publikal); };
+        document.getElementById('zona-figyelm').style.display = 'flex';
+        return;
     }
+    kinMentesVegrehajt(publikal);
+}
+
+function zonaFigyelmBezar() {
+    document.getElementById('zona-figyelm').style.display = 'none';
+    window._kinMentesFolytat = null;
+}
+
+function zonaFigyelmFolytat() {
+    document.getElementById('zona-figyelm').style.display = 'none';
+    if(window._kinMentesFolytat) window._kinMentesFolytat();
+    window._kinMentesFolytat = null;
+}
+
+async function kinMentesVegrehajt(publikal) {
 
     var resultEl = document.getElementById('kin-result');
     var cim = document.getElementById('kin-cim').value.trim();
