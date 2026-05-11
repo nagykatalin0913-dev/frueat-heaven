@@ -247,6 +247,19 @@
     </style>
 </head>
 <body>
+<!-- PIN VÉDELEM OVERLAY -->
+<div id="pin-overlay">
+    <div id="pin-box">
+        <div id="pin-logo">🍓</div>
+        <div id="pin-cim">Fru'eat Admin</div>
+        <div id="pin-alcim">Add meg a PIN kódot a belépéshez</div>
+        <input type="tel" id="pin-input" maxlength="6" placeholder="••••" autocomplete="off"
+               onkeyup="if(event.key==='Enter') pinEllenorzes()">
+        <button id="pin-btn" onclick="pinEllenorzes()">🔓 Belépés</button>
+        <div id="pin-hiba">Hibás PIN kód. Próbáld újra!</div>
+        <div id="pin-valtas" onclick="pinValtas()">PIN kód megváltoztatása</div>
+    </div>
+</div>
 
 <div class="header">
     <h2>&#127818; Fru'eat Admin</h2>
