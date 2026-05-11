@@ -257,13 +257,15 @@
                onkeyup="if(event.key==='Enter') pinEllenorzes()">
         <button id="pin-btn" onclick="pinEllenorzes()">🔓 Belépés</button>
         <div id="pin-hiba">Hibás PIN kód. Próbáld újra!</div>
-        <div id="pin-valtas" onclick="pinValtas()">PIN kód megváltoztatása</div>
     </div>
 </div>
 
-<div class="header">
-    <h2>&#127818; Fru'eat Admin</h2>
-    <small id="last-update">Adatok betöltése...</small>
+<div class="header" style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+        <h2>&#127818; Fru'eat Admin</h2>
+        <small id="last-update">Adatok betöltése...</small>
+    </div>
+    <button onclick="pinValtas()" title="PIN módosítása" style="background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;flex-shrink:0;">⚙️</button>
 </div>
 
 <div class="mode-selector">
@@ -570,15 +572,18 @@ function pinEllenorzes() {
 }
 
 function pinValtas() {
-    if(sessionStorage.getItem(PIN_AUTH_KEY) !== "1") { alert("Először lépj be!"); return; }
-    var regi   = prompt("Jelenlegi PIN:");
+    var regi   = prompt("Add meg a jelenlegi PIN kódot:");
+    if(regi === null) return; // Mégse gomb
     var helyes = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
-    if(regi !== helyes) { alert("Hibás PIN!"); return; }
-    var uj = prompt("Új PIN (min. 4 szám):");
-    if(!uj || uj.length < 4 || isNaN(uj)) { alert("Érvénytelen PIN!"); return; }
-    if(uj !== prompt("Új PIN mégegyszer:")) { alert("Nem egyezik!"); return; }
+    if(regi !== helyes) { alert("❌ Hibás PIN!"); return; }
+    var uj = prompt("Add meg az új PIN kódot (minimum 4 szám):");
+    if(uj === null) return;
+    if(!uj || uj.length < 4 || isNaN(uj)) { alert("❌ Érvénytelen PIN! Minimum 4 szám kell."); return; }
+    var ujMegint = prompt("Add meg újra az új PIN kódot:");
+    if(ujMegint === null) return;
+    if(uj !== ujMegint) { alert("❌ A két PIN nem egyezik!"); return; }
     localStorage.setItem(PIN_KEY, uj);
-    alert("✅ PIN megváltoztatva!");
+    alert("✅ PIN sikeresen megváltoztatva!");
 }
 
 document.addEventListener("DOMContentLoaded", function() {
