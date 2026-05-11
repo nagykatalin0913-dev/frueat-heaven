@@ -403,8 +403,9 @@
 
     <div id="kin-result" class="kin-result"></div>
 
-    <button class="kin-save-btn" onclick="kinMentes(false)">💾 Mentés (közzététel nélkül)</button>
-    <button class="kin-publish-btn" onclick="kinMentes(true)">🚀 Közzététel + Értesítés küldése</button>
+    <button class="kin-save-btn" onclick="kinMentes(false)">💾 Mentés (piszkozat)</button>
+    <button class="kin-publish-btn" onclick="kinMentes('kozzetek')">📢 Közzététel (értesítés nélkül)</button>
+    <button class="kin-publish-btn" style="background:#1b5e20;" onclick="kinMentes(true)">🚀 Közzététel + Értesítés küldése</button>
 </div>
 
 <!-- PUSH NÉZET -->
@@ -1970,6 +1971,11 @@ function kinElonezet() {
 }
 
 async function kinMentes(publikal) {
+    // Zóna ellenőrzés – ha nincs kijelölve semmi, figyelmeztessen
+    if(kinSelectedZonak.length === 0 && publikal !== false) {
+        if(!confirm('⚠️ Nincs zóna kiválasztva!\n\nHa folytatod, a kínálat MINDENKINEK megjelenik.\n\nFolytassuk?')) return;
+    }
+
     var resultEl = document.getElementById('kin-result');
     var cim = document.getElementById('kin-cim').value.trim();
     var uzenet = document.getElementById('kin-uzenet').value.trim();
@@ -2006,7 +2012,7 @@ async function kinMentes(publikal) {
     resultEl.style.display = 'block';
 
     try {
-        var statusz = publikal ? 'közzétett' : 'piszkozat';
+        var statusz = (publikal === false) ? 'piszkozat' : 'közzétett';
 
         // Zónák meghatározása: ha üres = Mindenki (1 sor), különben minden zónának külön sor
         var mentendoZonak = kinSelectedZonak.length === 0 ? [''] : kinSelectedZonak;
@@ -2035,7 +2041,7 @@ async function kinMentes(publikal) {
         }
 
         if(mentesOk) {
-            if(publikal) {
+            if(publikal === true) {
                 // Push értesítés küldése – minden érintett zónának
                 var pushCim = 'Új kínálat érkezett! 🍓';
                 var pushUzenet = cim || 'Nézd meg a heti friss kínálatunkat!';
@@ -2049,10 +2055,14 @@ async function kinMentes(publikal) {
                 var zSzam = mentendoZonak.length;
                 resultEl.className = 'kin-result ok';
                 resultEl.innerText = '✅ Kínálat közzétéve ' + (zSzam > 1 ? zSzam + ' zónában' : '') + ' és értesítés elküldve!';
+            } else if(publikal === 'kozzetek') {
+                var zSzam = mentendoZonak.length;
+                resultEl.className = 'kin-result ok';
+                resultEl.innerText = '✅ Kínálat közzétéve' + (zSzam > 1 ? ' (' + zSzam + ' zóna)' : '') + ' – értesítés NEM ment ki.';
             } else {
                 var zSzam = mentendoZonak.length;
                 resultEl.className = 'kin-result ok';
-                resultEl.innerText = '✅ Kínálat mentve' + (zSzam > 1 ? ' (' + zSzam + ' zóna, külön sorokba)' : '') + '!';
+                resultEl.innerText = '✅ Kínálat mentve piszkozatként' + (zSzam > 1 ? ' (' + zSzam + ' zóna)' : '') + '.';
             }
             // Mezők ürítése
             kinListaBetolt();
