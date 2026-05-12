@@ -811,8 +811,21 @@ function render() {
     var csoportMap = {};
     filtered.forEach(function(o) {
         var tel   = (o.telefon || o.tel || '').toString().trim().replace(/[^0-9]/g,'');
-        var datum = (o.datum || '').toString().trim().split('T')[0];
-        var kulcs = (tel && datum) ? (tel + '|' + datum) : ('egyedi_' + o.rowid);
+        // Dátum kulcs: datum mező napja VAGY kiszallitas_ideje első része (pl. "05.12.")
+        var datumRaw = (o.datum || '').toString().trim();
+        var datumKulcs = '';
+        if(datumRaw) {
+            // ISO dátumból csak a nap (időzóna-független): 2026-05-12T... → "05-12"
+            var isoM = datumRaw.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if(isoM) datumKulcs = isoM[2] + '-' + isoM[3];
+        }
+        if(!datumKulcs) {
+            // Fallback: kiszallitas_ideje első 5 karaktere (pl. "05.12")
+            var kiszStr = (o.kiszallitas_ideje || o['kiszallitas_ideje'] || '').toString().trim();
+            var kiszM = kiszStr.match(/(\d{2})\.(\d{2})/);
+            if(kiszM) datumKulcs = kiszM[1] + '-' + kiszM[2];
+        }
+        var kulcs = (tel && datumKulcs) ? (tel + '|' + datumKulcs) : ('egyedi_' + o.rowid);
         if(csoportMap[kulcs] === undefined) {
             csoportMap[kulcs] = csoportok.length;
             csoportok.push([o]);
@@ -853,9 +866,10 @@ function render() {
         if(csoport.length === 1) {
             html += renderItemsTable(fo.termek || fo.termekek || '', fo.rowid, fo);
         } else {
-            csoport.forEach(function(o) {
+            csoport.forEach(function(o, oi) {
                 html += '<div style="font-size:11px;font-weight:800;color:#888;margin:8px 0 2px;padding:4px 6px;background:#f5f5f5;border-radius:6px;">&#9135; Rendelés #' + (o.id||o.rowid) + ' &#9135;</div>';
-                html += renderItemsTable(o.termek || o.termekek || '', o.rowid, o);
+                // Szállítási díjat csak az első rendelésnél mutatjuk
+                html += renderItemsTable(o.termek || o.termekek || '', o.rowid, o, oi === 0);
             });
             // Összesített végösszeg: 1x szállítási díj
             var osszes = 0;
