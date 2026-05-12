@@ -706,24 +706,41 @@ async function fetchData() {
 //  ÁTVÉTEL / KISZÁLLÍTÁS – FILTER CHIPEK
 // ══════════════════════════════════════════════════════════════
 function buildFilterChips() {
-    function makeChips(el, items, current, setter) {
+    // Zónánként megszámoljuk a rendeléseket (összevont kártyák alapján)
+    var zonaSzamok = {};
+    var pontSzamok = {};
+    orders.forEach(function(o) {
+        var mod = String(o.atvetel_mod||'').toLowerCase();
+        if(mod.indexOf('házhoz') >= 0 && o.zona) {
+            zonaSzamok[o.zona] = (zonaSzamok[o.zona] || 0) + 1;
+        }
+        if(mod.indexOf('személyes') >= 0 && o.zona) {
+            pontSzamok[o.zona] = (pontSzamok[o.zona] || 0) + 1;
+        }
+    });
+
+    function makeChips(el, items, current, setter, szamok) {
         el.innerHTML = '';
         items.forEach(function(v) {
             var d = document.createElement('div');
             d.className = 'filter-chip' + (current === v ? ' active' : '');
-            d.textContent = v;
+            var label = v;
+            if(szamok && v !== 'mind' && szamok[v]) {
+                label = v + ' (' + szamok[v] + ')';
+            }
+            d.textContent = label;
             d.onclick = function() { setter(v); };
             el.appendChild(d);
         });
     }
     var zonak = ['mind'];
     orders.forEach(function(o) {
-        if (String(o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0 && o.zona && zonak.indexOf(o.zona) < 0)
+        if (String(o.atvetel_mod||'').toLowerCase().indexOf('házhoz') >= 0 && o.zona && zonak.indexOf(o.zona) < 0)
             zonak.push(o.zona);
     });
     var napok = ['mind'];
     orders.forEach(function(o) {
-        if (String(o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0 && o.datum) {
+        if (String(o.atvetel_mod||'').toLowerCase().indexOf('házhoz') >= 0 && o.datum) {
             var d = new Date(o.datum);
             if (!isNaN(d)) {
                 var s = d.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' });
@@ -733,12 +750,12 @@ function buildFilterChips() {
     });
     var pontok = ['mind'];
     orders.forEach(function(o) {
-        if (String(o.atvetel_mod||'').toLowerCase().indexOf('szem\u00e9lyes') >= 0 && o.zona && pontok.indexOf(o.zona) < 0)
+        if (String(o.atvetel_mod||'').toLowerCase().indexOf('személyes') >= 0 && o.zona && pontok.indexOf(o.zona) < 0)
             pontok.push(o.zona);
     });
-    makeChips(document.getElementById('zona-chips'), zonak, zonaFilter, function(v){ zonaFilter = v; buildFilterChips(); render(); });
-    makeChips(document.getElementById('nap-chips'),  napok,  napFilter,  function(v){ napFilter  = v; buildFilterChips(); render(); });
-    makeChips(document.getElementById('atvetel-pont-szuro'), pontok, pontFilter, function(v){ pontFilter = v; buildFilterChips(); render(); });
+    makeChips(document.getElementById('zona-chips'), zonak, zonaFilter, function(v){ zonaFilter = v; buildFilterChips(); render(); }, zonaSzamok);
+    makeChips(document.getElementById('nap-chips'),  napok,  napFilter,  function(v){ napFilter  = v; buildFilterChips(); render(); }, null);
+    makeChips(document.getElementById('atvetel-pont-szuro'), pontok, pontFilter, function(v){ pontFilter = v; buildFilterChips(); render(); }, pontSzamok);
 }
 
 // ══════════════════════════════════════════════════════════════
