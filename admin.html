@@ -122,6 +122,30 @@
         #uzenetek-view{display:none}
         #vevok-view{display:none}
 
+        /* ÚJ RENDELÉS BADGE */
+        .mode-btn { position: relative; }
+        .ujrendeles-badge {
+            position: absolute;
+            top: -6px; right: -6px;
+            background: #e53935;
+            color: white;
+            font-size: 11px;
+            font-weight: 800;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            animation: badgePulse 1.5s ease-in-out 3;
+        }
+        @keyframes badgePulse {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
         /* ZONA FIGYELMEZTETES MODAL */
         #zona-figyelm {
             display:none; position:fixed; top:0; left:0; width:100%; height:100%;
@@ -695,6 +719,7 @@ async function fetchData() {
             });
         }
         document.getElementById('last-update').innerText = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
+        ujRendelesBadgeFrissit();
         buildFilterChips();
         render();
     } catch(e) {
@@ -759,6 +784,67 @@ function buildFilterChips() {
 }
 
 // ══════════════════════════════════════════════════════════════
+//  ÚJ RENDELÉS BADGE
+// ══════════════════════════════════════════════════════════════
+
+var UTOLSO_MEGNEZTES_KEY = 'frueat_admin_utolso_megneztes';
+
+function ujRendelesBadgeFrissit() {
+    var utolso = parseInt(localStorage.getItem(UTOLSO_MEGNEZTES_KEY)) || 0;
+    var ujAtvetel   = 0;
+    var ujKiszallitas = 0;
+
+    orders.forEach(function(o) {
+        var statusz = (o.statusz || '').toString().toLowerCase();
+        if(statusz !== 'aktív' && statusz !== 'aktiv') return;
+        var datum = o.datum ? new Date(o.datum).getTime() : 0;
+        if(datum <= utolso) return;
+        var mod = (o.atvetel_mod || '').toLowerCase();
+        if(mod.indexOf('személyes') >= 0) ujAtvetel++;
+        else if(mod.indexOf('házhoz') >= 0) ujKiszallitas++;
+    });
+
+    // Badge az Átvétel gombra
+    var btnAtvetel = document.getElementById('btn-atvetel');
+    var badgeA = btnAtvetel ? btnAtvetel.querySelector('.ujrendeles-badge') : null;
+    if(ujAtvetel > 0) {
+        if(!badgeA) {
+            badgeA = document.createElement('span');
+            badgeA.className = 'ujrendeles-badge';
+            btnAtvetel.appendChild(badgeA);
+        }
+        badgeA.textContent = ujAtvetel;
+    } else if(badgeA) {
+        badgeA.remove();
+    }
+
+    // Badge a Kiszállítás gombra
+    var btnKiszall = document.getElementById('btn-szallitas');
+    var badgeK = btnKiszall ? btnKiszall.querySelector('.ujrendeles-badge') : null;
+    if(ujKiszallitas > 0) {
+        if(!badgeK) {
+            badgeK = document.createElement('span');
+            badgeK.className = 'ujrendeles-badge';
+            btnKiszall.appendChild(badgeK);
+        }
+        badgeK.textContent = ujKiszallitas;
+    } else if(badgeK) {
+        badgeK.remove();
+    }
+}
+
+function ujRendelesMegnezve() {
+    // Amikor átvétel vagy kiszállítás fülre lép → eltároljuk az időpontot
+    localStorage.setItem(UTOLSO_MEGNEZTES_KEY, Date.now().toString());
+    // Badge eltüntetése
+    ['btn-atvetel','btn-szallitas'].forEach(function(id) {
+        var btn = document.getElementById(id);
+        var badge = btn ? btn.querySelector('.ujrendeles-badge') : null;
+        if(badge) badge.remove();
+    });
+}
+
+// ══════════════════════════════════════════════════════════════
 //  MÓD VÁLTÁS
 // ══════════════════════════════════════════════════════════════
 function setMode(mode) {
@@ -786,6 +872,7 @@ function setMode(mode) {
     if (isKin)  { kinBetoltTermekek(); kinListaBetolt(); }
     if (isUz)   { uzenetListaBetolt(); }
     if (isVev)  { vevokBetolt(); }
+    if (mode === 'atvetel' || mode === 'szallitas') { ujRendelesMegnezve(); }
 }
 
 function betoltPushZonak() {
