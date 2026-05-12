@@ -1199,7 +1199,7 @@ async function fetchBeszerzes() {
             bszKartyak.push({
                 nev:                nev,
                 osszes_mennyiseg:   osszesKg,
-                egyseg:             'kg',
+                egyseg:             termekek[nev] ? (termekek[nev].egyseg || 'kg') : 'kg',
                 becsult_suly:       bsuly,
                 box_db:             boxDb,     // nyers db (pl. 10 db cukkini a boxból)
                 rendeles_mennyiseg: renKg,     // kg direkt rendelésekből
