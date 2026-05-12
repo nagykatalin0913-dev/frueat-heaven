@@ -1832,7 +1832,10 @@
                 vegosszeg: vegszamlaHUF,
                 megjegyzes: document.getElementById("megjegyzes").value,
                 mod: atveteliMod === "hazhoz" ? "Házhozszállítás" : "Személyes átvétel",
-                kinalat_id: aktKinalatRowid || ""
+                kinalat_id: aktKinalatRowid || "",
+                kiszallitas_datum: (aktualisSzallitasInfo && aktualisSzallitasInfo.kiszallitasIdeje)
+                    ? aktualisSzallitasInfo.kiszallitasIdeje.substring(0,5)
+                    : ""
             });
 
             fetch(API_URL + "?" + params.toString(), { 
