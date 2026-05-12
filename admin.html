@@ -810,22 +810,22 @@ function render() {
     var csoportok = [];
     var csoportMap = {};
     filtered.forEach(function(o) {
-        var tel   = (o.telefon || o.tel || '').toString().trim().replace(/[^0-9]/g,'');
-        // Dátum kulcs: datum mező napja VAGY kiszallitas_ideje első része (pl. "05.12.")
-        var datumRaw = (o.datum || '').toString().trim();
-        var datumKulcs = '';
-        if(datumRaw) {
-            // ISO dátumból csak a nap (időzóna-független): 2026-05-12T... → "05-12"
-            var isoM = datumRaw.match(/(\d{4})-(\d{2})-(\d{2})/);
-            if(isoM) datumKulcs = isoM[2] + '-' + isoM[3];
-        }
-        if(!datumKulcs) {
-            // Fallback: kiszallitas_ideje első 5 karaktere (pl. "05.12")
-            var kiszStr = (o.kiszallitas_ideje || o['kiszallitas_ideje'] || '').toString().trim();
+        var tel = (o.telefon || o.tel || '').toString().trim().replace(/[^0-9]/g,'');
+        var kinalatId = (o.kinalat_id || '').toString().trim();
+
+        var kulcs;
+        if(tel && kinalatId) {
+            // Legjobb: azonos telefon + azonos kinalat_id → egy kínálatból rendeltek
+            kulcs = tel + '|kin|' + kinalatId;
+        } else if(tel) {
+            // Fallback régi rendeléseknél: telefon + kiszállítás dátuma
+            var kiszStr = (o.kiszallitas_ideje || '').toString().trim();
             var kiszM = kiszStr.match(/(\d{2})\.(\d{2})/);
-            if(kiszM) datumKulcs = kiszM[1] + '-' + kiszM[2];
+            var datumKulcs = kiszM ? (kiszM[1] + '-' + kiszM[2]) : '';
+            kulcs = datumKulcs ? (tel + '|' + datumKulcs) : ('egyedi_' + o.rowid);
+        } else {
+            kulcs = 'egyedi_' + o.rowid;
         }
-        var kulcs = (tel && datumKulcs) ? (tel + '|' + datumKulcs) : ('egyedi_' + o.rowid);
         if(csoportMap[kulcs] === undefined) {
             csoportMap[kulcs] = csoportok.length;
             csoportok.push([o]);
