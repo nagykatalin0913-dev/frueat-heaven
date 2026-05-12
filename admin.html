@@ -818,11 +818,14 @@ function render() {
             // Legjobb: azonos telefon + azonos kinalat_id → egy kínálatból rendeltek
             kulcs = tel + '|kin|' + kinalatId;
         } else if(tel) {
-            // Fallback régi rendeléseknél: telefon + kiszállítás dátuma
-            var kiszStr = (o.kiszallitas_ideje || '').toString().trim();
-            var kiszM = kiszStr.match(/(\d{2})\.(\d{2})/);
-            var datumKulcs = kiszM ? (kiszM[1] + '-' + kiszM[2]) : '';
-            kulcs = datumKulcs ? (tel + '|' + datumKulcs) : ('egyedi_' + o.rowid);
+            // Fallback: telefon + kiszallitas_datum (új rendeléseknél) VAGY kiszallitas_ideje első 5 kar
+            var kiszDat = (o.kiszallitas_datum || '').toString().trim();
+            if(!kiszDat) {
+                var kiszStr = (o.kiszallitas_ideje || '').toString().trim();
+                var kiszM = kiszStr.match(/(\d{2})\.(\d{2})/);
+                kiszDat = kiszM ? (kiszM[1] + '.' + kiszM[2]) : '';
+            }
+            kulcs = kiszDat ? (tel + '|' + kiszDat) : ('egyedi_' + o.rowid);
         } else {
             kulcs = 'egyedi_' + o.rowid;
         }
