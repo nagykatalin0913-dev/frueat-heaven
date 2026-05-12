@@ -934,10 +934,13 @@ function szamolVegosszeg(rowid) {
     });
     var zona_ = (order.zona || '').toString().trim();
     var sd = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
+    var ingyHatar = (zonaLista[zona_] && zonaLista[zona_].ingyenes_hatar) ? zonaLista[zona_].ingyenes_hatar : 0;
     var isHazhoz_ = (order.atvetel_mod||'').toLowerCase().indexOf('házhoz') >= 0;
+    // Ingyenes határ ellenőrzés
+    if(ingyHatar > 0 && t >= ingyHatar) sd = 0;
     if (isHazhoz_ && sd > 0) t += sd;
     var el = document.getElementById('total-' + rowid);
-    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft' + (isHazhoz_ && sd > 0 ? ' (+ ' + sd + ' Ft szállítás)' : '');
+    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft' + (isHazhoz_ && sd > 0 ? ' (+ ' + sd + ' Ft szállítás)' : (isHazhos_ && ingyHatar > 0 && sd === 0 ? ' (szállítás ingyenes)' : ''));
     order.vegosszeg = Math.round(t);
 }
 
