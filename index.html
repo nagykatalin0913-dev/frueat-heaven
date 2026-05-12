@@ -1380,9 +1380,12 @@
                     // "2026.04.24" vagy "2026.04.24." formátum
                     const m = s.match(/^(\d{4})[\.\-\/](\d{1,2})[\.\-\/](\d{1,2})/);
                     if(m) return new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
+                    if(m) return new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3]));
+                    // ISO timestamp UTC fix: '2026-05-11T22:00:00.000Z' → lokális dátumként kezeljük
+                    const isoM = s.match(/^(\d{4})-(\d{2})-(\d{2})T/);
+                    if(isoM) return new Date(parseInt(isoM[1]), parseInt(isoM[2])-1, parseInt(isoM[3]));
                     const d = new Date(s);
                     return isNaN(d) ? null : d;
-                }
 
                 // Zóna normalizálás: ékezetek és extra karakterek nélkül hasonlít
                 function normZona(s) {
