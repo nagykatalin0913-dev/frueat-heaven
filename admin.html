@@ -1079,9 +1079,12 @@ function renderItemsTable(str, rowid, order) {
             '</td>' +
         '</tr>';
     }).join('');
-    if (vs && sd > 0) tot += sd;
+    var ingyHatar_rt = (zonaLista[zona_r] && zonaLista[zona_r].ingyenes_hatar) ? zonaLista[zona_r].ingyenes_hatar : 0;
+    var sdEff = (vs && sd > 0 && !(ingyHatar_rt > 0 && tot >= ingyHatar_rt)) ? sd : 0;
+    if (sdEff > 0) tot += sdEff;
     return '<table class="items-table"><thead><tr><th>Termék</th><th style="text-align:right;">Mennyiség / Összeg</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-        (vs && sd > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Szállítási díj:</span><span>' + sd + ' Ft</span></div>' : '') +
+        (sdEff > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Szállítási díj:</span><span>' + sdEff + ' Ft</span></div>' : '') +
+        (vs && sdEff === 0 && ingyHatar_rt > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#2e7d32;font-style:italic;"><span>Szállítási díj:</span><span>Ingyenes 🎉</span></div>' : '') +
         '<div class="total-row" id="total-' + rowid + '">Fizetendő: ' + tot + ' Ft</div>';
 }
 
