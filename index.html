@@ -1646,8 +1646,6 @@
                     `;
                 });
                 document.getElementById("termek-lista").innerHTML = html || '<div style="color:#999;padding:16px;text-align:center;">Nincsenek megjeleníthető termékek.</div>';
-                // Kosár badge-ek frissítése a termék kártyákon
-                frissitOsszesTermekBadge();
             })
             .catch(e => {
                 console.error("Hiba:", e);
