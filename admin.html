@@ -714,7 +714,8 @@ async function fetchData() {
             td.zonak.forEach(function(z) {
                 var nev = (z.telepules || z['telepules/kerulet'] || z.zona || '').toString().trim();
                 if(nev) zonaLista[nev] = {
-                    szallitasi_dij: parseFloat(z['szallitasi dij'] || z.szallitasi_dij || 0)
+                    szallitasi_dij:  parseFloat(z['szallitasi dij'] || z.szallitasi_dij || 0),
+                    ingyenes_hatar:  parseFloat(z['ingyenes hatar'] || z['ingyenes_hatar'] || 0)
                 };
             });
         }
