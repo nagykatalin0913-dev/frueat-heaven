@@ -1668,6 +1668,7 @@
             repulKosarba(inputField);
 
             frissitKosarUI();
+            frissitTermekBadge(nev);
         }
 
         function repulKosarba(forrasEl) {
@@ -1812,7 +1813,6 @@
             document.getElementById("cart-content").innerHTML = html;
             document.getElementById("btn-submit").disabled = false;
             frissitFabBadge();
-            frissitOsszesTermekBadge();
         }
 
         function kosarTorlesBtn(btn) {
@@ -1822,7 +1822,7 @@
 
         function kosarTorles(nev) {
             delete kosar[nev];
-            frissitKosar();
+            frissitKosarUI();
             frissitTermekBadge(nev);
         }
 
