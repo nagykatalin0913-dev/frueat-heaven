@@ -1637,7 +1637,8 @@
                             <div class="product-cart">
                                 <input id="qty_${t.nev}" type="number" step="0.1" placeholder="0" min="0">
                                 <button class="btn btn-small" onclick="addToCart('${safeNev}')">+ Kosárba</button>
-                            </div>` : ''}
+                            </div>
+                            <div id="kosar-badge-${safeNev}" class="termek-kosar-badge" data-nev="${t.nev}" style="display:none;"></div>` : ''}
                         </div>
                     `;
                 });
@@ -1737,13 +1738,13 @@
                 let t = kosar[nev];
                 let reszosszeg = Math.round(t.qty * t.ar);
                 kosarErtek += reszosszeg;
-                const nevSafe = nev.replace(/'/g, "\\'");
+                const nevSafe = nev.replace(/[^a-zA-Z0-9]/g, '_');
                 html += `
                     <div class="cart-item" style="align-items:center;">
                         <span><b>${t.qty} ${t.egyseg}</b> ${nev}</span>
                         <div style="display:flex;align-items:center;gap:8px;">
                             <span style="font-weight:700;">${reszosszeg} Ft</span>
-                            <button onclick="kosarTorles('${nevSafe}')" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;" title="Törlés">✕</button>
+                            <button data-nev="${nev}" onclick="kosarTorlesBtn(this)" style="background:none;border:none;color:var(--red);font-size:20px;cursor:pointer;padding:4px 8px;line-height:1;font-weight:800;" title="Törlés">✕</button>
                         </div>
                     </div>
                 `;
@@ -1814,10 +1815,14 @@
             frissitOsszesTermekBadge();
         }
 
+        function kosarTorlesBtn(btn) {
+            const nev = btn.dataset.nev;
+            kosarTorles(nev);
+        }
+
         function kosarTorles(nev) {
             delete kosar[nev];
             frissitKosar();
-            // Badge frissítés a termék kártyán
             frissitTermekBadge(nev);
         }
 
