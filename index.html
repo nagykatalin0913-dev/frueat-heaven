@@ -1344,8 +1344,13 @@
                     document.getElementById("chat-wa").href  = "https://wa.me/" + waNum + "?text=" + encodeURIComponent(uzi);
                 }
                 if(msgPage) {
-                    // Messenger deeplink: fb-messenger://user-thread/ (ugyanaz mint Anitánál)
-                    document.getElementById("chat-msg").href = "fb-messenger://user-thread/" + msgPage;
+                    // Messenger deeplink: onclick + window.open hogy ne villanjon fel "lap nem elérhető"
+                    var msgEl = document.getElementById("chat-msg");
+                    msgEl.removeAttribute("href");
+                    msgEl.onclick = function(e) {
+                        e.preventDefault();
+                        window.open("fb-messenger://user-thread/" + msgPage, "_blank");
+                    };
                 }
                 if(waNum || msgPage) {
                     document.getElementById("chat-buttons").style.display = "flex";
