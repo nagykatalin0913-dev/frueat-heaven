@@ -1344,13 +1344,19 @@
                     document.getElementById("chat-wa").href  = "https://wa.me/" + waNum + "?text=" + encodeURIComponent(uzi);
                 }
                 if(msgPage) {
-                    // Messenger deeplink: közvetlenül nyitja meg a chatablakot
-                    // Numerikus ID esetén fb-messenger://user-thread/, egyébként m.me/ fallback
+                    // Messenger deeplink: Android intent séma, iOS + fallback: m.me/
+                    var msgEl = document.getElementById("chat-msg");
                     var isNumericId = /^[0-9]+$/.test(msgPage);
-                    var msgHref = isNumericId
-                        ? "fb-messenger://user-thread/" + msgPage
-                        : "https://m.me/" + msgPage;
-                    document.getElementById("chat-msg").href = msgHref;
+                    var webFallback = "https://m.me/" + msgPage;
+                    var isAndroid = /android/i.test(navigator.userAgent);
+                    if(isAndroid && isNumericId) {
+                        // Android + numerikus ID: intent séma – közvetlenül nyitja a Messenger appot
+                        var intentLink = "intent://user/" + msgPage + "#Intent;scheme=fb-messenger;package=com.facebook.orca;S.browser_fallback_url=" + encodeURIComponent(webFallback) + ";end";
+                        msgEl.href = intentLink;
+                    } else {
+                        // iOS vagy felhasználónév: m.me/ (böngésző→app átirányítás)
+                        msgEl.href = webFallback;
+                    }
                 }
                 if(waNum || msgPage) {
                     document.getElementById("chat-buttons").style.display = "flex";
