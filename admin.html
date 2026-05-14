@@ -1048,7 +1048,7 @@ function szamolVegosszeg(rowid) {
     if(ingyHatar > 0 && t >= ingyHatar) sd = 0;
     if (isHazhoz_ && sd > 0) t += sd;
     var el = document.getElementById('total-' + rowid);
-    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft' + (isHazhoz_ && sd > 0 ? ' (+ ' + sd + ' Ft szállítás)' : (isHazhos_ && ingyHatar > 0 && sd === 0 ? ' (szállítás ingyenes)' : ''));
+    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft' + (isHazhoz_ && sd > 0 ? ' (+ ' + sd + ' Ft szállítás)' : (isHazhoz_ && ingyHatar > 0 && sd === 0 ? ' (szállítás ingyenes)' : ''));
     order.vegosszeg = Math.round(t);
 }
 
@@ -1805,8 +1805,11 @@ async function kinListaBetolt() {
     if(!container) return;
     container.innerHTML = '<div style="color:#aaa;font-size:13px;">Betöltés...</div>';
     try {
-        var r = await fetch(API_URL, { redirect: 'follow' });
-        if (!r.ok) throw new Error("Hiba: " + r.status);
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function() { controller.abort(); }, 12000);
+        var r = await fetch(API_URL, { redirect: 'follow', signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!r.ok) throw new Error("Szerver hiba: " + r.status);
         var d = await r.json();
         var lista = (d && d.kinalat) ? d.kinalat : [];
         if(lista.length === 0) {
@@ -1877,7 +1880,10 @@ async function kinListaBetolt() {
         });
         container.innerHTML = html;
     } catch(e) {
-        container.innerHTML = '<div style="color:#c62828;font-size:13px;">Hiba: ' + e.message + '</div>';
+        var uzenet = e.name === 'AbortError'
+            ? '⏱ Időtúllépés – az API nem válaszolt 12 másodpercen belül. Ellenőrizd a Code.gs szintaxisát!'
+            : '❌ Hiba: ' + e.message;
+        container.innerHTML = '<div style="color:#c62828;font-size:13px;padding:12px;background:#ffebee;border-radius:8px;">' + uzenet + '<br><button onclick="kinListaBetolt()" style="margin-top:8px;padding:6px 14px;border-radius:8px;background:#c62828;color:white;border:none;font-weight:700;cursor:pointer;">↺ Újra</button></div>';
     }
 }
 
@@ -2261,13 +2267,14 @@ async function kinMentesVegrehajt(publikal) {
 
         // Minden zónának külön API hívás → külön sor a sheetben
         var mentesOk = true;
+        var lastError = '';
         for(var zi = 0; zi < mentendoZonak.length; zi++) {
             var zonaParam = mentendoZonak[zi];
             var url = API_URL + baseParams + '&zona=' + encodeURIComponent(zonaParam);
             var r = await fetch(url, { redirect: 'follow' });
-            if(!r.ok) { mentesOk = false; break; }
+            if(!r.ok) { lastError = 'Szerver hiba: ' + r.status; mentesOk = false; break; }
             var res = await r.text();
-            if(!res.trim().startsWith('ok')) { mentesOk = false; break; }
+            if(!res.trim().startsWith('ok')) { lastError = res; mentesOk = false; break; }
         }
 
         if(mentesOk) {
@@ -2301,7 +2308,7 @@ async function kinMentesVegrehajt(publikal) {
             }
         } else {
             resultEl.className = 'kin-result err';
-            resultEl.innerText = 'Hiba: ' + res;
+            resultEl.innerText = 'Hiba: ' + (lastError || 'Ismeretlen hiba');
         }
     } catch(e) {
         resultEl.className = 'kin-result err';
