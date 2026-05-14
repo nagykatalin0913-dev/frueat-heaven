@@ -1023,14 +1023,25 @@
             const tarolt = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
             if(!tarolt.length) return;
             try {
-                const resp = await fetch(API_URL + "?admin=true", { redirect: "follow" });
-                if (!resp.ok) throw new Error("Szinkron hiba: " + resp.status);
-                const aktivak = await resp.json();
+                // Csak a saját rendelési ID-kat küldjük el – nem töltjük le az összes rendelést
+                const sajatIdkArr = tarolt.map(r => r.id).filter(Boolean);
+                let aktivak = [];
+                if(sajatIdkArr.length > 0) {
+                    const resp = await fetch(API_URL + "?checkIds=" + sajatIdkArr.join(","), { redirect: "follow" });
+                    if (!resp.ok) throw new Error("Szinkron hiba: " + resp.status);
+                    aktivak = await resp.json();
+                } else {
+                    // Fallback régi rendeléseknél amiknek nincs ID-juk: telefon alapján
+                    const profil = JSON.parse(localStorage.getItem("frueat_profile") || "{}");
+                    const tel = (profil.tel || "").replace(/\D/g,'').slice(-7);
+                    if(!tel) return;
+                    const resp = await fetch(API_URL + "?checkTel=" + encodeURIComponent(tel), { redirect: "follow" });
+                    if (!resp.ok) throw new Error("Szinkron hiba: " + resp.status);
+                    aktivak = await resp.json();
+                }
 
                 let volt_valtozas = false;
                 const megmaradok = tarolt.filter(r => {
-                    // Az egyedi rendelési ID (pl. 27) alapján keresünk
-                    // aktivak[].id tartalmazza az egyedi számot
                     if(r.id) {
                         return aktivak.some(a => String(a.id) === String(r.id));
                     }
@@ -1116,11 +1127,24 @@
         }
         function cimModalMegse() {
             document.getElementById("cim-modal").style.display = "none";
-            // Ha volt aktív házhozszállítás választás, visszaállunk személyesre ha van, egyébként marad
+            // Ha volt aktív házhozszállítás választás és nincs cím megadva
             if(atveteliMod === "hazhoz" && (!userProfile || !userProfile.utca)) {
-                // Visszaállítjuk a rádiógombot személyesre ha lehetséges
+                // Van személyes átvétel opció? Akkor visszaállunk arra
                 const szemEl = document.querySelector('input[name="atvetel"][value="szemelyes"]');
-                if(szemEl) { szemEl.checked = true; atveteliMod = "szemelyes"; frissitKosarUI(); }
+                if(szemEl) {
+                    szemEl.checked = true;
+                    atveteliMod = "szemelyes";
+                    frissitKosarUI();
+                } else {
+                    // Nincs személyes átvétel (csak házhozszállítás zóna) →
+                    // atveteliMod marad "hazhoz", de jelezzük a vevőnek hogy kötelező a cím
+                    const hazEl = document.querySelector('input[name="atvetel"][value="hazhoz"]');
+                    if(hazEl) hazEl.checked = true;
+                    // Megmutatjuk újra a modalt rövid késleltetéssel
+                    setTimeout(function() {
+                        cimModalMegnyit(null);
+                    }, 200);
+                }
             }
         }
         function cimModalMentes() {
@@ -1621,7 +1645,7 @@
                         return idStr.split(",").map(s => parseInt(s.trim())).includes(t_id);
                     });
                     const mindenHataridoLejart = termekKinalatai.length > 0 && termekKinalatai.every(k => {
-                        const h = k.hatarido ? new Date(k.hatarido) : null;
+                        const h = k.hatarido ? parseDatum(k.hatarido) : null;
                         return h && h < new Date();
                     });
 
