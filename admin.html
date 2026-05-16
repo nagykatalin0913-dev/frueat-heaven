@@ -369,15 +369,7 @@
         <div class="kin-section-title">🗺️ Zóna</div>
         <div style="font-size:11px;color:#aaa;margin-bottom:8px;">Több zóna is választható – "Mindenki" mindent felülír</div>
         <div class="kin-zona-grid" id="kin-zona-grid">
-            <div class="kin-zona-chip" data-zona="MINDENKI" onclick="kinZonaValaszt(this)" style="grid-column:1/-1;">🌍 Mindenki</div>
-            <div class="kin-zona-chip" data-zona="Pécel" onclick="kinZonaValaszt(this)">Pécel</div>
-            <div class="kin-zona-chip" data-zona="Maglód" onclick="kinZonaValaszt(this)">Maglód</div>
-            <div class="kin-zona-chip" data-zona="Gyömrő" onclick="kinZonaValaszt(this)">Gyömrő</div>
-            <div class="kin-zona-chip" data-zona="Vecsés" onclick="kinZonaValaszt(this)">Vecsés</div>
-            <div class="kin-zona-chip" data-zona="XVII" onclick="kinZonaValaszt(this)">XVII. ker.</div>
-            <div class="kin-zona-chip" data-zona="XVI" onclick="kinZonaValaszt(this)">XVI. ker.</div>
-            <div class="kin-zona-chip" data-zona="XVIII" onclick="kinZonaValaszt(this)">XVIII. ker.</div>
-            <div class="kin-zona-chip" data-zona="Dunaharaszti" onclick="kinZonaValaszt(this)">Dunaharaszti</div>
+            <div style="color:#aaa;font-size:12px;padding:8px;">Betöltés...</div>
         </div>
         <div id="kin-zona-preview" style="font-size:12px;color:var(--green-dark);margin-top:6px;font-weight:700;"></div>
     </div>
@@ -718,6 +710,15 @@ async function fetchData() {
                     ingyenes_hatar:  parseFloat(z['ingyenes hatar'] || z['ingyenes_hatar'] || 0)
                 };
             });
+            // Zóna chipek dinamikus generálása a Zonak sheetből
+            var grid = document.getElementById('kin-zona-grid');
+            if (grid) {
+                var html = '<div class="kin-zona-chip" data-zona="MINDENKI" onclick="kinZonaValaszt(this)" style="grid-column:1/-1;">🌍 Mindenki</div>';
+                Object.keys(zonaLista).forEach(function(nev) {
+                    html += '<div class="kin-zona-chip" data-zona="' + nev + '" onclick="kinZonaValaszt(this)">' + nev + '</div>';
+                });
+                grid.innerHTML = html;
+            }
         }
         document.getElementById('last-update').innerText = 'Frissítve: ' + new Date().toLocaleTimeString('hu-HU');
         ujRendelesBadgeFrissit();
