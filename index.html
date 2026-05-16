@@ -862,6 +862,135 @@
         }
         .chat-btn:active { transform: scale(0.92); opacity: 0.8; }
         .chat-btn svg { width: 26px; height: 26px; fill: #0d0d0d; }
+
+        /* ÁLLANDÓ TERMÉKEK SZEKCIÓ */
+        .allandok-card {
+            background: var(--dark-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1.5px solid var(--gold-dim);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+        .allandok-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .allandok-cim {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gold-light);
+            letter-spacing: 0.5px;
+        }
+        .allandok-alcim {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 3px;
+        }
+        .allandok-osszes-btn {
+            background: none;
+            border: 1.5px solid var(--gold-dim);
+            color: var(--gold);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: 'Nunito', sans-serif;
+        }
+        #allandok-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .allandok-mini-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .allandok-mini-kep {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 6px;
+        }
+        .allandok-mini-nev {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.3;
+            margin-bottom: 4px;
+            min-height: 28px;
+        }
+        .allandok-mini-ar {
+            font-size: 11px;
+            color: var(--gold);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .allandok-mini-plus {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+            border: none;
+            color: #0d0d0d;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .allandok-kategoria-cim {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            color: var(--gold-light);
+            margin: 22px 0 12px;
+            padding-left: 4px;
+            border-bottom: 1px solid var(--dark-border);
+            padding-bottom: 8px;
+        }
+        .allandok-termek-card {
+            background: var(--dark-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--dark-border);
+            border-radius: var(--radius);
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+        .allandok-termek-kep {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 10px;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.05);
+        }
+        .allandok-termek-info { flex: 1; }
+        .allandok-termek-nev {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+        .allandok-termek-ar {
+            font-size: 14px;
+            color: var(--gold);
+            font-weight: 700;
+        }
 </style>
 </head>
 
@@ -972,6 +1101,20 @@
             <div class="section-title">🛒 Aktuális kínálat</div>
             <div id="termek-lista"></div>
 
+            <!-- ÁLLANDÓ TERMÉKEK SZEKCIÓ -->
+            <div id="allandok-szekció" style="display:none;">
+                <div class="allandok-card">
+                    <div class="allandok-header">
+                        <div>
+                            <div class="allandok-cim">🛍️ ÁLLANDÓ TERMÉKEINK</div>
+                            <div class="allandok-alcim">Nézd meg webshopunk kedvenceit!</div>
+                        </div>
+                        <button class="allandok-osszes-btn" onclick="allandokNezetMegnyit()">Összes termék ›</button>
+                    </div>
+                    <div id="allandok-grid"></div>
+                </div>
+            </div>
+
             <div class="form">
                 <div class="form-section-title">🛒 Kosár tartalma</div>
                 <div class="cart-summary" id="cart-content">
@@ -993,6 +1136,17 @@
                 <button id="btn-submit" class="btn btn-submit" onclick="kuldes()" disabled>Rendelés elküldése 🍊</button>
                 <span class="reset-link" onclick="resetProfile()">⚠ Adatok megváltoztatása</span>
             </div>
+        </div>
+    </div>
+
+    <!-- ÁLLANDÓ TERMÉKEK TELJES LISTA NÉZET -->
+    <div id="allandok-nezet" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--dark-bg); z-index:2000; overflow-y:auto; padding-bottom:60px;">
+        <div style="max-width:600px; margin:auto; padding:14px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-top:12px;">
+                <button onclick="allandokNezetZar()" style="background:rgba(201,168,76,0.12); border:1.5px solid var(--dark-border); color:var(--gold); border-radius:12px; padding:8px 16px; font-size:15px; font-weight:700; cursor:pointer;">‹ Vissza</button>
+                <div style="font-family:'Playfair Display',serif; font-size:20px; color:var(--gold-light); font-weight:700;">🛍️ Állandó termékeink</div>
+            </div>
+            <div id="allandok-teljes-lista"></div>
         </div>
     </div>
 
@@ -1426,9 +1580,13 @@
                     document.getElementById("chat-wa").href  = "https://wa.me/" + waNum + "?text=" + encodeURIComponent(uzi);
                 }
                 if(msgPage) {
-                    // m.me link: numerikus profile ID-t és felhasználónevet egyaránt elfogad,
-                    // megbízhatóan nyitja meg a Messenger appot minden platformon
-                    document.getElementById("chat-msg").href = "https://m.me/" + msgPage;
+                    // Messenger deeplink: közvetlenül nyitja meg a chatablakot
+                    // Numerikus ID esetén fb-messenger://user-thread/, egyébként m.me/ fallback
+                    var isNumericId = /^[0-9]+$/.test(msgPage);
+                    var msgHref = isNumericId
+                        ? "fb-messenger://user-thread/" + msgPage
+                        : "https://m.me/" + msgPage;
+                    document.getElementById("chat-msg").href = msgHref;
                 }
                 if(waNum || msgPage) {
                     document.getElementById("chat-buttons").style.display = "flex";
@@ -1715,10 +1873,112 @@
                 document.getElementById("termek-lista").innerHTML = html || '<div style="color:#999;padding:16px;text-align:center;">Nincsenek megjeleníthető termékek.</div>';
                 // Stepper állapot frissítése minden termékre (ha van már valami a kosárban)
                 frissitOsszesSteppert();
+
+                // Állandó termékek megjelenítése
+                if(data.allandok && data.allandok.length > 0) {
+                    renderAllandokFooldal(data.allandok);
+                    renderAllandokTeljesLista(data.allandok);
+                    document.getElementById("allandok-szekció").style.display = "block";
+                }
             })
             .catch(e => {
                 console.error("Hiba:", e);
             });
+        }
+
+        // Állandó termékek: globális tároló
+        var allandokAdatbazis = [];
+
+        // Állandó termékek: 4 random termék a főoldalon
+        function renderAllandokFooldal(termekek) {
+            allandokAdatbazis = termekek;
+            const shuffled = termekek.slice().sort(() => Math.random() - 0.5);
+            const negy = shuffled.slice(0, 4);
+            const grid = document.getElementById("allandok-grid");
+            if(!grid) return;
+            grid.innerHTML = negy.map(t => {
+                const kep = (t.kep1_url || t["kep1_url"] || "").toString().trim();
+                const kepUrl = kep ? (kep.startsWith("http") ? kep : "https://nagykatalin0913-dev.github.io/frueat-heaven/" + kep) : "";
+                const safeNev = t.nev.replace(/'/g, "\'");
+                const keszlet = parseFloat(t.keszlet || t["keszlet"] || -1);
+                const elfogyott = keszlet === 0;
+                return `<div class="allandok-mini-card">
+                    ${kepUrl ? `<img class="allandok-mini-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.display='none'" style="${elfogyott ? 'opacity:0.45;' : ''}">` : `<div class="allandok-mini-kep"></div>`}
+                    <div class="allandok-mini-nev" style="${elfogyott ? 'color:var(--text-dim);' : ''}">${t.nev}</div>
+                    <div class="allandok-mini-ar">${Number(t.ar).toLocaleString('hu-HU')} Ft</div>
+                    ${elfogyott
+                        ? `<div style="font-size:10px;color:#e74c3c;font-weight:700;">Elfogyott</div>`
+                        : `<button class="allandok-mini-plus" onclick="allandokKosarba('${safeNev}')">+</button>`
+                    }
+                </div>`;
+            }).join("");
+        }
+
+        // Állandó termékek: teljes lista kategóriánként
+        function renderAllandokTeljesLista(termekek) {
+            const container = document.getElementById("allandok-teljes-lista");
+            if(!container) return;
+            // Kategóriánkénti csoportosítás, sorrend megőrzésével
+            const kategoriak = [];
+            const katMap = {};
+            termekek.forEach(t => {
+                const kat = (t.kategoria || t["kategoria"] || "Egyéb").toString().trim();
+                if(!katMap[kat]) { katMap[kat] = []; kategoriak.push(kat); }
+                katMap[kat].push(t);
+            });
+            let html = "";
+            kategoriak.forEach(kat => {
+                html += `<div class="allandok-kategoria-cim">${kat}</div>`;
+                katMap[kat].forEach(t => {
+                    const kep = (t.kep1_url || t["kep1_url"] || "").toString().trim();
+                    const kepUrl = kep ? (kep.startsWith("http") ? kep : "https://nagykatalin0913-dev.github.io/frueat-heaven/" + kep) : "";
+                    const safeNev = t.nev.replace(/'/g, "\'");
+                    const minMenny = parseFloat(t.min_mennyiseg || 0);
+                    const egyseg = (t.egyseg || "db").toString().trim();
+                    const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
+                    const keszlet2 = parseFloat(t.keszlet || t["keszlet"] || -1);
+                    const elfogyott2 = keszlet2 === 0;
+                    html += `<div class="allandok-termek-card" style="${elfogyott2 ? 'opacity:0.6;' : ''}">
+                        ${kepUrl ? `<img class="allandok-termek-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.background='rgba(255,255,255,0.05)'">` : `<div class="allandok-termek-kep"></div>`}
+                        <div class="allandok-termek-info">
+                            <div class="allandok-termek-nev">${t.nev}</div>
+                            <div class="allandok-termek-ar">${Number(t.ar).toLocaleString('hu-HU')} Ft / ${egyseg}</div>
+                            ${minMenny > 0 ? `<div style="font-size:12px;color:var(--text-dim);">Min: ${minMenny} ${egyseg}</div>` : ""}
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                            ${elfogyott2
+                                ? `<div style="font-size:11px;color:#e74c3c;font-weight:700;text-align:center;">Elfogyott</div>`
+                                : `<button class="allandok-mini-plus" onclick="allandokKosarba('${safeNev}')">+</button>`
+                            }
+                        </div>
+                    </div>`;
+                });
+            });
+            container.innerHTML = html;
+        }
+
+        // Állandó termék kosárba adása (1 kattintás = min_mennyiseg vagy 1)
+        function allandokKosarba(nev) {
+            const t = allandokAdatbazis.find(x => x.nev === nev);
+            if(!t) return;
+            const egyseg = (t.egyseg || "db").toString().trim();
+            const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
+            const min = parseFloat(t.min_mennyiseg || 0) || lepeskoz;
+            if(kosar[nev]) kosar[nev].qty = Math.round((kosar[nev].qty + lepeskoz) * 100) / 100;
+            else kosar[nev] = { qty: min, ar: parseFloat(t.ar), egyseg: egyseg };
+            repulKosarbaFAB();
+            frissitKosarUI();
+        }
+
+        // Állandó termékek teljes lista nézet megnyitása
+        function allandokNezetMegnyit() {
+            document.getElementById("allandok-nezet").style.display = "block";
+            window.scrollTo(0, 0);
+        }
+
+        // Állandó termékek teljes lista nézet bezárása
+        function allandokNezetZar() {
+            document.getElementById("allandok-nezet").style.display = "none";
         }
 
         function addToCart(nev) {
@@ -2000,6 +2260,11 @@
             }
             termekLista = termekLista.replace(/, $/, '');
 
+            // Állandó termékek JSON - készlet levonáshoz (csak "a" prefixű ID-k)
+            const allandokRendeles = allandokAdatbazis
+                .filter(t => kosar[t.nev] && kosar[t.nev].qty > 0)
+                .map(t => ({ id: t.id, nev: t.nev, qty: kosar[t.nev].qty }));
+
             const params = new URLSearchParams({
                 nev: userProfile.vnev + " " + userProfile.knev,
                 tel: userProfile.tel,
@@ -2008,6 +2273,7 @@
                     : userProfile.irsz + " " + userProfile.varos,
                 zona: zonaAzonosito,
                 termek: termekLista,
+                allandok_rendeles: allandokRendeles.length > 0 ? JSON.stringify(allandokRendeles) : "",
                 vegosszeg: vegszamlaHUF,
                 megjegyzes: document.getElementById("megjegyzes").value,
                 mod: atveteliMod === "hazhoz" ? "Házhozszállítás" : "Személyes átvétel",
