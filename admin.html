@@ -1071,7 +1071,8 @@ function renderItemsTable(str, rowid, order) {
                 '<div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;">' +
                     '<input type="number" step="0.1" min="0" value="' + pq.qty + '" class="weight-input qty-input"' +
                     ' data-rowid="' + rowid + '" data-nev="' + ns + '" data-ar="' + ar + '" data-egyseg="' + eg + '"' +
-                    ' oninput="szamolVegosszeg(' + rowid + ');updateOrderDataDelayed(' + rowid + ',\'' + ns + '\',this.value,\'' + eg + '\')"' +
+                    ' oninput="szamolVegosszeg(' + rowid + ')"' +
+                    ' onchange="updateOrderData(' + rowid + ',\'' + ns + '\',this.value,\'' + eg + '\')"' +
                     ' onclick="event.stopPropagation()">' +
                     '<span style="font-size:13px;color:#555;white-space:nowrap;min-width:36px;">' + eg + '</span>' +
                 '</div>' +
@@ -1096,13 +1097,39 @@ function updateOrderDataDelayed(rowid, nev, val, eg) {
 async function updateOrderData(rowid, nev, val, eg) {
     var order = orders.find(function(o){ return o.rowid === rowid; });
     if (!order) return;
-    var ns = val + (eg ? ' ' + eg : '');
+
+    // Vesszős tizedes kezelése (iPhone billentyűzet)
+    var tisztitottVal = (val || '').toString().replace(',', '.');
+    var szam = parseFloat(tisztitottVal);
+    if (isNaN(szam) || szam < 0) return; // érvénytelen értéket nem mentünk
+
+    var ns = szam + (eg ? ' ' + eg : '');
     var rt = (order.termek || order.termekek || '').split(',').map(function(t){
         return t.trim().indexOf(nev) === 0 ? nev + ': ' + ns : t;
     }).join(', ');
     if (order.termek !== undefined) order.termek = rt;
     if (order.termekek !== undefined) order.termekek = rt;
-    try { await fetch(API_URL + '?update=true&rowId=' + rowid + '&newItems=' + encodeURIComponent(rt) + '&newVegosszeg=' + order.vegosszeg, { redirect: 'follow' }); } catch(e) {}
+
+    // Vizuális visszajelzés: az input zölden villan mentés közben
+    var inputEl = document.querySelector('.qty-input[data-rowid="' + rowid + '"][data-nev="' + nev + '"]');
+    if (inputEl) {
+        inputEl.style.transition = 'border-color 0.2s';
+        inputEl.style.borderColor = '#f59e0b'; // mentés folyamatban: sárga
+    }
+
+    try {
+        var r = await fetch(API_URL + '?update=true&rowId=' + rowid + '&newItems=' + encodeURIComponent(rt) + '&newVegosszeg=' + order.vegosszeg, { redirect: 'follow' });
+        var txt = await r.text();
+        if (inputEl) {
+            inputEl.style.borderColor = txt.trim() === 'ok' ? '#22c55e' : '#ef4444'; // zöld OK / piros hiba
+            setTimeout(function() { if (inputEl) inputEl.style.borderColor = ''; }, 1500);
+        }
+    } catch(e) {
+        if (inputEl) {
+            inputEl.style.borderColor = '#ef4444';
+            setTimeout(function() { if (inputEl) inputEl.style.borderColor = ''; }, 1500);
+        }
+    }
 }
 
 async function deleteOrder(rowId) {
