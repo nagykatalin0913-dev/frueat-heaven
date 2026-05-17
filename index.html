@@ -952,12 +952,30 @@
         }
         .allandok-kategoria-cim {
             font-family: 'Playfair Display', serif;
-            font-size: 18px;
+            font-size: 17px;
             color: var(--gold-light);
-            margin: 22px 0 12px;
-            padding-left: 4px;
-            border-bottom: 1px solid var(--dark-border);
-            padding-bottom: 8px;
+            margin: 10px 0 0;
+            padding: 14px 12px;
+            border: 1px solid var(--dark-border);
+            border-radius: 12px;
+            background: var(--dark-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .allandok-kategoria-cim.nyitva {
+            border-radius: 12px 12px 0 0;
+            border-bottom: none;
+        }
+        .allandok-kategoria-tartalom {
+            border: 1px solid var(--dark-border);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+            padding: 8px;
+            background: rgba(255,255,255,0.02);
         }
         .allandok-termek-card {
             background: var(--dark-card);
@@ -1875,10 +1893,17 @@
                 frissitOsszesSteppert();
 
                 // Állandó termékek megjelenítése
-                if(data.allandok && data.allandok.length > 0) {
+                // Csak akkor jelenik meg, ha az aktív kínálat engedélyezte
+                const allandokEngedely = megjelenitekKinalat.some(k => {
+                    const v = (k.allandok_megjelenit || k["allandok_megjelenit"] || "").toString().trim().toLowerCase();
+                    return v === "igen";
+                });
+                if(data.allandok && data.allandok.length > 0 && allandokEngedely) {
                     renderAllandokFooldal(data.allandok);
                     renderAllandokTeljesLista(data.allandok);
                     document.getElementById("allandok-szekció").style.display = "block";
+                } else {
+                    document.getElementById("allandok-szekció").style.display = "none";
                 }
             })
             .catch(e => {
@@ -1914,11 +1939,10 @@
             }).join("");
         }
 
-        // Állandó termékek: teljes lista kategóriánként
+        // Állandó termékek: teljes lista kategóriánként (accordion)
         function renderAllandokTeljesLista(termekek) {
             const container = document.getElementById("allandok-teljes-lista");
             if(!container) return;
-            // Kategóriánkénti csoportosítás, sorrend megőrzésével
             const kategoriak = [];
             const katMap = {};
             termekek.forEach(t => {
@@ -1927,15 +1951,19 @@
                 katMap[kat].push(t);
             });
             let html = "";
-            kategoriak.forEach(kat => {
-                html += `<div class="allandok-kategoria-cim">${kat}</div>`;
+            kategoriak.forEach((kat, katIdx) => {
+                const katId = "kat_" + katIdx;
+                html += `<div class="allandok-kategoria-cim" id="kat-cim-${katIdx}" onclick="allandokKatToggle(${katIdx})">
+                    <span>${kat} <span style="font-size:13px;color:var(--text-dim);font-family:Nunito,sans-serif;">(${katMap[kat].length})</span></span>
+                    <span id="kat-nyil-${katIdx}" style="font-size:18px;">›</span>
+                </div>
+                <div class="allandok-kategoria-tartalom" id="kat-tartalom-${katIdx}" style="display:none;">`;
                 katMap[kat].forEach(t => {
                     const kep = (t.kep1_url || t["kep1_url"] || "").toString().trim();
                     const kepUrl = kep ? (kep.startsWith("http") ? kep : "https://nagykatalin0913-dev.github.io/frueat-heaven/" + kep) : "";
                     const safeNev = t.nev.replace(/'/g, "\'");
                     const minMenny = parseFloat(t.min_mennyiseg || 0);
                     const egyseg = (t.egyseg || "db").toString().trim();
-                    const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
                     const keszlet2 = parseFloat(t.keszlet || t["keszlet"] || -1);
                     const elfogyott2 = keszlet2 === 0;
                     html += `<div class="allandok-termek-card" style="${elfogyott2 ? 'opacity:0.6;' : ''}">
@@ -1953,14 +1981,29 @@
                         </div>
                     </div>`;
                 });
+                html += `</div>`;
             });
             container.innerHTML = html;
+        }
+
+        function allandokKatToggle(katIdx) {
+            const tartalom = document.getElementById("kat-tartalom-" + katIdx);
+            const nyil = document.getElementById("kat-nyil-" + katIdx);
+            const cim = document.getElementById("kat-cim-" + katIdx);
+            if(!tartalom) return;
+            const nyitva = tartalom.style.display !== "none";
+            tartalom.style.display = nyitva ? "none" : "block";
+            nyil.textContent = nyitva ? "›" : "∨";
+            cim.classList.toggle("nyitva", !nyitva);
         }
 
         // Állandó termék kosárba adása (1 kattintás = min_mennyiseg vagy 1)
         function allandokKosarba(nev) {
             const t = allandokAdatbazis.find(x => x.nev === nev);
             if(!t) return;
+            // Elfogyott termék nem rakható kosárba
+            const keszlet = parseFloat(t.keszlet || t["keszlet"] || -1);
+            if(keszlet === 0) return;
             const egyseg = (t.egyseg || "db").toString().trim();
             const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
             const min = parseFloat(t.min_mennyiseg || 0) || lepeskoz;
