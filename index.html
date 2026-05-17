@@ -1009,6 +1009,51 @@
             color: var(--gold);
             font-weight: 700;
         }
+
+        /* LIGHTBOX */
+        #lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.88);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #lightbox.aktiv { display: flex; }
+        #lightbox img {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 14px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+            object-fit: contain;
+        }
+        #lightbox-nev {
+            position: fixed;
+            bottom: 30px;
+            left: 0; right: 0;
+            text-align: center;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+        #lightbox-zar {
+            position: fixed;
+            top: 16px; right: 16px;
+            width: 36px; height: 36px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 </style>
 </head>
 
@@ -1935,7 +1980,7 @@
                 const safeNev = t.nev.replace(/'/g, "\'");
                 const elfogyott = isElfogyott(t);
                 return `<div class="allandok-mini-card">
-                    ${kepUrl ? `<img class="allandok-mini-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.display='none'" style="${elfogyott ? 'opacity:0.45;' : ''}">` : `<div class="allandok-mini-kep"></div>`}
+                    ${kepUrl ? `<img class="allandok-mini-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.display='none'" style="${elfogyott ? 'opacity:0.45;' : ''} cursor:pointer;" onclick="lightboxMegnyit('${kepUrl}','${safeNev}')">` : `<div class="allandok-mini-kep"></div>`}
                     <div class="allandok-mini-nev" style="${elfogyott ? 'color:var(--text-dim);' : ''}">${t.nev}</div>
                     <div class="allandok-mini-ar">${Number(t.ar).toLocaleString('hu-HU')} Ft</div>
                     ${elfogyott
@@ -1973,7 +2018,7 @@
                     const egyseg = (t.egyseg || "db").toString().trim();
                     const elfogyott2 = isElfogyott(t);
                     html += `<div class="allandok-termek-card" style="${elfogyott2 ? 'opacity:0.6;' : ''}">
-                        ${kepUrl ? `<img class="allandok-termek-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.background='rgba(255,255,255,0.05)'">` : `<div class="allandok-termek-kep"></div>`}
+                        ${kepUrl ? `<img class="allandok-termek-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.background='rgba(255,255,255,0.05)'" style="cursor:pointer;" onclick="lightboxMegnyit('${kepUrl}','${safeNev}')">` : `<div class="allandok-termek-kep"></div>`}
                         <div class="allandok-termek-info">
                             <div class="allandok-termek-nev">${t.nev}</div>
                             <div class="allandok-termek-ar">${Number(t.ar).toLocaleString('hu-HU')} Ft / ${egyseg}</div>
@@ -2019,6 +2064,20 @@
         }
 
         // Állandó termékek teljes lista nézet megnyitása
+        // Lightbox
+        function lightboxMegnyit(kepUrl, nev) {
+            if(!kepUrl) return;
+            document.getElementById("lightbox-kep").src = kepUrl;
+            document.getElementById("lightbox-nev").textContent = nev || "";
+            document.getElementById("lightbox").classList.add("aktiv");
+        }
+        function lightboxZar() {
+            document.getElementById("lightbox").classList.remove("aktiv");
+        }
+        document.addEventListener("keydown", function(e) {
+            if(e.key === "Escape") lightboxZar();
+        });
+
         function allandokNezetMegnyit() {
             document.getElementById("allandok-nezet").style.display = "block";
             window.scrollTo(0, 0);
@@ -2438,6 +2497,13 @@ function uzenetPopupZar() {
         <svg viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 4.974 0 11.111c0 3.498 1.744 6.614 4.469 8.652V24l4.088-2.242c1.092.3 2.246.464 3.443.464 6.627 0 12-4.975 12-11.111S18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8l3.131 3.26L19.752 8l-6.561 6.963z"/></svg>
     </a>
 </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox" onclick="lightboxZar()">
+        <button id="lightbox-zar" onclick="lightboxZar()">✕</button>
+        <img id="lightbox-kep" src="" alt="">
+        <div id="lightbox-nev"></div>
+    </div>
 
 </body>
 </html>
