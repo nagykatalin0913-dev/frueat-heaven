@@ -1058,11 +1058,6 @@
 </head>
 
 <body>
-    <div id="lightbox" onclick="this.style.display='none'">
-        <span class="close-lb">&times;</span>
-        <img id="lb-img" src="">
-    </div>
-
     <div id="success-modal">
         <div class="modal-content">
             <div class="modal-icon">✅</div>
@@ -1980,7 +1975,7 @@
                 const safeNev = t.nev.replace(/'/g, "\'");
                 const elfogyott = isElfogyott(t);
                 return `<div class="allandok-mini-card">
-                    ${kepUrl ? `<img class="allandok-mini-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.display='none'" style="${elfogyott ? 'opacity:0.45;' : ''} cursor:pointer;" onclick="lightboxMegnyit('${kepUrl}','${safeNev}')">` : `<div class="allandok-mini-kep"></div>`}
+                    ${kepUrl ? `<img class="allandok-mini-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.display='none'" style="${elfogyott ? 'opacity:0.45;' : ''} cursor:pointer;" onclick="event.stopPropagation();lightboxMegnyit(this.src,this.alt)">` : `<div class="allandok-mini-kep"></div>`}
                     <div class="allandok-mini-nev" style="${elfogyott ? 'color:var(--text-dim);' : ''}">${t.nev}</div>
                     <div class="allandok-mini-ar">${Number(t.ar).toLocaleString('hu-HU')} Ft</div>
                     ${elfogyott
@@ -2018,7 +2013,7 @@
                     const egyseg = (t.egyseg || "db").toString().trim();
                     const elfogyott2 = isElfogyott(t);
                     html += `<div class="allandok-termek-card" style="${elfogyott2 ? 'opacity:0.6;' : ''}">
-                        ${kepUrl ? `<img class="allandok-termek-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.background='rgba(255,255,255,0.05)'" style="cursor:pointer;" onclick="lightboxMegnyit('${kepUrl}','${safeNev}')">` : `<div class="allandok-termek-kep"></div>`}
+                        ${kepUrl ? `<img class="allandok-termek-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.background='rgba(255,255,255,0.05)'" style="cursor:pointer;" onclick="event.stopPropagation();lightboxMegnyit(this.src,this.alt)">` : `<div class="allandok-termek-kep"></div>`}
                         <div class="allandok-termek-info">
                             <div class="allandok-termek-nev">${t.nev}</div>
                             <div class="allandok-termek-ar">${Number(t.ar).toLocaleString('hu-HU')} Ft / ${egyseg}</div>
@@ -2067,12 +2062,21 @@
         // Lightbox
         function lightboxMegnyit(kepUrl, nev) {
             if(!kepUrl) return;
-            document.getElementById("lightbox-kep").src = kepUrl;
-            document.getElementById("lightbox-nev").textContent = nev || "";
-            document.getElementById("lightbox").classList.add("aktiv");
+            var lb = document.getElementById("lightbox");
+            var lbKep = document.getElementById("lightbox-kep");
+            var lbNev = document.getElementById("lightbox-nev");
+            if(!lb || !lbKep) return;
+            lbKep.src = kepUrl;
+            if(lbNev) lbNev.textContent = nev || "";
+            lb.classList.add("aktiv");
         }
         function lightboxZar() {
-            document.getElementById("lightbox").classList.remove("aktiv");
+            var lb = document.getElementById("lightbox");
+            if(lb) {
+                lb.classList.remove("aktiv");
+                var lbKep = document.getElementById("lightbox-kep");
+                if(lbKep) lbKep.src = "";
+            }
         }
         document.addEventListener("keydown", function(e) {
             if(e.key === "Escape") lightboxZar();
@@ -2500,9 +2504,9 @@ function uzenetPopupZar() {
 
     <!-- LIGHTBOX -->
     <div id="lightbox" onclick="lightboxZar()">
-        <button id="lightbox-zar" onclick="lightboxZar()">✕</button>
-        <img id="lightbox-kep" src="" alt="">
-        <div id="lightbox-nev"></div>
+        <button id="lightbox-zar" onclick="event.stopPropagation();lightboxZar()">✕</button>
+        <img id="lightbox-kep" src="" alt="" onclick="event.stopPropagation()">
+        <div id="lightbox-nev" onclick="event.stopPropagation()"></div>
     </div>
 
 </body>
