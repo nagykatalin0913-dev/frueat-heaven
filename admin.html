@@ -301,6 +301,18 @@
     </div>
 </div>
 
+<!-- ÁLLANDÓ TERMÉKEK DIALOG -->
+<div id="allandok-dialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:24px; max-width:340px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+        <h3 style="font-size:18px; color:#2e7d32; margin-bottom:10px;">🛍️ Állandó termékek</h3>
+        <p style="font-size:14px; color:#555; line-height:1.5; margin-bottom:20px;">Szeretnéd megjeleníteni az állandó termékeket is ennél a kínálatnál?</p>
+        <div style="display:flex; gap:10px;">
+            <button onclick="allandokDialogValasz(false)" style="flex:1; padding:12px; border-radius:10px; border:1.5px solid #ccc; background:#fff; font-size:14px; font-weight:700; cursor:pointer; color:#555;">❌ Nem</button>
+            <button onclick="allandokDialogValasz(true)" style="flex:1; padding:12px; border-radius:10px; border:none; background:#2e7d32; color:white; font-size:14px; font-weight:700; cursor:pointer;">✅ Igen</button>
+        </div>
+    </div>
+</div>
+
 <!-- PIN VÉDELEM OVERLAY -->
 <div id="pin-overlay">
     <div id="pin-box">
@@ -2262,11 +2274,26 @@ function kinElonezet() {
 async function kinMentes(publikal) {
     // Zóna ellenőrzés – ha nincs kijelölve semmi, modal figyelmeztetés
     if(kinSelectedZonak.length === 0 && publikal !== false) {
-        window._kinMentesFolytat = function() { kinMentesVegrehajt(publikal); };
+        window._kinMentesFolytat = function() { kinAllandokDialog(publikal); };
         document.getElementById('zona-figyelm').style.display = 'flex';
         return;
     }
-    kinMentesVegrehajt(publikal);
+    // Piszkozatnál nem kérdezzük az állandókat
+    if(publikal === false) {
+        kinMentesVegrehajt(publikal, false);
+        return;
+    }
+    kinAllandokDialog(publikal);
+}
+
+function kinAllandokDialog(publikal) {
+    window._kinMentesPublikal = publikal;
+    document.getElementById('allandok-dialog').style.display = 'flex';
+}
+
+function allandokDialogValasz(igen) {
+    document.getElementById('allandok-dialog').style.display = 'none';
+    kinMentesVegrehajt(window._kinMentesPublikal, igen);
 }
 
 function zonaFigyelmBezar() {
@@ -2280,7 +2307,7 @@ function zonaFigyelmFolytat() {
     window._kinMentesFolytat = null;
 }
 
-async function kinMentesVegrehajt(publikal) {
+async function kinMentesVegrehajt(publikal, allandoMegjelenit) {
 
     var resultEl = document.getElementById('kin-result');
     var cim = document.getElementById('kin-cim').value.trim();
@@ -2333,7 +2360,8 @@ async function kinMentesVegrehajt(publikal) {
             '&datum=' + encodeURIComponent(datum) +
             '&fokep=' + encodeURIComponent(fokep) +
             '&termek_idk=' + encodeURIComponent(termekIdk) +
-            '&statusz=' + encodeURIComponent(statusz);
+            '&statusz=' + encodeURIComponent(statusz) +
+            '&allandok_megjelenit=' + encodeURIComponent(allandoMegjelenit ? 'igen' : 'nem');
 
         // Minden zónának külön API hívás → külön sor a sheetben
         var mentesOk = true;
