@@ -1914,6 +1914,14 @@
         // Állandó termékek: globális tároló
         var allandokAdatbazis = [];
 
+        // Elfogyott-e a termék? Csak akkor igaz, ha keszlet pontosan 0 (üres = korlátlan)
+        function isElfogyott(t) {
+            const k = (t.keszlet || t["keszlet"] || "").toString().trim();
+            if(k === "") return false; // üres = korlátlan
+            const n = parseFloat(k.replace(",", "."));
+            return !isNaN(n) && n === 0;
+        }
+
         // Állandó termékek: 4 random termék a főoldalon
         function renderAllandokFooldal(termekek) {
             allandokAdatbazis = termekek;
@@ -1925,8 +1933,7 @@
                 const kep = (t.kep1_url || t["kep1_url"] || "").toString().trim();
                 const kepUrl = kep ? (kep.startsWith("http") ? kep : "https://nagykatalin0913-dev.github.io/frueat-heaven/" + kep) : "";
                 const safeNev = t.nev.replace(/'/g, "\'");
-                const keszlet = parseFloat(t.keszlet || t["keszlet"] || -1);
-                const elfogyott = keszlet === 0;
+                const elfogyott = isElfogyott(t);
                 return `<div class="allandok-mini-card">
                     ${kepUrl ? `<img class="allandok-mini-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.display='none'" style="${elfogyott ? 'opacity:0.45;' : ''}">` : `<div class="allandok-mini-kep"></div>`}
                     <div class="allandok-mini-nev" style="${elfogyott ? 'color:var(--text-dim);' : ''}">${t.nev}</div>
@@ -1964,8 +1971,7 @@
                     const safeNev = t.nev.replace(/'/g, "\'");
                     const minMenny = parseFloat(t.min_mennyiseg || 0);
                     const egyseg = (t.egyseg || "db").toString().trim();
-                    const keszlet2 = parseFloat(t.keszlet || t["keszlet"] || -1);
-                    const elfogyott2 = keszlet2 === 0;
+                    const elfogyott2 = isElfogyott(t);
                     html += `<div class="allandok-termek-card" style="${elfogyott2 ? 'opacity:0.6;' : ''}">
                         ${kepUrl ? `<img class="allandok-termek-kep" src="${kepUrl}" alt="${t.nev}" onerror="this.style.background='rgba(255,255,255,0.05)'">` : `<div class="allandok-termek-kep"></div>`}
                         <div class="allandok-termek-info">
@@ -2002,8 +2008,7 @@
             const t = allandokAdatbazis.find(x => x.nev === nev);
             if(!t) return;
             // Elfogyott termék nem rakható kosárba
-            const keszlet = parseFloat(t.keszlet || t["keszlet"] || -1);
-            if(keszlet === 0) return;
+            if(isElfogyott(t)) return;
             const egyseg = (t.egyseg || "db").toString().trim();
             const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
             const min = parseFloat(t.min_mennyiseg || 0) || lepeskoz;
