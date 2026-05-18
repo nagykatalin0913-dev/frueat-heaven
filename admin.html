@@ -440,10 +440,9 @@
 
     <div class="kin-section">
         <div class="kin-section-title">🛒 Termékek kiválasztása</div>
-        <label class="kin-label">Termék hozzáadása</label>
-        <select id="kin-termek-select" class="kin-input" style="cursor:pointer;" onchange="kinTermekSelectValtozas()">
-            <option value="">-- Válassz terméket --</option>
-        </select>
+        <label class="kin-label">Termék hozzáadása (több is kijelölhető)</label>
+        <input type="text" id="kin-termek-kereses" class="kin-input" placeholder="🔍 Keresés..." oninput="kinTermekSzur()" style="margin-bottom:6px;">
+        <div id="kin-termek-listbox" style="max-height:220px;overflow-y:auto;border:1.5px solid #c8e6c9;border-radius:10px;background:#fff;"></div>
         <div id="kin-kivalasztott-lista" style="margin-top:12px;"></div>
     </div>
 
@@ -2122,6 +2121,7 @@ async function kinListaBetolt() {
             }
             html += '<div style="margin-left:auto;display:flex;gap:6px;">';
             html += '<button onclick="kinReszlet(' + rowid + ')" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid var(--green);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;">👁 Megtekint</button>';
+            html += '<button onclick="kinSzerkeszt(' + rowid + ')" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid #ff9800;color:#e65100;font-size:12px;font-weight:700;cursor:pointer;">✏️ Módosít</button>';
             html += '<button onclick="kinTorol(' + rowid + ',event)" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid #e57373;color:#e57373;font-size:12px;font-weight:700;cursor:pointer;">🗑</button>';
             html += '</div>';
             html += '</div>';
@@ -2221,6 +2221,72 @@ async function kinCsakErtesit(rowid) {
     } catch(e) { alert('Hiba: ' + e.message); }
 }
 
+var kinSzerkesztRowId = null; // éppen szerkesztett kínálat rowid-ja
+
+function kinSzerkeszt(rowid) {
+    var k = kinListaAdatok[rowid];
+    if(!k) return;
+    kinSzerkesztRowId = rowid;
+
+    // Felső szerkesztő form betöltése az adott kínálat adataival
+    document.getElementById('kin-cim').value    = k.cim    || '';
+    document.getElementById('kin-uzenet').value = k.uzenet || '';
+    document.getElementById('kin-kiszallitas').value   = k.kiszallitas_ideje || '';
+    document.getElementById('kin-atvetel-datum').value = k.atvetel_datum    || '';
+    document.getElementById('kin-atvetel-toltig').value= k.atvetel_tol_ig   || '';
+    document.getElementById('kin-datum').value  = k.datum  || '';
+    document.getElementById('kin-fokep').value  = k.fokep  || '';
+
+    // Határidő visszatöltése datetime-local formátumba
+    var hStr = (k.hatarido || '').toString().trim();
+    if(hStr) {
+        // "2026.05.20. 16:00" → "2026-05-20T16:00"
+        var hm = hStr.match(/(\d{4})\.(\d{2})\.(\d{2})\.\s*(\d{2}:\d{2})?/);
+        if(hm) document.getElementById('kin-hatarido').value = hm[1]+'-'+hm[2]+'-'+hm[3]+(hm[4]?'T'+hm[4]:'');
+    }
+
+    // Zónák visszatöltése
+    kinSelectedZonak = [];
+    var zonaStr = (k.zona || '').toString().trim();
+    document.querySelectorAll('.kin-zona-chip').forEach(function(c){ c.classList.remove('active'); });
+    if(zonaStr && zonaStr !== 'Mindenki') {
+        zonaStr.split(',').forEach(function(z) {
+            z = z.trim();
+            if(!z) return;
+            kinSelectedZonak.push(z);
+            document.querySelectorAll('.kin-zona-chip').forEach(function(c){
+                if(c.dataset.zona === z) c.classList.add('active');
+            });
+        });
+    }
+    var zprev = document.getElementById('kin-zona-preview');
+    if(zprev) zprev.textContent = kinSelectedZonak.length > 0 ? kinSelectedZonak.join(', ') : '';
+
+    // Termékek visszatöltése
+    kinSelectedTermekek = {};
+    var termekIdkStr = (k.termek_idk || '').toString().trim();
+    if(termekIdkStr) {
+        termekIdkStr.split(',').forEach(function(id) {
+            id = id.trim();
+            var t = kinAdatbazis[id];
+            if(t) kinSelectedTermekek[id] = { nev: t.nev, ar: t.ar, egyseg: t.egyseg };
+        });
+    }
+    kinRajzolKivalasztottak();
+    kinRajzolListbox('');
+
+    // Szerkesztés jelzése a formban
+    var resultEl = document.getElementById('kin-result');
+    resultEl.className = 'kin-result';
+    resultEl.innerText = '✏️ Szerkesztési mód – rowid: ' + rowid + '. Mentéskor frissíti a sheetben.';
+    resultEl.style.display = 'block';
+    resultEl.style.background = '#fff8e1';
+    resultEl.style.color = '#e65100';
+
+    // Görgetés a form tetejére
+    document.getElementById('kin-cim').scrollIntoView({ behavior: 'smooth' });
+}
+
 async function kinTorol(rowid, ev) {
     if(ev) ev.stopPropagation();
     if(!confirm('Biztosan törlöd ezt a kínálatot? A sheetben "törölt" státuszra vált, de megmarad.')) return;
@@ -2261,13 +2327,12 @@ function kinZonaValaszt(el) {
 var kinAdatbazis = {};
 
 async function kinBetoltTermekek() {
-    var sel = document.getElementById('kin-termek-select');
-    if(!sel) return;
+    var lb = document.getElementById('kin-termek-listbox');
+    if(lb) lb.innerHTML = '<div style="padding:10px;color:#aaa;font-size:13px;">Betöltés...</div>';
     try {
         var r = await fetch(API_URL, { redirect: 'follow' });
         var d = await r.json();
         kinAdatbazis = {};
-        sel.innerHTML = '<option value="">-- Válassz terméket --</option>';
         if(d && d.termekek) {
             d.termekek.forEach(function(t, idx) {
                 if((t.tipus || '').toLowerCase() === 'box') return;
@@ -2278,61 +2343,53 @@ async function kinBetoltTermekek() {
                 var kep = t.kep1_url || t['kep1_url'] || t.kep1 || '';
                 var kep2= t.kep2_url || t['kep2_url'] || t.kep2 || '';
                 kinAdatbazis[id] = { nev: nev, ar: ar, egyseg: eg, kep: kep, kep2: kep2 };
-                var opt = document.createElement('option');
-                opt.value = id;
-                opt.textContent = (kinSelectedTermekek[id] ? '✓ ' : '') + nev + '  –  ' + ar + ' Ft / ' + eg;
-                sel.appendChild(opt);
             });
         }
+        kinRajzolListbox('');
         kinRajzolKivalasztottak();
     } catch(e) {
-        sel.innerHTML = '<option value="">Hiba: ' + e.message + '</option>';
+        if(lb) lb.innerHTML = '<div style="padding:10px;color:red;font-size:13px;">Hiba: ' + e.message + '</div>';
     }
 }
 
-function kinTermekSelectValtozas() {
-    var sel = document.getElementById('kin-termek-select');
-    var id  = sel.value;
-    if(!id) return;
-    var t = kinAdatbazis[id];
-    if(!t) return;
-    if(kinSelectedTermekek[id]) {
-        delete kinSelectedTermekek[id];
-    } else {
-        kinSelectedTermekek[id] = { nev: t.nev, ar: t.ar, egyseg: t.egyseg };
-    }
-    sel.value = '';
-    kinRajzolKivalasztottak();
-    kinFrissitDropdown();
-}
+// kinTermekSelectValtozas és kinFrissitDropdown helyett kinListboxToggle és kinRajzolListbox
 
-function kinFrissitDropdown() {
-    var sel = document.getElementById('kin-termek-select');
-    if(!sel) return;
-    Array.from(sel.options).forEach(function(opt) {
-        if(!opt.value) return;
-        var db  = kinAdatbazis[opt.value] || {};
-        var sel2= kinSelectedTermekek[opt.value];
-        var ar  = sel2 ? sel2.ar : (db.ar || 0);
-        opt.textContent = (sel2 ? '✓ ' : '') + (db.nev || '') + '  –  ' + ar + ' Ft / ' + (db.egyseg || '');
+function kinSorrendFel(id) {
+    var ids = Object.keys(kinSelectedTermekek);
+    var idx = ids.indexOf(id);
+    if(idx <= 0) return;
+    var temp = {};
+    ids.forEach(function(k, i) {
+        if(i === idx - 1) { temp[ids[idx]] = kinSelectedTermekek[ids[idx]]; temp[ids[idx-1]] = kinSelectedTermekek[ids[idx-1]]; }
+        else if(i !== idx) temp[k] = kinSelectedTermekek[k];
     });
+    kinSelectedTermekek = temp;
+    kinRajzolKivalasztottak();
+}
+
+function kinSorrendLe(id) {
+    var ids = Object.keys(kinSelectedTermekek);
+    var idx = ids.indexOf(id);
+    if(idx >= ids.length - 1) return;
+    var temp = {};
+    ids.forEach(function(k, i) {
+        if(i === idx) { temp[ids[idx+1]] = kinSelectedTermekek[ids[idx+1]]; temp[ids[idx]] = kinSelectedTermekek[ids[idx]]; }
+        else if(i !== idx + 1) temp[k] = kinSelectedTermekek[k];
+    });
+    kinSelectedTermekek = temp;
+    kinRajzolKivalasztottak();
 }
 
 function kinTorleTermek(id) {
     delete kinSelectedTermekek[id];
     kinRajzolKivalasztottak();
-    // Ha a termék kártyán is látszik (grid nézetben), frissítsük a gombját
-    var safeId = id.replace(/[^a-z0-9]/gi, '') || ('idx' + id);
-    var card = document.getElementById('ktc-' + safeId);
-    var btn  = document.getElementById('kbtn-' + safeId);
-    if(card) card.classList.remove('selected');
-    if(btn)  { btn.textContent = '+ Add'; btn.style.background = 'var(--green)'; }
+    var szuro = (document.getElementById('kin-termek-kereses') ? document.getElementById('kin-termek-kereses').value || '' : '').toLowerCase();
+    kinRajzolListbox(szuro);
 }
 
 function kinArValtozas(id, val) {
     if(kinSelectedTermekek[id]) {
         kinSelectedTermekek[id].ar = parseFloat(val) || 0;
-        kinFrissitDropdown();
     }
 }
 
@@ -2365,6 +2422,11 @@ function kinRajzolKivalasztottak() {
         html += '<input type="number" id="' + arInputId + '" value="' + t.ar + '" style="width:85px;padding:5px 8px;border-radius:6px;border:1.5px solid #a5d6a7;font-size:13px;font-weight:700;font-family:Nunito,sans-serif;color:#1b5e20;" oninput="kinArValtozas(' + JSON.stringify(id) + ',this.value)">';
         html += '<span style="font-size:12px;color:#888;">Ft / ' + t.egyseg + '</span>';
         html += '</div></div>';
+        var idxN = ids.indexOf(id);
+        html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">';
+        html += '<button onclick="kinSorrendFel(' + JSON.stringify(id) + ')" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;" ' + (idxN === 0 ? 'disabled' : '') + '>▲</button>';
+        html += '<button onclick="kinSorrendLe(' + JSON.stringify(id) + ')" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;" ' + (idxN === ids.length - 1 ? 'disabled' : '') + '>▼</button>';
+        html += '</div>';
         html += '<button onclick="kinTorleTermek(' + JSON.stringify(id) + ')" style="flex-shrink:0;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;">✕</button>';
         html += '</div>';
     });
@@ -2520,22 +2582,41 @@ async function kinMentesVegrehajt(publikal, allandoMegjelenit) {
         var statusz = (publikal === false) ? 'piszkozat' : 'közzétett';
 
         // Zónák meghatározása: ha üres = Mindenki (1 sor), különben minden zónának külön sor
-        var mentendoZonak = kinSelectedZonak.length === 0 ? [''] : kinSelectedZonak;
+        var mentendoZonak = isEdit ? [kinSelectedZonak.join(',')] : (kinSelectedZonak.length === 0 ? [''] : kinSelectedZonak);
 
-        var baseParams = '?ujKinalat=true' +
-            '&cim=' + encodeURIComponent(cim) +
-            '&uzenet=' + encodeURIComponent(uzenet) +
-            '&hatarido=' + encodeURIComponent(hatarido) +
-            '&kiszallitas_ideje=' + encodeURIComponent(kiszallitas) +
-            '&atvetel_datum=' + encodeURIComponent(atvetelDatum) +
-            '&atvetel_tol_ig=' + encodeURIComponent(atvetelToltig) +
-            '&datum=' + encodeURIComponent(datum) +
-            '&fokep=' + encodeURIComponent(fokep) +
-            '&termek_idk=' + encodeURIComponent(termekIdk) +
-            '&statusz=' + encodeURIComponent(statusz) +
-            '&allandok_megjelenit=' + encodeURIComponent(allandoMegjelenit ? 'igen' : 'nem');
+        // Ha szerkesztési módban vagyunk → UPDATE, különben új sor
+        var isEdit = !!kinSzerkesztRowId;
+        var baseParams;
+        if(isEdit) {
+            baseParams = '?updateKinalatTeljes=true&rowId=' + kinSzerkesztRowId +
+                '&cim=' + encodeURIComponent(cim) +
+                '&uzenet=' + encodeURIComponent(uzenet) +
+                '&hatarido=' + encodeURIComponent(hatarido) +
+                '&kiszallitas_ideje=' + encodeURIComponent(kiszallitas) +
+                '&atvetel_datum=' + encodeURIComponent(atvetelDatum) +
+                '&atvetel_tol_ig=' + encodeURIComponent(atvetelToltig) +
+                '&datum=' + encodeURIComponent(datum) +
+                '&fokep=' + encodeURIComponent(fokep) +
+                '&termek_idk=' + encodeURIComponent(termekIdk) +
+                '&statusz=' + encodeURIComponent(statusz) +
+                '&allandok_megjelenit=' + encodeURIComponent(allandoMegjelenit ? 'igen' : 'nem') +
+                '&zona=' + encodeURIComponent(kinSelectedZonak.join(','));
+        } else {
+            baseParams = '?ujKinalat=true' +
+                '&cim=' + encodeURIComponent(cim) +
+                '&uzenet=' + encodeURIComponent(uzenet) +
+                '&hatarido=' + encodeURIComponent(hatarido) +
+                '&kiszallitas_ideje=' + encodeURIComponent(kiszallitas) +
+                '&atvetel_datum=' + encodeURIComponent(atvetelDatum) +
+                '&atvetel_tol_ig=' + encodeURIComponent(atvetelToltig) +
+                '&datum=' + encodeURIComponent(datum) +
+                '&fokep=' + encodeURIComponent(fokep) +
+                '&termek_idk=' + encodeURIComponent(termekIdk) +
+                '&statusz=' + encodeURIComponent(statusz) +
+                '&allandok_megjelenit=' + encodeURIComponent(allandoMegjelenit ? 'igen' : 'nem');
+        }
 
-        // Minden zónának külön API hívás → külön sor a sheetben
+        // Minden zónának külön API hívás → külön sor a sheetben (csak új kínálatnál)
         var mentesOk = true;
         var lastError = '';
         for(var zi = 0; zi < mentendoZonak.length; zi++) {
@@ -2608,8 +2689,9 @@ function kinUrit() {
     document.getElementById('kin-datum').value = '';
     document.getElementById('kin-fokep').value = '';
     kinSelectedTermekek = {};
+    kinSzerkesztRowId = null;
     kinRajzolKivalasztottak();
-    kinFrissitDropdown();
+    kinRajzolListbox('');
     document.querySelectorAll('.kin-zona-chip').forEach(function(c){ c.classList.remove('active'); });
     kinSelectedZonak = [];
     var zprev = document.getElementById('kin-zona-preview'); if(zprev) zprev.textContent = '';
