@@ -2479,10 +2479,10 @@ function kinRajzolKivalasztottak() {
         html += '</div></div>';
         var idxN = ids.indexOf(id);
         html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">';
-        html += '<button onclick="kinSorrendFel(' + JSON.stringify(id) + ')" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;" ' + (idxN === 0 ? 'disabled' : '') + '>▲</button>';
-        html += '<button onclick="kinSorrendLe(' + JSON.stringify(id) + ')" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;" ' + (idxN === ids.length - 1 ? 'disabled' : '') + '>▼</button>';
+        html += '<button class="kin-fel-btn" data-id="' + id.replace(/"/g,'&quot;') + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;" ' + (idxN === 0 ? 'disabled' : '') + '>▲</button>';
+        html += '<button class="kin-le-btn" data-id="' + id.replace(/"/g,'&quot;') + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;" ' + (idxN === ids.length - 1 ? 'disabled' : '') + '>▼</button>';
         html += '</div>';
-        html += '<button onclick="kinTorleTermek(' + JSON.stringify(id) + ')" style="flex-shrink:0;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;">✕</button>';
+        html += '<button class="kin-torl-btn" data-id="' + id.replace(/"/g,'&quot;') + '" style="flex-shrink:0;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;">✕</button>';
         html += '</div>';
     });
     // Preserve existing ar input values before re-render
@@ -2495,6 +2495,16 @@ function kinRajzolKivalasztottak() {
     Object.keys(arValues).forEach(function(iid) {
         var el = lista.querySelector('#' + iid);
         if(el && arValues[iid] !== '') el.value = arValues[iid];
+    });
+    // Eseménykezelők data-id alapján
+    lista.querySelectorAll('.kin-fel-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() { kinSorrendFel(this.dataset.id); });
+    });
+    lista.querySelectorAll('.kin-le-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() { kinSorrendLe(this.dataset.id); });
+    });
+    lista.querySelectorAll('.kin-torl-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() { kinTorleTermek(this.dataset.id); });
     });
 }
 
