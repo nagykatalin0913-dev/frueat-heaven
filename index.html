@@ -2052,10 +2052,10 @@
             // Elfogyott termék nem rakható kosárba
             if(isElfogyott(t)) return;
             const egyseg = (t.egyseg || "db").toString().trim();
-            const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
-            const min = parseFloat(t.min_mennyiseg || 0) || lepeskoz;
+            const min = parseFloat(t.min_mennyiseg || t["min_mennyiseg"] || 0);
+            const lepeskoz = min > 0 ? min : (egyseg.toLowerCase() === "kg" ? 0.5 : 1);
             if(kosar[nev]) kosar[nev].qty = Math.round((kosar[nev].qty + lepeskoz) * 100) / 100;
-            else kosar[nev] = { qty: min, ar: parseFloat(t.ar), egyseg: egyseg };
+            else kosar[nev] = { qty: lepeskoz, ar: parseFloat(t.ar), egyseg: egyseg };
             // Repülő animáció
             if(forrasEl) repulKosarba(forrasEl);
             else repulKosarbaFAB();
@@ -2068,7 +2068,8 @@
             const t = allandokAdatbazis.find(x => x.nev === nev);
             if(!t) return;
             const egyseg = (t.egyseg || "db").toString().trim();
-            const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
+            const min = parseFloat(t.min_mennyiseg || t["min_mennyiseg"] || 0);
+            const lepeskoz = min > 0 ? min : (egyseg.toLowerCase() === "kg" ? 0.5 : 1);
             if(!kosar[nev]) return;
             kosar[nev].qty = Math.round((kosar[nev].qty - lepeskoz) * 100) / 100;
             if(kosar[nev].qty <= 0) delete kosar[nev];
@@ -2086,7 +2087,8 @@
             if(isElfogyott(t)) return;
             const safeNevJs = nev.replace(/'/g, "\'");
             const egyseg = (t.egyseg || "db").toString().trim();
-            const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
+            const min = parseFloat(t.min_mennyiseg || t["min_mennyiseg"] || 0);
+            const lepeskoz = min > 0 ? min : (egyseg.toLowerCase() === "kg" ? 0.5 : 1);
 
             if(kosar[nev] && kosar[nev].qty > 0) {
                 const qty = kosar[nev].qty;
