@@ -2409,26 +2409,20 @@ function kinListboxToggle(id) {
 
 // kinTermekSelectValtozas és kinFrissitDropdown helyett kinListboxToggle és kinRajzolListbox
 
-function kinSorrendCsere(id, irany) {
-    // String konverzió - dataset.id mindig string, Object.keys is string
-    id = String(id);
-    var parok = [];
-    Object.keys(kinSelectedTermekek).forEach(function(k) {
-        parok.push({ id: String(k), adat: kinSelectedTermekek[k] });
-    });
-    var idx = -1;
-    for(var i = 0; i < parok.length; i++) {
-        if(parok[i].id === id) { idx = i; break; }
-    }
-    if(idx < 0) return;
+function kinSorrendCsere(idx, irany) {
+    // Index alapú csere - nem kell ID egyezés
+    idx = parseInt(idx);
+    var kulcsok = Object.keys(kinSelectedTermekek);
+    var ertekek = kulcsok.map(function(k) { return kinSelectedTermekek[k]; });
     var celIdx = irany === 'fel' ? idx - 1 : idx + 1;
-    if(celIdx < 0 || celIdx >= parok.length) return;
-    var tmp = parok[celIdx];
-    parok[celIdx] = parok[idx];
-    parok[idx] = tmp;
+    if(celIdx < 0 || celIdx >= kulcsok.length) return;
+    // Kulcsok cseréje
+    var tmpK = kulcsok[celIdx]; kulcsok[celIdx] = kulcsok[idx]; kulcsok[idx] = tmpK;
+    var tmpV = ertekek[celIdx]; ertekek[celIdx] = ertekek[idx]; ertekek[idx] = tmpV;
+    // Újraépítés
     kinSelectedTermekek = {};
-    for(var j = 0; j < parok.length; j++) {
-        kinSelectedTermekek[parok[j].id] = parok[j].adat;
+    for(var i = 0; i < kulcsok.length; i++) {
+        kinSelectedTermekek[kulcsok[i]] = ertekek[i];
     }
     kinRajzolKivalasztottak();
 }
@@ -2480,8 +2474,8 @@ function kinRajzolKivalasztottak() {
         html += '</div></div>';
         var idxN = ids.indexOf(id);
         html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">';
-        html += '<button class="kin-fel-btn" data-id="' + id + '" data-idx="' + idxN + '" data-max="' + (ids.length-1) + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === 0 ? 'opacity:0.3;' : '') + '">▲</button>';
-        html += '<button class="kin-le-btn" data-id="' + id + '" data-idx="' + idxN + '" data-max="' + (ids.length-1) + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === ids.length-1 ? 'opacity:0.3;' : '') + '">▼</button>';
+        html += '<button ' + (idxN > 0 ? 'onclick="kinSorrendCsere(' + idxN + ','fel')"' : '') + ' style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === 0 ? 'opacity:0.3;' : '') + '">▲</button>';
+        html += '<button ' + (idxN < ids.length-1 ? 'onclick="kinSorrendCsere(' + idxN + ','le')"' : '') + ' style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === ids.length-1 ? 'opacity:0.3;' : '') + '">▼</button>';
         html += '</div>';
         html += '<button class="kin-torl-btn" data-id="' + id + '" style="flex-shrink:0;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;">✕</button>';
         html += '</div>';
@@ -2498,18 +2492,6 @@ function kinRajzolKivalasztottak() {
         if(el && arValues[iid] !== '') el.value = arValues[iid];
     });
     // Eseménykezelők data-id alapján
-    lista.querySelectorAll('.kin-fel-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            if(parseInt(this.dataset.idx) <= 0) return;
-            kinSorrendFel(this.dataset.id);
-        });
-    });
-    lista.querySelectorAll('.kin-le-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            if(parseInt(this.dataset.idx) >= parseInt(this.dataset.max)) return;
-            kinSorrendLe(this.dataset.id);
-        });
-    });
     lista.querySelectorAll('.kin-torl-btn').forEach(function(btn) {
         btn.addEventListener('click', function() { kinTorleTermek(this.dataset.id); });
     });
