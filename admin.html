@@ -2410,10 +2410,11 @@ function kinListboxToggle(id) {
 // kinTermekSelectValtozas és kinFrissitDropdown helyett kinListboxToggle és kinRajzolListbox
 
 function kinSorrendCsere(id, irany) {
-    // Tömb alapú sorrend csere
+    // String konverzió - dataset.id mindig string, Object.keys is string
+    id = String(id);
     var parok = [];
     Object.keys(kinSelectedTermekek).forEach(function(k) {
-        parok.push({ id: k, adat: kinSelectedTermekek[k] });
+        parok.push({ id: String(k), adat: kinSelectedTermekek[k] });
     });
     var idx = -1;
     for(var i = 0; i < parok.length; i++) {
