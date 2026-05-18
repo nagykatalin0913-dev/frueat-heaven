@@ -1980,7 +1980,7 @@
                     <div class="allandok-mini-ar">${Number(t.ar).toLocaleString('hu-HU')} Ft</div>
                     ${elfogyott
                         ? `<div style="font-size:10px;color:#e74c3c;font-weight:700;">Elfogyott</div>`
-                        : `<button class="allandok-mini-plus" id="allandok-kontrol-${t.nev.replace(/[^a-zA-Z0-9]/g,'_')}" onclick="allandokKosarba('${safeNev}',this)">+</button>`
+                        : `<button class="allandok-mini-plus" onclick="allandokKosarba('${safeNev}',this)">+</button>`
                     }
                 </div>`;
             }).join("");
