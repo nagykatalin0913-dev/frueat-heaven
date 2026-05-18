@@ -2409,34 +2409,31 @@ function kinListboxToggle(id) {
 
 // kinTermekSelectValtozas és kinFrissitDropdown helyett kinListboxToggle és kinRajzolListbox
 
-function kinSorrendFel(id) {
-    // Tömb alapú csere - megbízható sorrendkezelés
-    var parok = Object.keys(kinSelectedTermekek).map(function(k) {
-        return [k, kinSelectedTermekek[k]];
+function kinSorrendCsere(id, irany) {
+    // Tömb alapú sorrend csere
+    var parok = [];
+    Object.keys(kinSelectedTermekek).forEach(function(k) {
+        parok.push({ id: k, adat: kinSelectedTermekek[k] });
     });
-    var idx = parok.findIndex(function(p) { return p[0] === id; });
-    if(idx <= 0) return;
-    var tmp = parok[idx - 1];
-    parok[idx - 1] = parok[idx];
+    var idx = -1;
+    for(var i = 0; i < parok.length; i++) {
+        if(parok[i].id === id) { idx = i; break; }
+    }
+    if(idx < 0) return;
+    var celIdx = irany === 'fel' ? idx - 1 : idx + 1;
+    if(celIdx < 0 || celIdx >= parok.length) return;
+    var tmp = parok[celIdx];
+    parok[celIdx] = parok[idx];
     parok[idx] = tmp;
     kinSelectedTermekek = {};
-    parok.forEach(function(p) { kinSelectedTermekek[p[0]] = p[1]; });
+    for(var j = 0; j < parok.length; j++) {
+        kinSelectedTermekek[parok[j].id] = parok[j].adat;
+    }
     kinRajzolKivalasztottak();
 }
 
-function kinSorrendLe(id) {
-    var parok = Object.keys(kinSelectedTermekek).map(function(k) {
-        return [k, kinSelectedTermekek[k]];
-    });
-    var idx = parok.findIndex(function(p) { return p[0] === id; });
-    if(idx < 0 || idx >= parok.length - 1) return;
-    var tmp = parok[idx + 1];
-    parok[idx + 1] = parok[idx];
-    parok[idx] = tmp;
-    kinSelectedTermekek = {};
-    parok.forEach(function(p) { kinSelectedTermekek[p[0]] = p[1]; });
-    kinRajzolKivalasztottak();
-}
+function kinSorrendFel(id) { kinSorrendCsere(id, 'fel'); }
+function kinSorrendLe(id)  { kinSorrendCsere(id, 'le');  }
 
 function kinTorleTermek(id) {
     delete kinSelectedTermekek[id];
@@ -2482,10 +2479,10 @@ function kinRajzolKivalasztottak() {
         html += '</div></div>';
         var idxN = ids.indexOf(id);
         html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">';
-        html += '<button class="kin-fel-btn" data-id="' + id.replace(/"/g,'&quot;') + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;" ' + (idxN === 0 ? 'disabled' : '') + '>▲</button>';
-        html += '<button class="kin-le-btn" data-id="' + id.replace(/"/g,'&quot;') + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;" ' + (idxN === ids.length - 1 ? 'disabled' : '') + '>▼</button>';
+        html += '<button class="kin-fel-btn" data-id="' + id + '" data-idx="' + idxN + '" data-max="' + (ids.length-1) + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === 0 ? 'opacity:0.3;' : '') + '">▲</button>';
+        html += '<button class="kin-le-btn" data-id="' + id + '" data-idx="' + idxN + '" data-max="' + (ids.length-1) + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === ids.length-1 ? 'opacity:0.3;' : '') + '">▼</button>';
         html += '</div>';
-        html += '<button class="kin-torl-btn" data-id="' + id.replace(/"/g,'&quot;') + '" style="flex-shrink:0;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;">✕</button>';
+        html += '<button class="kin-torl-btn" data-id="' + id + '" style="flex-shrink:0;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;">✕</button>';
         html += '</div>';
     });
     // Preserve existing ar input values before re-render
@@ -2501,10 +2498,16 @@ function kinRajzolKivalasztottak() {
     });
     // Eseménykezelők data-id alapján
     lista.querySelectorAll('.kin-fel-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() { kinSorrendFel(this.dataset.id); });
+        btn.addEventListener('click', function() {
+            if(parseInt(this.dataset.idx) <= 0) return;
+            kinSorrendFel(this.dataset.id);
+        });
     });
     lista.querySelectorAll('.kin-le-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() { kinSorrendLe(this.dataset.id); });
+        btn.addEventListener('click', function() {
+            if(parseInt(this.dataset.idx) >= parseInt(this.dataset.max)) return;
+            kinSorrendLe(this.dataset.id);
+        });
     });
     lista.querySelectorAll('.kin-torl-btn').forEach(function(btn) {
         btn.addEventListener('click', function() { kinTorleTermek(this.dataset.id); });
