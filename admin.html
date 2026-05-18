@@ -2480,8 +2480,8 @@ function kinRajzolKivalasztottak() {
         html += '</div></div>';
         var idxN = ids.indexOf(id);
         html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">';
-        html += '<button onclick="kinSorrendFel(\'' + id + '\')" style="width:24px;height:24px;border-radius:6px;border:1px solid #ccc;background:white;font-weight:800;cursor:pointer;' + (idxN === 0 ? 'opacity:0.3;' : '') + '">▲</button>';
-        html += '<button onclick="kinSorrendLe(\'' + id + '\')" style="width:24px;height:24px;border-radius:6px;border:1px solid #ccc;background:white;font-weight:800;cursor:pointer;' + (idxN === ids.length-1 ? 'opacity:0.3;' : '') + '">▼</button>';
+        html += '<button onclick="event.stopPropagation();kinSorrendFel(\'' + id + '\')" style="width:24px;height:24px;border-radius:6px;border:1px solid #ccc;background:white;font-weight:800;cursor:pointer;">▲</button>';
+        html += '<button onclick="event.stopPropagation();kinSorrendLe(\'' + id + '\')" style="width:24px;height:24px;border-radius:6px;border:1px solid #ccc;background:white;font-weight:800;cursor:pointer;">▼</button>';
 
 
         html += '</div>';
