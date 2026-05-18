@@ -2474,8 +2474,10 @@ function kinRajzolKivalasztottak() {
         html += '</div></div>';
         var idxN = ids.indexOf(id);
         html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">';
-        html += '<button ' + (idxN > 0 ? 'onclick="kinSorrendCsere(' + idxN + ','fel')"' : '') + ' style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === 0 ? 'opacity:0.3;' : '') + '">▲</button>';
-        html += '<button ' + (idxN < ids.length-1 ? 'onclick="kinSorrendCsere(' + idxN + ','le')"' : '') + ' style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === ids.length-1 ? 'opacity:0.3;' : '') + '">▼</button>';
+        var felOnclick = idxN > 0 ? ' onclick="kinSorrendCsere(' + idxN + ',\'fel\')"' : '';
+        var leOnclick  = idxN < ids.length-1 ? ' onclick="kinSorrendCsere(' + idxN + ',\'le\')"' : '';
+        html += '<button' + felOnclick + ' style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === 0 ? 'opacity:0.3;' : '') + '">▲</button>';
+        html += '<button' + leOnclick  + ' style="background:none;border:1px solid #ddd;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;' + (idxN === ids.length-1 ? 'opacity:0.3;' : '') + '">▼</button>';
         html += '</div>';
         html += '<button class="kin-torl-btn" data-id="' + id + '" style="flex-shrink:0;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;">✕</button>';
         html += '</div>';
