@@ -2375,7 +2375,7 @@ function kinRajzolListbox(szuro) {
     lb.innerHTML = ids.map(function(id) {
         var t = kinAdatbazis[id];
         var selected = !!kinSelectedTermekek[id];
-        return '<div onclick="kinListboxToggle('' + id.replace(/'/g,"\'") + '')" ' +
+        return '<div class="kin-lb-sor" data-id="' + id.replace(/"/g,'&quot;') + '" ' +
             'style="display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;' +
             (selected ? 'background:#e8f5e9;' : '') + '">' +
             '<div style="width:22px;height:22px;border-radius:6px;border:2px solid ' + (selected ? '#2e7d32' : '#ccc') + ';' +
@@ -2386,6 +2386,12 @@ function kinRajzolListbox(szuro) {
             '<div style="font-size:12px;color:#888;">' + (t.ar||0) + ' Ft / ' + (t.egyseg||'') + '</div>' +
             '</div></div>';
     }).join('');
+    // Kattintás esemény data-id alapján (elkerüli az aposztróf problémát)
+    lb.querySelectorAll('.kin-lb-sor').forEach(function(el) {
+        el.addEventListener('click', function() {
+            kinListboxToggle(this.dataset.id);
+        });
+    });
 }
 
 function kinListboxToggle(id) {
