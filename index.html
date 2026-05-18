@@ -1980,7 +1980,7 @@
                     <div class="allandok-mini-ar">${Number(t.ar).toLocaleString('hu-HU')} Ft</div>
                     ${elfogyott
                         ? `<div style="font-size:10px;color:#e74c3c;font-weight:700;">Elfogyott</div>`
-                        : `<button class="allandok-mini-plus" onclick="allandokKosarba('${safeNev}')">+</button>`
+                        : `<button class="allandok-mini-plus" id="allandok-kontrol-${t.nev.replace(/[^a-zA-Z0-9]/g,'_')}" onclick="allandokKosarba('${safeNev}',this)">+</button>`
                     }
                 </div>`;
             }).join("");
@@ -2019,10 +2019,10 @@
                             <div class="allandok-termek-ar">${Number(t.ar).toLocaleString('hu-HU')} Ft / ${egyseg}</div>
                             ${minMenny > 0 ? `<div style="font-size:12px;color:var(--text-dim);">Min: ${minMenny} ${egyseg}</div>` : ""}
                         </div>
-                        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                        <div id="allandok-kontrol-${t.nev.replace(/[^a-zA-Z0-9]/g,'_')}" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
                             ${elfogyott2
                                 ? `<div style="font-size:11px;color:#e74c3c;font-weight:700;text-align:center;">Elfogyott</div>`
-                                : `<button class="allandok-mini-plus" onclick="allandokKosarba('${safeNev}')">+</button>`
+                                : `<button class="allandok-mini-plus" onclick="allandokKosarba('${safeNev}',this)">+</button>`
                             }
                         </div>
                     </div>`;
@@ -2030,6 +2030,8 @@
                 html += `</div>`;
             });
             container.innerHTML = html;
+            // Stepper állapot frissítése (ha már van valami a kosárban)
+            frissitOsszesAllandoKontrol();
         }
 
         function allandokKatToggle(katIdx) {
@@ -2044,7 +2046,7 @@
         }
 
         // Állandó termék kosárba adása (1 kattintás = min_mennyiseg vagy 1)
-        function allandokKosarba(nev) {
+        function allandokKosarba(nev, forrasEl) {
             const t = allandokAdatbazis.find(x => x.nev === nev);
             if(!t) return;
             // Elfogyott termék nem rakható kosárba
@@ -2054,8 +2056,60 @@
             const min = parseFloat(t.min_mennyiseg || 0) || lepeskoz;
             if(kosar[nev]) kosar[nev].qty = Math.round((kosar[nev].qty + lepeskoz) * 100) / 100;
             else kosar[nev] = { qty: min, ar: parseFloat(t.ar), egyseg: egyseg };
-            repulKosarbaFAB();
+            // Repülő animáció
+            if(forrasEl) repulKosarba(forrasEl);
+            else repulKosarbaFAB();
+            // Stepper frissítése
+            frissitAllandoKontrol(nev);
             frissitKosarUI();
+        }
+
+        function allandokCsokkentes(nev) {
+            const t = allandokAdatbazis.find(x => x.nev === nev);
+            if(!t) return;
+            const egyseg = (t.egyseg || "db").toString().trim();
+            const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
+            if(!kosar[nev]) return;
+            kosar[nev].qty = Math.round((kosar[nev].qty - lepeskoz) * 100) / 100;
+            if(kosar[nev].qty <= 0) delete kosar[nev];
+            frissitAllandoKontrol(nev);
+            frissitKosarUI();
+        }
+
+        // Állandó termék kontrol frissítése: stepper ha van kosárban, + gomb ha nincs
+        function frissitAllandoKontrol(nev) {
+            const safeId = nev.replace(/[^a-zA-Z0-9]/g, '_');
+            const kontrol = document.getElementById("allandok-kontrol-" + safeId);
+            if(!kontrol) return;
+            const t = allandokAdatbazis.find(x => x.nev === nev);
+            if(!t) return;
+            if(isElfogyott(t)) return;
+            const safeNevJs = nev.replace(/'/g, "\'");
+            const egyseg = (t.egyseg || "db").toString().trim();
+            const lepeskoz = egyseg.toLowerCase() === "kg" ? 0.5 : 1;
+
+            if(kosar[nev] && kosar[nev].qty > 0) {
+                const qty = kosar[nev].qty;
+                const reszosszeg = Math.round(qty * parseFloat(t.ar));
+                kontrol.innerHTML = `
+                    <div class="product-stepper" style="min-width:110px;">
+                        <button class="stepper-btn minus" onclick="allandokCsokkentes('${safeNevJs}')">−</button>
+                        <div class="stepper-info">
+                            ${qty} ${egyseg}
+                            <small>🛒 ${reszosszeg.toLocaleString('hu-HU')} Ft</small>
+                        </div>
+                        <button class="stepper-btn" onclick="allandokKosarba('${safeNevJs}')">+</button>
+                    </div>`;
+            } else {
+                kontrol.innerHTML = `<button class="allandok-mini-plus" onclick="allandokKosarba('${safeNevJs}', this)">+</button>`;
+            }
+        }
+
+        // Minden állandó kontrol frissítése (pl. oldalbetöltéskor)
+        function frissitOsszesAllandoKontrol() {
+            allandokAdatbazis.forEach(function(t) {
+                frissitAllandoKontrol(t.nev);
+            });
         }
 
         // Állandó termékek teljes lista nézet megnyitása
