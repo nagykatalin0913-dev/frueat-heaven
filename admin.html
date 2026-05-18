@@ -2427,8 +2427,14 @@ function kinSorrendCsere(idx, irany) {
     kinRajzolKivalasztottak();
 }
 
-function kinSorrendFel(id) { kinSorrendCsere(id, 'fel'); }
-function kinSorrendLe(id)  { kinSorrendCsere(id, 'le');  }
+function kinSorrendFel(id) {
+    var idx = Object.keys(kinSelectedTermekek).indexOf(String(id));
+    kinSorrendCsere(idx, 'fel');
+}
+function kinSorrendLe(id) {
+    var idx = Object.keys(kinSelectedTermekek).indexOf(String(id));
+    kinSorrendCsere(idx, 'le');
+}
 
 function kinTorleTermek(id) {
     delete kinSelectedTermekek[id];
