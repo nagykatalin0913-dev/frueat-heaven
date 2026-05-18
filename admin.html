@@ -2410,28 +2410,31 @@ function kinListboxToggle(id) {
 // kinTermekSelectValtozas és kinFrissitDropdown helyett kinListboxToggle és kinRajzolListbox
 
 function kinSorrendFel(id) {
-    var ids = Object.keys(kinSelectedTermekek);
-    var idx = ids.indexOf(id);
-    if(idx <= 0) return;
-    var temp = {};
-    ids.forEach(function(k, i) {
-        if(i === idx - 1) { temp[ids[idx]] = kinSelectedTermekek[ids[idx]]; temp[ids[idx-1]] = kinSelectedTermekek[ids[idx-1]]; }
-        else if(i !== idx) temp[k] = kinSelectedTermekek[k];
+    // Tömb alapú csere - megbízható sorrendkezelés
+    var parok = Object.keys(kinSelectedTermekek).map(function(k) {
+        return [k, kinSelectedTermekek[k]];
     });
-    kinSelectedTermekek = temp;
+    var idx = parok.findIndex(function(p) { return p[0] === id; });
+    if(idx <= 0) return;
+    var tmp = parok[idx - 1];
+    parok[idx - 1] = parok[idx];
+    parok[idx] = tmp;
+    kinSelectedTermekek = {};
+    parok.forEach(function(p) { kinSelectedTermekek[p[0]] = p[1]; });
     kinRajzolKivalasztottak();
 }
 
 function kinSorrendLe(id) {
-    var ids = Object.keys(kinSelectedTermekek);
-    var idx = ids.indexOf(id);
-    if(idx >= ids.length - 1) return;
-    var temp = {};
-    ids.forEach(function(k, i) {
-        if(i === idx) { temp[ids[idx+1]] = kinSelectedTermekek[ids[idx+1]]; temp[ids[idx]] = kinSelectedTermekek[ids[idx]]; }
-        else if(i !== idx + 1) temp[k] = kinSelectedTermekek[k];
+    var parok = Object.keys(kinSelectedTermekek).map(function(k) {
+        return [k, kinSelectedTermekek[k]];
     });
-    kinSelectedTermekek = temp;
+    var idx = parok.findIndex(function(p) { return p[0] === id; });
+    if(idx < 0 || idx >= parok.length - 1) return;
+    var tmp = parok[idx + 1];
+    parok[idx + 1] = parok[idx];
+    parok[idx] = tmp;
+    kinSelectedTermekek = {};
+    parok.forEach(function(p) { kinSelectedTermekek[p[0]] = p[1]; });
     kinRajzolKivalasztottak();
 }
 
