@@ -1948,6 +1948,7 @@ function uzenetUrit() {
 
 var kinSelectedZonak = []; // több zóna
 var kinSelectedTermekek = {};
+var kinSorrendTomb = []; // rendezett sorrend tömb (V8 numerikus kulcs bypass)
 
 Object.defineProperty(window, 'kinSelectedZona', {
     get: function() { return kinSelectedZonak.length === 0 ? '' : kinSelectedZonak.join(','); }
@@ -2264,12 +2265,16 @@ function kinSzerkeszt(rowid) {
 
     // Termékek visszatöltése
     kinSelectedTermekek = {};
+    kinSorrendTomb = [];
     var termekIdkStr = (k.termek_idk || '').toString().trim();
     if(termekIdkStr) {
         termekIdkStr.split(',').forEach(function(id) {
             id = id.trim();
             var t = kinAdatbazis[id];
-            if(t) kinSelectedTermekek[id] = { nev: t.nev, ar: t.ar, egyseg: t.egyseg };
+            if(t) {
+                kinSelectedTermekek[id] = { nev: t.nev, ar: t.ar, egyseg: t.egyseg };
+                kinSorrendTomb.push(id);
+            }
         });
     }
     kinRajzolKivalasztottak();
@@ -2399,8 +2404,10 @@ function kinListboxToggle(id) {
     if(!t) return;
     if(kinSelectedTermekek[id]) {
         delete kinSelectedTermekek[id];
+        kinSorrendTomb = kinSorrendTomb.filter(function(k){ return k !== id; });
     } else {
         kinSelectedTermekek[id] = { nev: t.nev, ar: t.ar, egyseg: t.egyseg };
+        kinSorrendTomb.push(id);
     }
     var szuro = (document.getElementById('kin-termek-kereses').value || '').toLowerCase();
     kinRajzolListbox(szuro);
@@ -2410,34 +2417,29 @@ function kinListboxToggle(id) {
 // kinTermekSelectValtozas és kinFrissitDropdown helyett kinListboxToggle és kinRajzolListbox
 
 function kinSorrendCsere(idx, irany) {
-    // Index alapú csere - nem kell ID egyezés
+    // kinSorrendTomb alapján – Object.keys() TILOS mert V8 numerikus kulcsokat
+    // automatikusan növekvő sorrendbe rendezi, így a csere sosem látszana
     idx = parseInt(idx);
-    var kulcsok = Object.keys(kinSelectedTermekek);
-    var ertekek = kulcsok.map(function(k) { return kinSelectedTermekek[k]; });
     var celIdx = irany === 'fel' ? idx - 1 : idx + 1;
-    if(celIdx < 0 || celIdx >= kulcsok.length) return;
-    // Kulcsok cseréje
-    var tmpK = kulcsok[celIdx]; kulcsok[celIdx] = kulcsok[idx]; kulcsok[idx] = tmpK;
-    var tmpV = ertekek[celIdx]; ertekek[celIdx] = ertekek[idx]; ertekek[idx] = tmpV;
-    // Újraépítés
-    kinSelectedTermekek = {};
-    for(var i = 0; i < kulcsok.length; i++) {
-        kinSelectedTermekek[kulcsok[i]] = ertekek[i];
-    }
+    if(celIdx < 0 || celIdx >= kinSorrendTomb.length) return;
+    var tmp = kinSorrendTomb[celIdx];
+    kinSorrendTomb[celIdx] = kinSorrendTomb[idx];
+    kinSorrendTomb[idx] = tmp;
     kinRajzolKivalasztottak();
 }
 
 function kinSorrendFel(id) {
-    var idx = Object.keys(kinSelectedTermekek).indexOf(String(id));
+    var idx = kinSorrendTomb.indexOf(String(id));
     kinSorrendCsere(idx, 'fel');
 }
 function kinSorrendLe(id) {
-    var idx = Object.keys(kinSelectedTermekek).indexOf(String(id));
+    var idx = kinSorrendTomb.indexOf(String(id));
     kinSorrendCsere(idx, 'le');
 }
 
 function kinTorleTermek(id) {
     delete kinSelectedTermekek[id];
+    kinSorrendTomb = kinSorrendTomb.filter(function(k){ return k !== id; });
     kinRajzolKivalasztottak();
     var szuro = (document.getElementById('kin-termek-kereses') ? document.getElementById('kin-termek-kereses').value || '' : '').toLowerCase();
     kinRajzolListbox(szuro);
@@ -2452,7 +2454,7 @@ function kinArValtozas(id, val) {
 function kinRajzolKivalasztottak() {
     var lista = document.getElementById('kin-kivalasztott-lista');
     if(!lista) return;
-    var ids = Object.keys(kinSelectedTermekek);
+    var ids = kinSorrendTomb.filter(function(k){ return !!kinSelectedTermekek[k]; });
     if(ids.length === 0) {
         lista.innerHTML = '<div style="color:#aaa;font-size:13px;padding:6px 0;">Még nincs kiválasztott termék.</div>';
         return;
@@ -2620,7 +2622,7 @@ async function kinMentesVegrehajt(publikal, allandoMegjelenit) {
     var atvetelToltig = document.getElementById('kin-atvetel-toltig').value.trim();
     var datum = document.getElementById('kin-datum').value;
     var fokep = document.getElementById('kin-fokep').value.trim();
-    var termekIdk = Object.keys(kinSelectedTermekek).join(',');
+    var termekIdk = kinSorrendTomb.filter(function(k){ return !!kinSelectedTermekek[k]; }).join(',');
 
     if(!cim && !uzenet) {
         resultEl.className = 'kin-result err';
@@ -2751,6 +2753,7 @@ function kinUrit() {
     document.getElementById('kin-datum').value = '';
     document.getElementById('kin-fokep').value = '';
     kinSelectedTermekek = {};
+    kinSorrendTomb = [];
     kinSzerkesztRowId = null;
     kinRajzolKivalasztottak();
     kinRajzolListbox('');
