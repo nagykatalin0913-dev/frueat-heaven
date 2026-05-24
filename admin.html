@@ -1249,21 +1249,35 @@ function renderItemsTable(str, rowid, order) {
         var td = termekek[nev] || {}, ar = td.ar || 0, eg = td.egyseg || pq.unit || '';
         var rs = Math.round(pq.qty * ar); tot += rs;
         var ns = nev.replace(/'/g,'').replace(/"/g,'');
+        var suyRowId = 'suly-' + rowid + '-' + ns;
+        var arRowId  = 'ar-' + rowid + '-' + ns;
+        var mentBtnId = 'mentbtn-' + rowid + '-' + ns;
         return '<tr class="item-row">' +
             '<td><div class="item-name">' + nev + '</div>' + (ar > 0 ? '<div style="color:#999;font-size:12px;">' + ar + ' Ft / ' + eg + '</div>' : '') + '</td>' +
             '<td style="text-align:right;vertical-align:middle;">' +
                 '<div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;">' +
                     '<input type="number" step="0.1" min="0" value="' + pq.qty + '" class="weight-input qty-input"' +
-                    ' data-rowid="' + rowid + '" data-nev="' + ns + '" data-ar="' + ar + '" data-egyseg="' + eg + '"' +
-                    ' oninput="szamolVegosszeg(' + rowid + ')"' +
-                    ' onchange="updateOrderData(' + rowid + ',\'' + ns + '\',this.value,\'' + eg + '\')"' +
+                    ' id="' + suyRowId + '"' +
+                    ' data-rowid="' + rowid + '" data-nev="' + ns + '" data-ar="' + ar + '" data-egyseg="' + eg + '" data-parid="' + arRowId + '" data-mentbtn="' + mentBtnId + '"' +
+                    ' oninput="sulyValtozas(this)"' +
                     ' onclick="event.stopPropagation()">' +
                     '<span style="font-size:13px;color:#555;white-space:nowrap;min-width:36px;">' + eg + '</span>' +
                 '</div>' +
-                (ar > 0 ? '<div id="item-rs-' + rowid + '-' + ns + '" style="font-weight:700;font-size:13px;color:#333;margin-top:3px;">' + rs + ' Ft</div>' : '') +
+                (ar > 0 ?
+                    '<div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:4px;">' +
+                        '<input type="number" step="1" min="0" value="' + rs + '" class="weight-input"' +
+                        ' id="' + arRowId + '"' +
+                        ' data-rowid="' + rowid + '" data-nev="' + ns + '" data-ar="' + ar + '" data-egyseg="' + eg + '" data-parid="' + suyRowId + '" data-mentbtn="' + mentBtnId + '"' +
+                        ' oninput="arValtozas(this)"' +
+                        ' onclick="event.stopPropagation()" style="width:80px;background:#f0f9ff;">' +
+                        '<span style="font-size:13px;color:#555;white-space:nowrap;min-width:20px;">Ft</span>' +
+                    '</div>'
+                : '') +
+                '<div style="margin-top:6px;text-align:right;">' +
+                    '<button id="' + mentBtnId + '" onclick="event.stopPropagation();mentSulyAr(\'' + rowid + '\',\'' + ns + '\',\'' + eg + '\',this)" style="display:none;padding:4px 12px;background:#2e7d32;color:white;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">✓ Mentés</button>' +
+                '</div>' +
             '</td>' +
         '</tr>';
-    }).join('');
     var ingyHatar_rt = (zonaLista[zona_r] && zonaLista[zona_r].ingyenes_hatar) ? zonaLista[zona_r].ingyenes_hatar : 0;
     var sdEff = (vs && sd > 0 && !(ingyHatar_rt > 0 && tot >= ingyHatar_rt)) ? sd : 0;
     if (sdEff > 0) tot += sdEff;
@@ -1271,6 +1285,54 @@ function renderItemsTable(str, rowid, order) {
         (sdEff > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Szállítási díj:</span><span>' + sdEff + ' Ft</span></div>' : '') +
         (vs && sdEff === 0 && ingyHatar_rt > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#2e7d32;font-style:italic;"><span>Szállítási díj:</span><span>Ingyenes 🎉</span></div>' : '') +
         '<div class="total-row" id="total-' + rowid + '">Fizetendő: ' + tot + ' Ft</div>';
+}
+
+// Súly változáskor: kiszámolja az árat, megmutatja a Mentés gombot
+function sulyValtozas(input) {
+    var ar    = parseFloat(input.dataset.ar) || 0;
+    var suly  = parseFloat((input.value || '0').replace(',', '.')) || 0;
+    var parid = input.dataset.parid;
+    if(ar > 0 && parid) {
+        var arInput = document.getElementById(parid);
+        if(arInput) arInput.value = Math.round(suly * ar);
+    }
+    szamolVegosszeg(parseInt(input.dataset.rowid));
+    var mentBtn = document.getElementById(input.dataset.mentbtn);
+    if(mentBtn) mentBtn.style.display = 'inline-block';
+}
+
+// Ár változáskor: kiszámolja a súlyt, megmutatja a Mentés gombot
+function arValtozas(input) {
+    var ar    = parseFloat(input.dataset.ar) || 0;
+    var arVal = parseFloat((input.value || '0').replace(',', '.')) || 0;
+    var parid = input.dataset.parid;
+    if(ar > 0 && parid) {
+        var sulyInput = document.getElementById(parid);
+        if(sulyInput) {
+            sulyInput.value = Math.round((arVal / ar) * 100) / 100;
+            szamolVegosszeg(parseInt(input.dataset.rowid));
+        }
+    }
+    var mentBtn = document.getElementById(input.dataset.mentbtn);
+    if(mentBtn) mentBtn.style.display = 'inline-block';
+}
+
+// Mentés gomb megnyomásra
+async function mentSulyAr(rowid, nev, eg, btn) {
+    var sulyInput = document.getElementById('suly-' + rowid + '-' + nev);
+    if(!sulyInput) return;
+    var val = sulyInput.value;
+    btn.textContent = '⏳';
+    btn.disabled = true;
+    await updateOrderData(parseInt(rowid), nev, val, eg);
+    btn.textContent = '✓ Mentve';
+    btn.style.background = '#22c55e';
+    setTimeout(function() {
+        btn.style.display = 'none';
+        btn.textContent = '✓ Mentés';
+        btn.style.background = '#2e7d32';
+        btn.disabled = false;
+    }, 1500);
 }
 
 var updateTimers = {};
@@ -2481,12 +2543,6 @@ function kinRajzolKivalasztottak() {
         html += '<span style="font-size:12px;color:#888;">Ft / ' + t.egyseg + '</span>';
         html += '</div></div>';
         var idxN = ids.indexOf(id);
-        html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">';
-        html += '<button onclick="event.stopPropagation();kinSorrendFel(\'' + id + '\')" style="width:24px;height:24px;border-radius:6px;border:1px solid #ccc;background:white;font-weight:800;cursor:pointer;">▲</button>';
-        html += '<button onclick="event.stopPropagation();kinSorrendLe(\'' + id + '\')" style="width:24px;height:24px;border-radius:6px;border:1px solid #ccc;background:white;font-weight:800;cursor:pointer;">▼</button>';
-
-
-        html += '</div>';
         html += '<button class="kin-torl-btn" data-id="' + id + '" style="flex-shrink:0;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;">✕</button>';
         html += '</div>';
     });
