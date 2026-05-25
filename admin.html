@@ -1278,6 +1278,7 @@ function renderItemsTable(str, rowid, order) {
                 '</div>' +
             '</td>' +
         '</tr>';
+    }).join('');
     var ingyHatar_rt = (zonaLista[zona_r] && zonaLista[zona_r].ingyenes_hatar) ? zonaLista[zona_r].ingyenes_hatar : 0;
     var sdEff = (vs && sd > 0 && !(ingyHatar_rt > 0 && tot >= ingyHatar_rt)) ? sd : 0;
     if (sdEff > 0) tot += sdEff;
