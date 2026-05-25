@@ -1889,8 +1889,8 @@
                     let kepek = "";
                     let kep1 = t.kep1_url || t["kep1_url"] || t.kep1;
                     let kep2 = t.kep2_url || t["kep2_url"] || t.kep2;
-                    if(kep1) kepek += `<img src="${kep1}" onclick="document.getElementById('lb-img').src='${kep1}'; document.getElementById('lightbox').style.display='flex'">`;
-                    if(kep2) kepek += `<img src="${kep2}" onclick="document.getElementById('lb-img').src='${kep2}'; document.getElementById('lightbox').style.display='flex'">`;
+                    if(kep1) kepek += `<img src="${kep1}" onclick="event.stopPropagation();lightboxMegnyit('${kep1}','${t.nev}')" style="cursor:pointer;">`;
+                    if(kep2) kepek += `<img src="${kep2}" onclick="event.stopPropagation();lightboxMegnyit('${kep2}','${t.nev}')" style="cursor:pointer;">`;
 
                     const min = t.min_mennyiseg > 0 ? `<div class="product-min">Min: ${t.min_mennyiseg} ${t.egyseg}</div>` : "";
                     const safeNev = t.nev.replace(/'/g, "\\'");
