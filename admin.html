@@ -2544,6 +2544,10 @@ function kinRajzolKivalasztottak() {
         html += '<span style="font-size:12px;color:#888;">Ft / ' + t.egyseg + '</span>';
         html += '</div></div>';
         var idxN = ids.indexOf(id);
+        html += '<div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">';
+        html += '<button class="kin-fel-btn" data-id="' + id + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;' + (idxN === 0 ? 'opacity:0.3;' : '') + '">▲</button>';
+        html += '<button class="kin-le-btn"  data-id="' + id + '" style="background:none;border:1px solid #ddd;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:13px;' + (idxN === ids.length-1 ? 'opacity:0.3;' : '') + '">▼</button>';
+        html += '</div>';
         html += '<button class="kin-torl-btn" data-id="' + id + '" style="flex-shrink:0;background:none;border:none;font-size:22px;cursor:pointer;color:#bbb;line-height:1;">✕</button>';
         html += '</div>';
     });
@@ -2559,6 +2563,18 @@ function kinRajzolKivalasztottak() {
         if(el && arValues[iid] !== '') el.value = arValues[iid];
     });
     // Eseménykezelők data-id alapján
+    lista.querySelectorAll('.kin-fel-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            kinSorrendFel(this.dataset.id);
+        });
+    });
+    lista.querySelectorAll('.kin-le-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            kinSorrendLe(this.dataset.id);
+        });
+    });
     lista.querySelectorAll('.kin-torl-btn').forEach(function(btn) {
         btn.addEventListener('click', function() { kinTorleTermek(this.dataset.id); });
     });
@@ -2702,11 +2718,11 @@ async function kinMentesVegrehajt(publikal, allandoMegjelenit) {
     try {
         var statusz = (publikal === false) ? 'piszkozat' : 'közzétett';
 
-        // Zónák meghatározása: ha üres = Mindenki (1 sor), különben minden zónának külön sor
-        var mentendoZonak = isEdit ? [kinSelectedZonak.join(',')] : (kinSelectedZonak.length === 0 ? [''] : kinSelectedZonak);
-
         // Ha szerkesztési módban vagyunk → UPDATE, különben új sor
         var isEdit = !!kinSzerkesztRowId;
+
+        // Zónák meghatározása: ha üres = Mindenki (1 sor), különben minden zónának külön sor
+        var mentendoZonak = isEdit ? [kinSelectedZonak.join(',')] : (kinSelectedZonak.length === 0 ? [''] : kinSelectedZonak);
         var baseParams;
         if(isEdit) {
             baseParams = '?updateKinalatTeljes=true&rowId=' + kinSzerkesztRowId +
