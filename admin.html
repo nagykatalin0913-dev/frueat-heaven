@@ -313,6 +313,19 @@
     </div>
 </div>
 
+<!-- TERMÉK ZÁRÁS MODAL -->
+<div id="termekzar-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:9500;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:20px;padding:24px;max-width:360px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+        <h3 style="font-size:17px;color:#c62828;margin-bottom:6px;">🚫 Termék zárás</h3>
+        <p style="font-size:13px;color:#666;margin-bottom:16px;">Jelöld be melyik termékekre nem lehet több rendelést felvenni:</p>
+        <div id="termekzar-lista" style="margin-bottom:20px;"></div>
+        <div style="display:flex;gap:10px;">
+            <button onclick="termekZarMent()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#c62828;color:white;font-size:14px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">✓ Mentés</button>
+            <button onclick="document.getElementById('termekzar-modal').style.display='none'" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #ccc;background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">Mégse</button>
+        </div>
+    </div>
+</div>
+
 <!-- PIN VÉDELEM OVERLAY -->
 <div id="pin-overlay">
     <div id="pin-box">
@@ -2390,29 +2403,48 @@ async function kinHazhozToggle(rowid) {
     } catch(e) { alert('Hiba: ' + e.message); }
 }
 
-async function kinTermekZar(rowid) {
+var _termekZarRowid = null;
+
+function kinTermekZar(rowid) {
     var k = kinListaAdatok[rowid];
     if(!k) return;
+    _termekZarRowid = rowid;
     var jelenleg = (k.lezart_termekek || "").toString().trim();
+    var lezartLista = jelenleg ? jelenleg.split(",").map(function(s){ return s.trim(); }) : [];
     var termekNevek = [];
     if(k.termek_idk) {
-        k.termek_idk.toString().split(',').forEach(function(id) {
+        k.termek_idk.toString().split(",").forEach(function(id) {
             id = id.trim();
             var t = kinAdatbazis[id];
             if(t) termekNevek.push(t.nev);
         });
     }
-    if(termekNevek.length === 0) { alert('Nincs termék ehhez a kínálathoz.'); return; }
-    var promptSzoveg = "Melyik termékeket zárd le? (vesszővel elválasztva)\n\nElérhető termékek:\n" + termekNevek.join("\n") +
-        "\n\nJelenleg lezárva: " + (jelenleg || "nincs") +
-        "\n\n(Hagyd üresen a feloldáshoz)";
-    var valasztott = prompt(promptSzoveg);
-    if(valasztott === null) return; // Mégse
+    if(termekNevek.length === 0) { alert("Nincs termék ehhez a kínálathoz."); return; }
+    var listaHtml = termekNevek.map(function(nev) {
+        var checked = lezartLista.includes(nev) ? "checked" : "";
+        var safeId = "tzchk_" + nev.replace(/[^a-zA-Z0-9]/g,"_");
+        return '<label style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px solid #eee;margin-bottom:8px;cursor:pointer;">' +
+            '<input type="checkbox" id="' + safeId + '" value="' + nev.replace(/"/g,"&quot;") + '" ' + checked + ' style="width:20px;height:20px;accent-color:#c62828;">' +
+            '<span style="font-size:14px;font-weight:700;color:#333;">' + nev + '</span>' +
+            '</label>';
+    }).join("");
+    document.getElementById("termekzar-lista").innerHTML = listaHtml;
+    document.getElementById("termekzar-modal").style.display = "flex";
+}
+
+async function termekZarMent() {
+    if(_termekZarRowid === null) return;
+    var kivalasztottak = [];
+    document.querySelectorAll("#termekzar-lista input[type=checkbox]:checked").forEach(function(cb) {
+        kivalasztottak.push(cb.value);
+    });
+    var ertek = kivalasztottak.join(",");
     try {
-        await fetch(API_URL + '?updateKinalatMezo=true&rowId=' + rowid + '&mezo=lezart_termekek&ertek=' + encodeURIComponent(valasztott.trim()), { redirect: 'follow' });
-        k.lezart_termekek = valasztott.trim();
+        await fetch(API_URL + "?updateKinalatMezo=true&rowId=" + _termekZarRowid + "&mezo=lezart_termekek&ertek=" + encodeURIComponent(ertek), { redirect: "follow" });
+        kinListaAdatok[_termekZarRowid].lezart_termekek = ertek;
+        document.getElementById("termekzar-modal").style.display = "none";
         kinListaBetolt();
-    } catch(e) { alert('Hiba: ' + e.message); }
+    } catch(e) { alert("Hiba: " + e.message); }
 }
 
 async function kinTorol(rowid, ev) {
