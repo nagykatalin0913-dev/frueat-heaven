@@ -2201,6 +2201,8 @@
         }
 
         function addToCart(nev) {
+            // Lezárt termék nem rakható kosárba
+            if((window.lezartTermekNevek || []).includes(nev)) return;
             let inputField = document.getElementById("qty_" + nev);
             let qty = parseFloat(inputField ? inputField.value : 0);
             let t = termekAdatbazis[nev];
@@ -2221,6 +2223,7 @@
 
         // Stepper: + gomb
         function stepperNoveles(nev) {
+            if((window.lezartTermekNevek || []).includes(nev)) return;
             const t = termekAdatbazis[nev];
             if(!t) return;
             const lepeskoz = (t.egyseg || "").toLowerCase() === "kg" ? 0.5 : 1;
