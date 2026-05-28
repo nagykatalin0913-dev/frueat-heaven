@@ -704,7 +704,8 @@ document.addEventListener("DOMContentLoaded", function() {
 //  GLOBÁLIS ÁLLAPOT
 // ══════════════════════════════════════════════════════════════
 var orders = [];
-var termekek = {};           // { "Termék neve": { ar, egyseg, beszerzesi_ar, atlag_suly, tipus, box_egyseg } }
+var termekek = {};
+var allandokTermekek = {}; // Allandok sheet adatai az adminban           // { "Termék neve": { ar, egyseg, beszerzesi_ar, atlag_suly, tipus, box_egyseg } }
 var currentMode = 'atvetel';
 var activeCardId = null;
 var zonaFilter = 'mind';
@@ -738,6 +739,16 @@ async function fetchData() {
                     atlag_suly:      parseFloat(t.atlag_suly) || 0,
                     tipus:           (t.tipus || '').toString().trim().toLowerCase(),
                     box_egyseg:      (t.box_egyseg || '').toString().trim().toLowerCase()
+                };
+            });
+        }
+        // Állandó termékek betöltése (Allandok sheet)
+        if (td && td.allandok) {
+            allandokTermekek = {};
+            td.allandok.forEach(function(t) {
+                allandokTermekek[t.nev] = {
+                    ar:     parseFloat(t.ar) || 0,
+                    egyseg: (t.egyseg || 'db').toString().trim()
                 };
             });
         }
@@ -1247,6 +1258,11 @@ function renderItemsTable(str, rowid, order) {
         var p = t.split(':'), nev = p[0].trim(), su = p[1] ? p[1].trim() : '';
         var pq = parseQtyAndUnit(su);
         var td = termekek[nev] || {}, ar = td.ar || 0, eg = td.egyseg || pq.unit || '';
+        // Ha a kínálat termékei közt nincs → nézzük az állandó termékek közt
+        if(!ar && allandokTermekek[nev]) {
+            ar = allandokTermekek[nev].ar || 0;
+            eg = eg || allandokTermekek[nev].egyseg || pq.unit || '';
+        }
         var rs = Math.round(pq.qty * ar); tot += rs;
         var ns = nev.replace(/'/g,'').replace(/"/g,'');
         var suyRowId = 'suly-' + rowid + '-' + ns;
@@ -1282,13 +1298,10 @@ function renderItemsTable(str, rowid, order) {
     var ingyHatar_rt = (zonaLista[zona_r] && zonaLista[zona_r].ingyenes_hatar) ? zonaLista[zona_r].ingyenes_hatar : 0;
     var sdEff = (vs && sd > 0 && !(ingyHatar_rt > 0 && tot >= ingyHatar_rt)) ? sd : 0;
     if (sdEff > 0) tot += sdEff;
-    // Ha a sheetből jövő vegosszeg nagyobb (pl. állandó termékek miatt), azt használjuk
-    var sheetVo = parseInt(order.vegosszeg) || 0;
-    var megjelenitetVo = (sheetVo > tot) ? sheetVo : tot;
     return '<table class="items-table"><thead><tr><th>Termék</th><th style="text-align:right;">Mennyiség / Összeg</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         (sdEff > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Szállítási díj:</span><span>' + sdEff + ' Ft</span></div>' : '') +
         (vs && sdEff === 0 && ingyHatar_rt > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#2e7d32;font-style:italic;"><span>Szállítási díj:</span><span>Ingyenes 🎉</span></div>' : '') +
-        '<div class="total-row" id="total-' + rowid + '">Fizetendő: ' + megjelenitetVo + ' Ft</div>';
+        '<div class="total-row" id="total-' + rowid + '">Fizetendő: ' + tot + ' Ft</div>';
 }
 
 // Súly változáskor: kiszámolja az árat, megmutatja a Mentés gombot
