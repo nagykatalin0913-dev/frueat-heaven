@@ -2199,6 +2199,13 @@ async function kinListaBetolt() {
             } else {
                 html += '<button onclick="kinCsakErtesit(' + rowid + ')" style="padding:6px 11px;border-radius:8px;background:#ff9800;color:white;border:none;font-size:12px;font-weight:700;cursor:pointer;">🔔 Újra értesít</button>';
             }
+            // Házhozszállítás és termék zárás gombok (csak aktív/értesített kínálatnál)
+            if(!isLejart && !isPiszkozat) {
+                var hazhozZarva = (k.hazhoz_zarva || k["hazhoz_zarva"] || "").toString().trim().toLowerCase() === "igen";
+                var lezartTermekek = (k.lezart_termekek || k["lezart_termekek"] || "").toString().trim();
+                html += '<button onclick="kinHazhozToggle(' + rowid + ')" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid ' + (hazhozZarva ? '#c62828' : '#aaa') + ';color:' + (hazhozZarva ? '#c62828' : '#888') + ';font-size:12px;font-weight:700;cursor:pointer;">' + (hazhozZarva ? '🚫 H2H zárva' : '🚚 H2H nyitva') + '</button>';
+                html += '<button onclick="kinTermekZar(' + rowid + ')" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid ' + (lezartTermekek ? '#c62828' : '#aaa') + ';color:' + (lezartTermekek ? '#c62828' : '#888') + ';font-size:12px;font-weight:700;cursor:pointer;">' + (lezartTermekek ? '🚫 Termék zárva' : '📦 Termék zárás') + '</button>';
+            }
             html += '<div style="margin-left:auto;display:flex;gap:6px;">';
             html += '<button onclick="kinReszlet(' + rowid + ')" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid var(--green);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;">👁 Megtekint</button>';
             html += '<button onclick="kinSzerkeszt(' + rowid + ')" style="padding:6px 10px;border-radius:8px;background:none;border:1.5px solid #ff9800;color:#e65100;font-size:12px;font-weight:700;cursor:pointer;">✏️ Módosít</button>';
@@ -2369,6 +2376,43 @@ function kinSzerkeszt(rowid) {
 
     // Görgetés a form tetejére
     document.getElementById('kin-cim').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function kinHazhozToggle(rowid) {
+    var k = kinListaAdatok[rowid];
+    if(!k) return;
+    var jelenleg = (k.hazhoz_zarva || "").toString().trim().toLowerCase() === "igen";
+    var ujErtek = jelenleg ? "nem" : "igen";
+    try {
+        await fetch(API_URL + '?updateKinalatMezo=true&rowId=' + rowid + '&mezo=hazhoz_zarva&ertek=' + encodeURIComponent(ujErtek), { redirect: 'follow' });
+        k.hazhoz_zarva = ujErtek;
+        kinListaBetolt();
+    } catch(e) { alert('Hiba: ' + e.message); }
+}
+
+async function kinTermekZar(rowid) {
+    var k = kinListaAdatok[rowid];
+    if(!k) return;
+    var jelenleg = (k.lezart_termekek || "").toString().trim();
+    var termekNevek = [];
+    if(k.termek_idk) {
+        k.termek_idk.toString().split(',').forEach(function(id) {
+            id = id.trim();
+            var t = kinAdatbazis[id];
+            if(t) termekNevek.push(t.nev);
+        });
+    }
+    if(termekNevek.length === 0) { alert('Nincs termék ehhez a kínálathoz.'); return; }
+    var promptSzoveg = "Melyik termékeket zárd le? (vesszővel elválasztva)\n\nElérhető termékek:\n" + termekNevek.join("\n") +
+        "\n\nJelenleg lezárva: " + (jelenleg || "nincs") +
+        "\n\n(Hagyd üresen a feloldáshoz)";
+    var valasztott = prompt(promptSzoveg);
+    if(valasztott === null) return; // Mégse
+    try {
+        await fetch(API_URL + '?updateKinalatMezo=true&rowId=' + rowid + '&mezo=lezart_termekek&ertek=' + encodeURIComponent(valasztott.trim()), { redirect: 'follow' });
+        k.lezart_termekek = valasztott.trim();
+        kinListaBetolt();
+    } catch(e) { alert('Hiba: ' + e.message); }
 }
 
 async function kinTorol(rowid, ev) {
