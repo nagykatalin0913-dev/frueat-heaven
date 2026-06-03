@@ -1960,11 +1960,19 @@ function vevokMegjelenit(lista) {
         var reg   = v.regisztracio ? new Date(v.regisztracio).toLocaleDateString('hu-HU') : '–';
         var utolso = v.utolso_rendeles ? new Date(v.utolso_rendeles).toLocaleDateString('hu-HU') : '–';
         var rSzam = v.rendelesek_szama || 0;
+        var push  = (v.push_engedelyezett || v["push_engedelyezett"] || "").toString().trim().toLowerCase();
+        var utolsoBelepes = v.utolso_belepes || v["utolso_belepes"] || "";
+        var belepesSzoveg = utolsoBelepes ? new Date(utolsoBelepes).toLocaleDateString('hu-HU', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '–';
+        var pushBadge = push === "igen"
+            ? '<span style="font-size:10px;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:2px 6px;font-weight:700;">🔔 Push ✓</span>'
+            : push === "nem"
+                ? '<span style="font-size:10px;background:#ffebee;color:#c62828;border-radius:6px;padding:2px 6px;font-weight:700;">🔕 Push ✗</span>'
+                : '<span style="font-size:10px;background:#f5f5f5;color:#aaa;border-radius:6px;padding:2px 6px;font-weight:700;">Push ?</span>';
 
         html += '<div style="background:#f9f5ff;border-radius:10px;padding:12px;margin-bottom:8px;border:1.5px solid #e1bee7;">';
         html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">';
         html += '<div style="flex:1;min-width:0;">';
-        html += '<div style="font-weight:800;font-size:14px;color:#222;">' + nev + '</div>';
+        html += '<div style="font-weight:800;font-size:14px;color:#222;">' + nev + ' ' + pushBadge + '</div>';
         html += '<div style="font-size:12px;color:#777;margin-top:2px;">' + zona + '</div>';
         html += '</div>';
         html += '<span style="font-size:13px;font-weight:800;color:#6a1b9a;white-space:nowrap;">' + rSzam + ' rendelés</span>';
@@ -1973,6 +1981,7 @@ function vevokMegjelenit(lista) {
         html += '<div style="font-size:11px;color:#aaa;">📱 ' + tel + '</div>';
         html += '<div style="font-size:11px;color:#aaa;">📅 Reg: ' + reg + '</div>';
         html += '<div style="font-size:11px;color:#aaa;">🛒 Utolsó: ' + utolso + '</div>';
+        html += '<div style="font-size:11px;color:#aaa;">👁 Belépett: ' + belepesSzoveg + '</div>';
         html += '</div>';
         html += '</div>';
     });
