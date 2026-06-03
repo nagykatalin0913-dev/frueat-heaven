@@ -1677,6 +1677,11 @@
                         // Telefon utolsó 7 számjegye - egyéni push-hoz
                         var tel7 = (userProfile.tel || "").replace(/[^0-9]/g, "").slice(-7);
                         if(tel7) await OneSignal.User.addTag("tel", tel7);
+                        // Push engedély státusz mentése a sheetbe
+                        try {
+                            var pushEngedelyezett = await OneSignal.User.PushSubscription.optedIn;
+                            fetch(API_URL + "?setPushStatus=true&tel=" + encodeURIComponent(userProfile.tel || "") + "&status=" + (pushEngedelyezett ? "igen" : "nem"), { redirect: "follow" });
+                        } catch(pe) {}
                     });
                 }
 
