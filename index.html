@@ -1669,12 +1669,14 @@
                 if(!waNum)  document.getElementById("chat-wa").style.display  = "none";
                 if(!msgPage)document.getElementById("chat-msg").style.display = "none";
 
-                // OneSignal zóna tag beállítása
-                // Így csak a megfelelő zónának lehet majd értesítést küldeni
+                // OneSignal zóna + telefon tag beállítása
                 if(window.OneSignalDeferred && zonaAzonosito) {
                     OneSignalDeferred.push(async function(OneSignal) {
                         await OneSignal.User.addTag("zona", zonaAzonosito);
                         await OneSignal.User.addTag("irsz", userProfile.irsz);
+                        // Telefon utolsó 7 számjegye - egyéni push-hoz
+                        var tel7 = (userProfile.tel || "").replace(/[^0-9]/g, "").slice(-7);
+                        if(tel7) await OneSignal.User.addTag("tel", tel7);
                     });
                 }
 
@@ -1747,6 +1749,7 @@
                 // Ha azonos napon több kínálat van (gyermek kínálatok),
                 // mutasd mindet. Ha különböző napon, csak a legközelebbit.
                 let megjelenitekKinalat = [];
+                aktKinalatRowid = null; // reset
                 if(aktKinalatok.length > 0) {
                     const elsoNap = parseDatum(aktKinalatok[0].datum);
                     if(elsoNap) {
@@ -1785,6 +1788,11 @@
                 // Kínálatok megjelenítése (mind egymás után, ha több is van)
                 let posztHtml = "";
                 let megjelenitetTermekNevek = new Set(); // duplikátum-szűrő
+
+                // Az első megjelenített kínálat kinalat_id-ja megy a rendelésbe
+                if(megjelenitekKinalat.length > 0) {
+                    aktKinalatRowid = megjelenitekKinalat[0].kinalat_id || megjelenitekKinalat[0]["kinalat_id"] || "";
+                }
 
                 megjelenitekKinalat.forEach((k, kIdx) => {
                     const hatarido = parseDatum(k.hatarido);
