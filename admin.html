@@ -882,7 +882,7 @@ function ujRendelesBadgeFrissit() {
 
     orders.forEach(function(o) {
         var statusz = (o.statusz || '').toString().toLowerCase();
-        if(statusz !== 'aktív' && statusz !== 'aktiv') return;
+        if(statusz !== 'aktív' && statusz !== 'aktiv' && statusz !== 'fogadva') return;
         var datum = o.datum ? new Date(o.datum).getTime() : 0;
         if(datum <= utolso) return;
         var mod = (o.atvetel_mod || '').toLowerCase();
