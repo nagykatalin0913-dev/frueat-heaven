@@ -696,8 +696,13 @@ async function pinValtas() {
     if(ujMegint === null) return;
     if(uj !== ujMegint) { alert("❌ A két PIN nem egyezik!"); return; }
     try {
-        await fetch(API_URL + "?setPin=" + encodeURIComponent(uj), { redirect: "follow" });
-        alert("✅ PIN sikeresen megváltoztatva!");
+        var r2 = await fetch(API_URL + "?setPin=" + encodeURIComponent(uj), { redirect: "follow" });
+        var res = await r2.text();
+        if(res.trim() === "ok") {
+            alert("✅ PIN sikeresen megváltoztatva!");
+        } else {
+            alert("❌ Hiba a mentésnél: " + res);
+        }
     } catch(e) { alert("Hiba a mentésnél!"); }
 }
 
