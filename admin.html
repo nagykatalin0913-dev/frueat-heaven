@@ -1230,6 +1230,12 @@ function render() {
 
         html += '<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;">';
         html += '<button onclick="event.stopPropagation();deleteOrder(' + fo.rowid + ')" style="flex-shrink:0;padding:10px 14px;border-radius:10px;background:none;border:1.5px solid #e57373;color:#e57373;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">&#128465; Töröl</button>';
+        // Fogadva gomb - csak ha még Aktív
+        var foStatusz = (fo.statusz || "").toString().trim().toLowerCase();
+        if(foStatusz === "aktív" || foStatusz === "aktiv") {
+            var allRowIds = '[' + csoport.map(function(o){return o.rowid;}).join(',') + ']';
+            html += '<button onclick="event.stopPropagation();rendelesFogadva(' + allRowIds + ')" style="flex-shrink:0;padding:10px 14px;border-radius:10px;background:none;border:1.5px solid #1976d2;color:#1976d2;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">&#10003; Fogadva</button>';
+        }
         if(csoport.length === 1) {
             html += '<button class="finish-btn" style="flex:1;" onclick="event.stopPropagation();completeOrder(' + fo.rowid + ')">' + (currentMode === 'atvetel' ? '&#10003; ÁTADVA ÉS FIZETVE' : '&#10003; KISZÁLLÍTVA') + '</button>';
         } else {
@@ -1426,6 +1432,23 @@ async function updateOrderData(rowid, nev, val, eg) {
             setTimeout(function() { if (inputEl) inputEl.style.borderColor = ''; }, 1500);
         }
     }
+}
+
+async function rendelesFogadva(rowids) {
+    if(!Array.isArray(rowids)) rowids = [rowids];
+    try {
+        for(var i = 0; i < rowids.length; i++) {
+            await fetch(API_URL + "?update=true&rowId=" + rowids[i] + "&newStatus=Fogadva", { redirect: "follow" });
+        }
+        // Push küldés az első rendelés adatai alapján
+        var elsoRend = orders.find(function(o){ return o.rowid === rowids[0]; });
+        if(elsoRend) {
+            var zona = (elsoRend.zona || "").toString().trim();
+            var tel  = (elsoRend.telefon || "").toString().trim();
+            await fetch(API_URL + "?rendelesFogadvaPush=true&rowId=" + rowids[0] + "&zona=" + encodeURIComponent(zona) + "&tel=" + encodeURIComponent(tel), { redirect: "follow" });
+        }
+        fetchData();
+    } catch(e) { alert("Hiba: " + e.message); }
 }
 
 async function deleteOrder(rowId) {
@@ -3028,4 +3051,3 @@ async function pushKuldes(tipus) {
 
 </body>
 </html>
-
