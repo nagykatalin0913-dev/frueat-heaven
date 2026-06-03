@@ -1234,7 +1234,7 @@ function render() {
         var foStatusz = (fo.statusz || "").toString().trim().toLowerCase();
         if(foStatusz === "aktív" || foStatusz === "aktiv") {
             var allRowIds = '[' + csoport.map(function(o){return o.rowid;}).join(',') + ']';
-            html += '<button onclick="event.stopPropagation();rendelesFogadva(' + allRowIds + ')" style="flex-shrink:0;padding:10px 14px;border-radius:10px;background:none;border:1.5px solid #1976d2;color:#1976d2;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">&#10003; Fogadva</button>';
+            html += '<button onclick="event.stopPropagation();rendelesFogadva(' + allRowIds + ',this)" style="flex-shrink:0;padding:10px 14px;border-radius:10px;background:none;border:1.5px solid #1976d2;color:#1976d2;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;">&#10003; Fogadva</button>';
         }
         if(csoport.length === 1) {
             html += '<button class="finish-btn" style="flex:1;" onclick="event.stopPropagation();completeOrder(' + fo.rowid + ')">' + (currentMode === 'atvetel' ? '&#10003; ÁTADVA ÉS FIZETVE' : '&#10003; KISZÁLLÍTVA') + '</button>';
@@ -1434,21 +1434,47 @@ async function updateOrderData(rowid, nev, val, eg) {
     }
 }
 
-async function rendelesFogadva(rowids) {
+async function rendelesFogadva(rowids, btnEl) {
     if(!Array.isArray(rowids)) rowids = [rowids];
+    // Azonnali vizuális visszajelzés
+    if(btnEl) {
+        btnEl.disabled = true;
+        btnEl.textContent = "⏳ Küldés...";
+        btnEl.style.borderColor = "#aaa";
+        btnEl.style.color = "#aaa";
+    }
     try {
         for(var i = 0; i < rowids.length; i++) {
             await fetch(API_URL + "?update=true&rowId=" + rowids[i] + "&newStatus=Fogadva", { redirect: "follow" });
+            // Helyi frissítés - ne tűnjön el a rendelés
+            var rend = orders.find(function(o){ return o.rowid === rowids[i]; });
+            if(rend) rend.statusz = "Fogadva";
         }
-        // Push küldés az első rendelés adatai alapján
+        // Push küldés
         var elsoRend = orders.find(function(o){ return o.rowid === rowids[0]; });
         if(elsoRend) {
             var zona = (elsoRend.zona || "").toString().trim();
             var tel  = (elsoRend.telefon || "").toString().trim();
             await fetch(API_URL + "?rendelesFogadvaPush=true&rowId=" + rowids[0] + "&zona=" + encodeURIComponent(zona) + "&tel=" + encodeURIComponent(tel), { redirect: "follow" });
         }
-        fetchData();
-    } catch(e) { alert("Hiba: " + e.message); }
+        // Gomb frissítése "Értesítve" feliratra
+        if(btnEl) {
+            btnEl.textContent = "✅ Értesítve";
+            btnEl.style.borderColor = "#2e7d32";
+            btnEl.style.color = "#2e7d32";
+        }
+        // Lista újrarajzolása (ne fetchData - az eltünteti!)
+        buildFilterChips();
+        render();
+    } catch(e) {
+        alert("Hiba: " + e.message);
+        if(btnEl) {
+            btnEl.disabled = false;
+            btnEl.textContent = "✓ Fogadva";
+            btnEl.style.borderColor = "#1976d2";
+            btnEl.style.color = "#1976d2";
+        }
+    }
 }
 
 async function deleteOrder(rowId) {
