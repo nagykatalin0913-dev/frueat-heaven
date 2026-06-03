@@ -1271,7 +1271,15 @@
                         <div class="ar-total">Fizetendő: ${r.vegosszeg} Ft</div>
                         <div style="font-size:11px;color:var(--text-dim);margin:4px 0 6px;line-height:1.5;font-style:italic;">⚖️ A végösszeg a tényleges mért súly alapján módosulhat.</div>
                         ${atvetelInfo}
-                        <div class="ar-status">Folyamatban</div>
+                        <div class="ar-status" style="${
+                            r.statusz && (r.statusz.toLowerCase() === 'fogadva') 
+                                ? 'background:rgba(25,118,210,0.15);color:#1565c0;border:1px solid rgba(25,118,210,0.3);' 
+                                : ''
+                        }">
+                            ${r.statusz && r.statusz.toLowerCase() === 'fogadva' 
+                                ? '✅ Megkaptuk a rendelésedet!' 
+                                : '📤 Elküldve – feldolgozás alatt'}
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -1335,6 +1343,12 @@
                     const ujVo = aktiv.vegosszeg;
                     if(ujVo !== undefined && String(ujVo) !== String(r.vegosszeg)) {
                         megmaradok[i].vegosszeg = ujVo;
+                        volt_valtozas = true;
+                    }
+                    // Státusz frissítése
+                    const ujStatusz = aktiv.statusz || "";
+                    if(ujStatusz && ujStatusz !== r.statusz) {
+                        megmaradok[i].statusz = ujStatusz;
                         volt_valtozas = true;
                     }
                 });
