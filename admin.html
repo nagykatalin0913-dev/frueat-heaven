@@ -648,42 +648,57 @@
 var API_URL = "https://script.google.com/macros/s/AKfycbxt_vm_W-t_vvScmOEwT7_u7hCfMUOaC0KdZbqVMiosarPUuqhSafeTh0-r6MN96BdPeg/exec";
 
 // ── PIN + VERZIÓ – DOMContentLoaded után fut ──────────────────
-const PIN_KEY      = "frueat_admin_pin";
 const PIN_AUTH_KEY = "frueat_admin_auth";
-const DEFAULT_PIN  = "1234";
 const ADMIN_VER_URL= "https://nagykatalin0913-dev.github.io/frueat-heaven/version.txt";
 const ADMIN_VER_KEY= "frueat_admin_version";
 
-function pinEllenorzes() {
-    var beirt  = document.getElementById("pin-input").value.trim();
-    var helyes = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
-    if(beirt === helyes) {
-        sessionStorage.setItem(PIN_AUTH_KEY, "1");
-        document.getElementById("pin-overlay").style.display = "none";
-        document.getElementById("pin-hiba").style.display   = "none";
-        document.getElementById("pin-input").value = "";
-        fetchData();
-        setInterval(fetchData, 60000);
-    } else {
+async function pinEllenorzes() {
+    var beirt = document.getElementById("pin-input").value.trim();
+    if(!beirt) return;
+    var btn = document.getElementById("pin-btn");
+    btn.disabled = true;
+    btn.textContent = "⏳";
+    try {
+        var r = await fetch(API_URL + "?checkPin=" + encodeURIComponent(beirt), { redirect: "follow" });
+        var eredmeny = await r.text();
+        if(eredmeny.trim() === "ok") {
+            sessionStorage.setItem(PIN_AUTH_KEY, "1");
+            document.getElementById("pin-overlay").style.display = "none";
+            document.getElementById("pin-hiba").style.display   = "none";
+            document.getElementById("pin-input").value = "";
+            fetchData();
+            setInterval(fetchData, 60000);
+        } else {
+            document.getElementById("pin-hiba").style.display = "block";
+            document.getElementById("pin-input").value = "";
+            document.getElementById("pin-input").focus();
+        }
+    } catch(e) {
+        document.getElementById("pin-hiba").innerText = "Kapcsolati hiba, próbáld újra!";
         document.getElementById("pin-hiba").style.display = "block";
-        document.getElementById("pin-input").value = "";
-        document.getElementById("pin-input").focus();
     }
+    btn.disabled = false;
+    btn.textContent = "🔓 Belépés";
 }
 
-function pinValtas() {
-    var regi   = prompt("Add meg a jelenlegi PIN kódot:");
-    if(regi === null) return; // Mégse gomb
-    var helyes = localStorage.getItem(PIN_KEY) || DEFAULT_PIN;
-    if(regi !== helyes) { alert("❌ Hibás PIN!"); return; }
+async function pinValtas() {
+    var regi = prompt("Add meg a jelenlegi PIN kódot:");
+    if(regi === null) return;
+    try {
+        var r = await fetch(API_URL + "?checkPin=" + encodeURIComponent(regi), { redirect: "follow" });
+        var eredmeny = await r.text();
+        if(eredmeny.trim() !== "ok") { alert("❌ Hibás PIN!"); return; }
+    } catch(e) { alert("Kapcsolati hiba!"); return; }
     var uj = prompt("Add meg az új PIN kódot (minimum 4 szám):");
     if(uj === null) return;
     if(!uj || uj.length < 4 || isNaN(uj)) { alert("❌ Érvénytelen PIN! Minimum 4 szám kell."); return; }
     var ujMegint = prompt("Add meg újra az új PIN kódot:");
     if(ujMegint === null) return;
     if(uj !== ujMegint) { alert("❌ A két PIN nem egyezik!"); return; }
-    localStorage.setItem(PIN_KEY, uj);
-    alert("✅ PIN sikeresen megváltoztatva!");
+    try {
+        await fetch(API_URL + "?setPin=" + encodeURIComponent(uj), { redirect: "follow" });
+        alert("✅ PIN sikeresen megváltoztatva!");
+    } catch(e) { alert("Hiba a mentésnél!"); }
 }
 
 document.addEventListener("DOMContentLoaded", function() {
