@@ -626,7 +626,17 @@
 </div>
 
 <div id="beszerzes-view">
-    <button class="bsz-frissit-btn" onclick="fetchBeszerzes()">&#128260; Beszerz. lista frissítése</button>
+    <!-- Kínálat választó -->
+    <div id="bsz-kinalat-valaszto" style="background:white;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+        <div style="font-size:13px;font-weight:800;color:#333;margin-bottom:10px;">📋 Melyik kínálat(ok) rendeléseit számoljuk?</div>
+        <div id="bsz-kinalat-lista" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+            <div style="color:#aaa;font-size:13px;">Betöltés...</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <button onclick="bszerzFrissitKinalattal()" style="flex:1;padding:12px;border-radius:10px;border:none;background:var(--green);color:white;font-size:14px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">&#128260; Frissítés kijelöltekkel</button>
+            <button onclick="fetchBeszerzes()" style="padding:12px 14px;border-radius:10px;border:1.5px solid #ccc;background:white;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;" title="Összes aktív rendelés">&#128260; Mind</button>
+        </div>
+    </div>
     <div class="bsz-osszesito" id="bsz-osszesito" style="display:none;">
         <div class="bsz-osszesito-item">
             <span class="bsz-ertek" id="bsz-total-koltseg">-</span>
@@ -968,6 +978,7 @@ function setMode(mode) {
     if (isUz)   { uzenetListaBetolt(); }
     if (isVev)  { vevokBetolt(); }
     if (isAll)  { allandokOsszesitoInit(); }
+    if (isBsz) { bszerzKinalatValasztoBetolt(); }
     if (mode === 'atvetel' || mode === 'szallitas') { ujRendelesMegnezve(); }
 }
 
@@ -1543,6 +1554,51 @@ async function completeOrder(rowId) {
 //    – Számol: maradék, költség
 //    – Megvan checkbox → kártya összecsukódik
 // ══════════════════════════════════════════════════════════════
+
+// Bszerz kínálat választó betöltése
+async function bszerzKinalatValasztoBetolt() {
+    var el = document.getElementById('bsz-kinalat-lista');
+    if(!el) return;
+    // Aktív kínálatok a kinListaAdatok-ból
+    var kinalatok = Object.values(kinListaAdatok || {}).filter(function(k) {
+        var s = (k.statusz || "").toLowerCase();
+        return s === "közzétett" || s === "kozzetett" || s === "értesítve" || s === "ertesitve";
+    });
+    if(kinalatok.length === 0) {
+        el.innerHTML = '<div style="color:#aaa;font-size:13px;">Nincs aktív kínálat</div>';
+        return;
+    }
+    el.innerHTML = kinalatok.map(function(k) {
+        var kid  = (k.kinalat_id || "").toString().trim();
+        var zona = (k.zona || "").toString().trim();
+        var cim  = (k.cim || "").toString().trim().substring(0,20);
+        var datum = (k.kiszallitas_ideje || k.atvetel_datum || "").toString().trim().substring(0,10);
+        var label = kid + (zona ? " – " + zona : "") + (datum ? " (" + datum + ")" : "");
+        return '<label style="display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:10px;padding:8px 12px;cursor:pointer;">' +
+            '<input type="checkbox" value="' + kid + '" style="width:18px;height:18px;accent-color:var(--green);" checked>' +
+            '<span style="font-size:13px;font-weight:700;color:#333;">' + label + '</span>' +
+            '</label>';
+    }).join('');
+}
+
+async function bszerzFrissitKinalattal() {
+    var checkboxok = document.querySelectorAll('#bsz-kinalat-lista input[type=checkbox]:checked');
+    var kinalatIdk = Array.from(checkboxok).map(function(cb){ return cb.value; }).filter(Boolean);
+    if(kinalatIdk.length === 0) {
+        alert('Jelölj ki legalább egy kínálatot!');
+        return;
+    }
+    var lista = document.getElementById('bsz-lista');
+    lista.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Számítás folyamatban...</div>';
+    try {
+        // Bszerz sheet frissítése a kijelölt kínálatokkal
+        await fetch(API_URL + '?szamolBeszerzesKinalat=true&kinalatIdk=' + encodeURIComponent(kinalatIdk.join(',')), { redirect: 'follow' });
+        // Majd betöltjük a frissített adatokat
+        await fetchBeszerzes();
+    } catch(e) {
+        lista.innerHTML = '<div style="color:red;padding:12px;">Hiba: ' + e.message + '</div>';
+    }
+}
 
 async function fetchBeszerzes() {
     var lista = document.getElementById('bsz-lista');
