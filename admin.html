@@ -1555,31 +1555,37 @@ async function completeOrder(rowId) {
 //    – Megvan checkbox → kártya összecsukódik
 // ══════════════════════════════════════════════════════════════
 
-// Bszerz kínálat választó betöltése
+// Bszerz kínálat választó betöltése - közvetlenül API-ból
 async function bszerzKinalatValasztoBetolt() {
     var el = document.getElementById('bsz-kinalat-lista');
     if(!el) return;
-    // Aktív kínálatok a kinListaAdatok-ból
-    var kinalatok = Object.values(kinListaAdatok || {}).filter(function(k) {
-        var s = (k.statusz || "").toLowerCase();
-        // Törölt és piszkozat kívül minden megjelenik (lejárt, közzétett, értesítve)
-        return s !== "piszkozat" && s !== "törölt" && s !== "torolt" && s !== "";
-    });
-    if(kinalatok.length === 0) {
-        el.innerHTML = '<div style="color:#aaa;font-size:13px;">Nincs aktív kínálat</div>';
-        return;
+    el.innerHTML = '<div style="color:#aaa;font-size:13px;">Betöltés...</div>';
+    try {
+        var r = await fetch(API_URL + '?getKinalatok=true', { redirect: 'follow' });
+        var d = await r.json();
+        var kinalatok = (d.kinalatok || []).filter(function(k) {
+            var s = (k.statusz || "").toString().toLowerCase();
+            return s !== "piszkozat" && s !== "törölt" && s !== "torolt" && s !== "";
+        });
+        if(kinalatok.length === 0) {
+            el.innerHTML = '<div style="color:#aaa;font-size:13px;">Nincs kínálat</div>';
+            return;
+        }
+        el.innerHTML = kinalatok.map(function(k) {
+            var kid   = (k.kinalat_id || "").toString().trim();
+            var zona  = (k.zona || "").toString().trim();
+            var datum = (k.kiszallitas_ideje || k.atvetel_datum || k.datum || "").toString().trim().substring(0,10);
+            var cim   = (k.cim || "").toString().trim().substring(0,15);
+            var label = (kid ? kid + " – " : "") + zona + (datum ? " (" + datum + ")" : "") + (cim ? " " + cim : "");
+            if(!kid) return ''; // kinalat_id nélküli kínálat kihagyása
+            return '<label style="display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:10px;padding:8px 12px;cursor:pointer;">' +
+                '<input type="checkbox" value="' + kid + '" style="width:18px;height:18px;accent-color:var(--green);" checked>' +
+                '<span style="font-size:13px;font-weight:700;color:#333;">' + label + '</span>' +
+                '</label>';
+        }).join('');
+    } catch(e) {
+        el.innerHTML = '<div style="color:red;font-size:13px;">Hiba: ' + e.message + '</div>';
     }
-    el.innerHTML = kinalatok.map(function(k) {
-        var kid  = (k.kinalat_id || "").toString().trim();
-        var zona = (k.zona || "").toString().trim();
-        var cim  = (k.cim || "").toString().trim().substring(0,20);
-        var datum = (k.kiszallitas_ideje || k.atvetel_datum || "").toString().trim().substring(0,10);
-        var label = kid + (zona ? " – " + zona : "") + (datum ? " (" + datum + ")" : "");
-        return '<label style="display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:10px;padding:8px 12px;cursor:pointer;">' +
-            '<input type="checkbox" value="' + kid + '" style="width:18px;height:18px;accent-color:var(--green);" checked>' +
-            '<span style="font-size:13px;font-weight:700;color:#333;">' + label + '</span>' +
-            '</label>';
-    }).join('');
 }
 
 async function bszerzFrissitKinalattal() {
