@@ -1562,7 +1562,8 @@ async function bszerzKinalatValasztoBetolt() {
     // Aktív kínálatok a kinListaAdatok-ból
     var kinalatok = Object.values(kinListaAdatok || {}).filter(function(k) {
         var s = (k.statusz || "").toLowerCase();
-        return s === "közzétett" || s === "kozzetett" || s === "értesítve" || s === "ertesitve";
+        // Törölt és piszkozat kívül minden megjelenik (lejárt, közzétett, értesítve)
+        return s !== "piszkozat" && s !== "törölt" && s !== "torolt" && s !== "";
     });
     if(kinalatok.length === 0) {
         el.innerHTML = '<div style="color:#aaa;font-size:13px;">Nincs aktív kínálat</div>';
