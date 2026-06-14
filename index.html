@@ -2432,8 +2432,8 @@
                 const meglevo = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
                 const aktKinId = aktKinalatRowid || "";
 
-                // Korábbi rendelések TERMÉK értéke (szállítási díj nélkül) ugyanehhez a kínálathoz
-                let korabbiTermekOsszeg = 0;
+                // Korábbi rendelések értéke ugyanehhez a kínálathoz
+                let korabbiOsszeg = 0;
                 let marVanSzallitas = false;
                 meglevo.forEach(r => {
                     const rTel = (r.telefon || r.tel || "").replace(/[^0-9]/g, "");
@@ -2441,23 +2441,31 @@
                     const rKin = (r.kinalat_id || "").toString().trim();
                     const egyezikKinalat = aktKinId ? rKin === aktKinId : true;
                     if(rTel === sajatTel && rMod.includes("házhoz") && egyezikKinalat) {
-                        // Vegosszegből levonjuk a szállítási díjat → csak termék érték marad
                         const rVo = parseInt(r.vegosszeg) || 0;
-                        const rSzallDij = marVanSzallitas ? 0 : alapDij; // első rendelésnél volt szállítási díj
-                        korabbiTermekOsszeg += Math.max(0, rVo - (marVanSzallitas ? 0 : alapDij));
+                        korabbiOsszeg += rVo;
                         marVanSzallitas = true;
                     }
                 });
 
-                // Összes termék érték = jelenlegi kosár + korábbi rendelések termék értéke
-                const osszesenTermekErtek = kosarErtek + korabbiTermekOsszeg;
-
-                // Ingyenes határ ellenőrzés csak termék értékek alapján
-                if(ingyenesHatar > 0 && osszesenTermekErtek >= ingyenesHatar) {
-                    szallitasiDij = 0;
-                    szallitasSzovegHtml = `<span class="free-delivery">🎉 INGYENES! (${ingyenesHatar} Ft felett)</span>`;
+                // Ingyenes határ ellenőrzés:
+                // Ha van ingyenes határ → nézzük hogy a korábbi + jelenlegi termékek elérik-e
+                // A korábbi vegosszeg már tartalmazza vagy nem a szállítási díjat,
+                // de mindkét esetben biztonságos: ha marVanSzallitas=true, akkor sd=0
+                if(ingyenesHatar > 0) {
+                    // Összes termék érték becslése: ha első rendelés ingyenes volt, sd nem volt benne
+                    // Ha nem volt ingyenes, sd benne van - de marVanSzallitas miatt sd=0 lesz
+                    const osszesenErtek = kosarErtek + korabbiOsszeg;
+                    if(osszesenErtek >= ingyenesHatar || marVanSzallitas) {
+                        szallitasiDij = 0;
+                        if(kosarErtek >= ingyenesHatar) {
+                            szallitasSzovegHtml = `<span class="free-delivery">🎉 INGYENES! (${ingyenesHatar} Ft felett)</span>`;
+                        } else {
+                            szallitasSzovegHtml = `<span class="free-delivery">✓ Szállítási díj már fedezett</span>`;
+                        }
+                    } else {
+                        szallitasSzovegHtml = `${szallitasiDij} Ft`;
+                    }
                 } else if(marVanSzallitas) {
-                    // Már fizette a szállítási díjat ehhez a kínálathoz → most 0
                     szallitasiDij = 0;
                     szallitasSzovegHtml = `<span class="free-delivery">✓ Szállítási díj már fedezett</span>`;
                 } else {
