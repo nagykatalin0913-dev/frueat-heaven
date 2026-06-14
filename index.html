@@ -2426,28 +2426,42 @@
                 szallitasSzovegHtml = `<span class="free-delivery">Személyes átvétel (0 Ft)</span>`;
             } else {
                 szallitasiDij = alapDij;
-                // Ingyenes határ ellenőrzés
-                if(ingyenesHatar > 0 && kosarErtek >= ingyenesHatar) {
+                // Meglévő rendelések ugyanehhez a kínálathoz
+                const profil = JSON.parse(localStorage.getItem("frueat_profile") || "{}");
+                const sajatTel = (profil.tel || "").replace(/[^0-9]/g, "");
+                const meglevo = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
+                const aktKinId = aktKinalatRowid || "";
+
+                // Korábbi rendelések TERMÉK értéke (szállítási díj nélkül) ugyanehhez a kínálathoz
+                let korabbiTermekOsszeg = 0;
+                let marVanSzallitas = false;
+                meglevo.forEach(r => {
+                    const rTel = (r.telefon || r.tel || "").replace(/[^0-9]/g, "");
+                    const rMod = (r.atvetel_mod || r.mod || "").toLowerCase();
+                    const rKin = (r.kinalat_id || "").toString().trim();
+                    const egyezikKinalat = aktKinId ? rKin === aktKinId : true;
+                    if(rTel === sajatTel && rMod.includes("házhoz") && egyezikKinalat) {
+                        // Vegosszegből levonjuk a szállítási díjat → csak termék érték marad
+                        const rVo = parseInt(r.vegosszeg) || 0;
+                        const rSzallDij = marVanSzallitas ? 0 : alapDij; // első rendelésnél volt szállítási díj
+                        korabbiTermekOsszeg += Math.max(0, rVo - (marVanSzallitas ? 0 : alapDij));
+                        marVanSzallitas = true;
+                    }
+                });
+
+                // Összes termék érték = jelenlegi kosár + korábbi rendelések termék értéke
+                const osszesenTermekErtek = kosarErtek + korabbiTermekOsszeg;
+
+                // Ingyenes határ ellenőrzés csak termék értékek alapján
+                if(ingyenesHatar > 0 && osszesenTermekErtek >= ingyenesHatar) {
                     szallitasiDij = 0;
                     szallitasSzovegHtml = `<span class="free-delivery">🎉 INGYENES! (${ingyenesHatar} Ft felett)</span>`;
+                } else if(marVanSzallitas) {
+                    // Már fizette a szállítási díjat ehhez a kínálathoz → most 0
+                    szallitasiDij = 0;
+                    szallitasSzovegHtml = `<span class="free-delivery">✓ Szállítási díj már fedezett</span>`;
                 } else {
-                    // Ha már van aznapi házhozszállítás → szállítási díj 0
-                    const ma = new Date().toDateString();
-                    const profil = JSON.parse(localStorage.getItem("frueat_profile") || "{}");
-                    const sajatTel = (profil.tel || "").replace(/[^0-9]/g, "");
-                    const meglevo = JSON.parse(localStorage.getItem("frueat_rendelesek") || "[]");
-                    const marVanSzallitas = meglevo.some(r => {
-                        const rDat = r.datum ? new Date(r.datum).toDateString() : "";
-                        const rTel = (r.telefon || r.tel || "").replace(/[^0-9]/g, "");
-                        const rMod = (r.atvetel_mod || r.mod || "").toLowerCase();
-                        return rTel === sajatTel && rDat === ma && rMod.includes("házhoz");
-                    });
-                    if(marVanSzallitas) {
-                        szallitasiDij = 0;
-                        szallitasSzovegHtml = `<span class="free-delivery">✓ Szállítási díj már fedezett</span>`;
-                    } else {
-                        szallitasSzovegHtml = `${szallitasiDij} Ft`;
-                    }
+                    szallitasSzovegHtml = `${szallitasiDij} Ft`;
                 }
             }
 
