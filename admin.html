@@ -1204,17 +1204,14 @@ function render() {
         var tel = fo.telefon || fo.tel || '';
         var idkSzoveg = csoport.map(function(o){ return '#' + (o.id||o.rowid||'?'); }).join(' + ');
 
-        // Végösszeg összesítés az összezárt nézethez
+        // Végösszeg összesítés - sheetből jövő értékek összeadása
         var osszesFo = 0;
-        var zona_ = (fo.zona||'').toString().trim();
+        var zona_ = (fo.zona||''  ).toString().trim();
         var sd_ = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
-        var isHazhoz_ = (fo.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
+        var isHazhoz_ = (fo.atvetel_mod||''  ).toLowerCase().indexOf('h\u00e1zhoz') >= 0;
         csoport.forEach(function(o) {
-            var vo = parseInt(o.vegosszeg) || 0;
-            if(isHazhoz_ && sd_ > 0 && csoport.length > 1) vo -= sd_;
-            osszesFo += vo;
+            osszesFo += parseInt(o.vegosszeg) || 0;
         });
-        if(isHazhoz_ && sd_ > 0 && csoport.length > 1) osszesFo += sd_;
         var foStatusz = (fo.statusz || '').toString().trim().toLowerCase();
         var cardId = 'card-' + fo.rowid;
 
