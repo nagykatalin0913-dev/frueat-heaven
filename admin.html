@@ -1307,11 +1307,36 @@ function szamolVegosszeg(rowid) {
     var sd = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
     var ingyHatar = (zonaLista[zona_] && zonaLista[zona_].ingyenes_hatar) ? zonaLista[zona_].ingyenes_hatar : 0;
     var isHazhoz_ = (order.atvetel_mod||'').toLowerCase().indexOf('házhoz') >= 0;
-    // Ingyenes határ ellenőrzés
-    if(ingyHatar > 0 && t >= ingyHatar) sd = 0;
+
+    if(isHazhoz_) {
+        // Ugyanazon vevő többi rendelésének termék értéke (szállítási díj nélkül)
+        var sajatTel = (order.telefon || '').replace(/[^0-9]/g, '');
+        var sajatKinId = (order.kinalat_id || '').toString().trim();
+        var tobbRendeles = false;
+        var korabbiTermekErtek = 0;
+        orders.forEach(function(o) {
+            if(o.rowid === rowid) return; // saját rendelés kihagyása
+            var oTel = (o.telefon || '').replace(/[^0-9]/g, '');
+            var oMod = (o.atvetel_mod || '').toLowerCase();
+            var oKin = (o.kinalat_id || '').toString().trim();
+            var kinEgyezik = sajatKinId ? oKin === sajatKinId : true;
+            if(oTel === sajatTel && oMod.indexOf('házhoz') >= 0 && kinEgyezik) {
+                var oVo = parseInt(o.vegosszeg) || 0;
+                // Termék érték = végösszeg - szállítási díj (ha volt)
+                korabbiTermekErtek += tobbRendeles ? oVo : Math.max(0, oVo - sd);
+                tobbRendeles = true;
+            }
+        });
+        var osszesenTermek = t + korabbiTermekErtek;
+        // Ingyenes határ az összes termék érték alapján
+        if(ingyHatar > 0 && osszesenTermek >= ingyHatar) sd = 0;
+        // Ha már van másik rendelés → szállítási díj 0
+        else if(tobbRendeles) sd = 0;
+    }
+
     if (isHazhoz_ && sd > 0) t += sd;
     var el = document.getElementById('total-' + rowid);
-    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft' + (isHazhoz_ && sd > 0 ? ' (+ ' + sd + ' Ft szállítás)' : (isHazhoz_ && ingyHatar > 0 && sd === 0 ? ' (szállítás ingyenes)' : ''));
+    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft' + (isHazhoz_ && sd > 0 ? ' (+ ' + sd + ' Ft szállítás)' : (isHazhoz_ && sd === 0 && ingyHatar > 0 ? ' (szállítás ingyenes)' : ''));
     order.vegosszeg = Math.round(t);
 }
 
