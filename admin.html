@@ -1211,16 +1211,13 @@ function render() {
         var idkSzoveg = csoport.map(function(o){ return '#' + (o.id||o.rowid||'?'); }).join(' + ');
 
         // Végösszeg összesítés az összezárt nézethez
-        var osszesFo = 0;
         var zona_ = (fo.zona||'').toString().trim();
         var sd_ = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
+        var ingyHatar_ = (zonaLista[zona_] && zonaLista[zona_].ingyenes_hatar) ? zonaLista[zona_].ingyenes_hatar : 0;
         var isHazhoz_ = (fo.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
-        csoport.forEach(function(o) {
-            var vo = parseInt(o.vegosszeg) || 0;
-            if(isHazhoz_ && sd_ > 0 && csoport.length > 1) vo -= sd_;
-            osszesFo += vo;
-        });
-        if(isHazhoz_ && sd_ > 0 && csoport.length > 1) osszesFo += sd_;
+        var osszesFo = 0;
+        csoport.forEach(function(o) { osszesFo += parseInt(o.vegosszeg) || 0; });
+        if(isHazhoz_ && sd_ > 0 && !(ingyHatar_ > 0 && osszesFo >= ingyHatar_)) osszesFo += sd_;
         var foStatusz = (fo.statusz || '').toString().trim().toLowerCase();
         var cardId = 'card-' + fo.rowid;
 
