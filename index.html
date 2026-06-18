@@ -1680,7 +1680,8 @@
                         // Push engedély státusz mentése a sheetbe
                         try {
                             var pushEngedelyezett = await OneSignal.User.PushSubscription.optedIn;
-                            fetch(API_URL + "?setPushStatus=true&tel=" + encodeURIComponent(userProfile.tel || "") + "&status=" + (pushEngedelyezett ? "igen" : "nem"), { redirect: "follow" });
+                            var teljesNev = ((userProfile.vnev||"") + " " + (userProfile.knev||"")).trim();
+                            fetch(API_URL + "?setPushStatus=true&tel=" + encodeURIComponent(userProfile.tel || "") + "&status=" + (pushEngedelyezett ? "igen" : "nem") + "&nev=" + encodeURIComponent(teljesNev) + "&zona=" + encodeURIComponent(zonaAzonosito || "") + "&irsz=" + encodeURIComponent(userProfile.irsz || ""), { redirect: "follow" });
                         } catch(pe) {}
                     });
                 }
