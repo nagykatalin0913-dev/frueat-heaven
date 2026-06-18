@@ -2035,7 +2035,8 @@
 
         // Elfogyott-e a termék? Csak akkor igaz, ha keszlet pontosan 0 (üres = korlátlan)
         function isElfogyott(t) {
-            const k = (t.keszlet || t["keszlet"] || "").toString().trim();
+            const raw = t.keszlet !== undefined ? t.keszlet : (t["keszlet"] !== undefined ? t["keszlet"] : "");
+            const k = raw.toString().trim();
             if(k === "") return false; // üres = korlátlan
             const n = parseFloat(k.replace(",", "."));
             return !isNaN(n) && n === 0;
