@@ -1279,12 +1279,27 @@ function render() {
         list.appendChild(card);
     });
 
+    // Módosított inputok visszaállítása (hogy a render ne törölje a gépelt értékeket)
+    var pendingInputs = {};
+    document.querySelectorAll('.qty-input, .weight-input').forEach(function(inp) {
+        var mentbtn = inp.dataset.mentbtn ? document.getElementById(inp.dataset.mentbtn) : null;
+        if(mentbtn && mentbtn.style.display !== 'none') {
+            pendingInputs[inp.id] = inp.value;
+        }
+    });
+
     // Nyitott kártyák visszaállítása render után
     nyitottKartyak.forEach(function(cardId) {
         var el = document.getElementById(cardId);
         var nyil = document.getElementById('nyil-' + cardId);
         if(el) el.classList.add('nyitva');
         if(nyil) nyil.classList.add('nyitva');
+    });
+
+    // Módosított input értékek visszatöltése
+    Object.keys(pendingInputs).forEach(function(iid) {
+        var el = document.getElementById(iid);
+        if(el) el.value = pendingInputs[iid];
     });
 }
 
