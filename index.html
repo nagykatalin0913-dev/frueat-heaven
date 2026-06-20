@@ -2255,7 +2255,8 @@
             if((window.lezartTermekNevek || []).includes(nev)) return;
             const t = termekAdatbazis[nev];
             if(!t) return;
-            const lepeskoz = (t.egyseg || "").toLowerCase() === "kg" ? 0.5 : 1;
+            const minMenny = parseFloat(t.min_mennyiseg || 0);
+            const lepeskoz = minMenny > 0 ? minMenny : ((t.egyseg || "").toLowerCase() === "kg" ? 0.5 : 1);
             if(!kosar[nev]) kosar[nev] = { qty: 0, ar: t.ar, egyseg: t.egyseg };
             kosar[nev].qty = Math.round((kosar[nev].qty + lepeskoz) * 100) / 100;
             repulKosarbaFAB();
@@ -2267,7 +2268,8 @@
         function stepperCsokkentes(nev) {
             const t = termekAdatbazis[nev];
             if(!t || !kosar[nev]) return;
-            const lepeskoz = (t.egyseg || "").toLowerCase() === "kg" ? 0.5 : 1;
+            const minMenny = parseFloat(t.min_mennyiseg || 0);
+            const lepeskoz = minMenny > 0 ? minMenny : ((t.egyseg || "").toLowerCase() === "kg" ? 0.5 : 1);
             kosar[nev].qty = Math.round((kosar[nev].qty - lepeskoz) * 100) / 100;
             if(kosar[nev].qty <= 0) {
                 delete kosar[nev];
