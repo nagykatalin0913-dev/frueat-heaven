@@ -1143,6 +1143,16 @@ function allandokSheetMentes() {
 function render() {
     // Nyitott kártyák mentése render előtt
     var nyitottKartyak = [];
+    // Módosított inputok mentése render előtt
+    var pendingInputs = {};
+    document.querySelectorAll('.qty-input, .weight-input').forEach(function(inp) {
+        if(inp.dataset.mentbtn) {
+            var mb = document.getElementById(inp.dataset.mentbtn);
+            if(mb && mb.style.display !== 'none') {
+                pendingInputs[inp.id] = inp.value;
+            }
+        }
+    });
     document.querySelectorAll('.card-reszletek.nyitva').forEach(function(el) {
         nyitottKartyak.push(el.id);
     });
@@ -1279,15 +1289,6 @@ function render() {
         list.appendChild(card);
     });
 
-    // Módosított inputok visszaállítása (hogy a render ne törölje a gépelt értékeket)
-    var pendingInputs = {};
-    document.querySelectorAll('.qty-input, .weight-input').forEach(function(inp) {
-        var mentbtn = inp.dataset.mentbtn ? document.getElementById(inp.dataset.mentbtn) : null;
-        if(mentbtn && mentbtn.style.display !== 'none') {
-            pendingInputs[inp.id] = inp.value;
-        }
-    });
-
     // Nyitott kártyák visszaállítása render után
     nyitottKartyak.forEach(function(cardId) {
         var el = document.getElementById(cardId);
@@ -1296,10 +1297,18 @@ function render() {
         if(nyil) nyil.classList.add('nyitva');
     });
 
-    // Módosított input értékek visszatöltése
+    // Módosított input értékek és mentés gombok visszaállítása
     Object.keys(pendingInputs).forEach(function(iid) {
         var el = document.getElementById(iid);
-        if(el) el.value = pendingInputs[iid];
+        if(el) {
+            el.value = pendingInputs[iid];
+            // Mentés gomb visszamutatása
+            var mentBtnId = el.dataset.mentbtn;
+            if(mentBtnId) {
+                var mentBtn = document.getElementById(mentBtnId);
+                if(mentBtn) mentBtn.style.display = 'inline-block';
+            }
+        }
     });
 }
 
