@@ -1331,21 +1331,12 @@ function szamolVegosszeg(rowid) {
     var order = orders.find(function(o){ return o.rowid === rowid; });
     if (!order) return;
 
-    // 1. Saját rendelés termékértéke az inputokból
-    var t = 0;
-    document.querySelectorAll('.qty-input[data-rowid="' + rowid + '"]').forEach(function(inp){
-        var ar  = parseFloat(inp.dataset.ar) || 0;
-        var qty = parseFloat(inp.value.replace(',','.')) || 0;
-        t += Math.round(ar * qty);
-    });
-    order.vegosszeg = Math.round(t); // frissítjük az orders tömbben
-
     var zona_ = (order.zona || '').toString().trim();
     var sd = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
     var ingyHatar = (zonaLista[zona_] && zonaLista[zona_].ingyenes_hatar) ? zonaLista[zona_].ingyenes_hatar : 0;
     var isHazhoz_ = (order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
 
-    // 2. Csoport összes rendelése (ugyanaz a telefon + kinalat_id + házhoz)
+    // Csoport: ugyanaz a telefon + kinalat_id + hazhoz
     var sajatTel = (order.telefon||'').replace(/[^0-9]/g,'');
     var sajatKin = (order.kinalat_id||'').toString().trim();
     var csoport = orders.filter(function(o){
@@ -1354,26 +1345,42 @@ function szamolVegosszeg(rowid) {
                (o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
     });
 
-    // 3. Összes termékérték (szállítás nélkül, frissített orders alapján)
+    // Minden rendelés termekerteket az oldalon levo inputokbol olvassuk
     var osszesenTermek = 0;
-    csoport.forEach(function(o){ osszesenTermek += parseInt(o.vegosszeg)||0; });
+    csoport.forEach(function(o) {
+        var oTermek = 0;
+        document.querySelectorAll('.qty-input[data-rowid="' + o.rowid + '"]').forEach(function(inp){
+            var ar  = parseFloat(inp.dataset.ar) || 0;
+            var qty = parseFloat((inp.value||'0').replace(',','.')) || 0;
+            oTermek += Math.round(ar * qty);
+        });
+        if(oTermek === 0) oTermek = parseInt(o.vegosszeg) || 0;
+        o._termekErtek = oTermek;
+        osszesenTermek += oTermek;
+    });
 
-    // 4. Szállítás: ha összes termékérték >= ingyenes határ → 0, egyébként +sd (egyszer)
+    // Szallitas
     var sdEff = (isHazhoz_ && sd > 0 && !(ingyHatar > 0 && osszesenTermek >= ingyHatar)) ? sd : 0;
 
-    // 5. Saját Fizetendő = saját termékérték (szállítás nélkül, mert az összesítőben jelenik meg)
-    var el = document.getElementById('total-' + rowid);
-    if(el) el.innerText = 'Fizeten\u0151: ' + Math.round(t) + ' Ft';
+    // Frissites
+    order.vegosszeg = order._termekErtek || 0;
 
-    // 6. Összesített fizetendő = összes termék + szállítás (egyszer)
+    csoport.forEach(function(o, idx) {
+        var oEl = document.getElementById('total-' + o.rowid);
+        if(oEl) {
+            var oFizet = (o._termekErtek||0) + (idx === 0 ? sdEff : 0);
+            oEl.innerText = 'Fizeten\u0151: ' + oFizet + ' Ft';
+        }
+    });
+
     var foRowid = csoport.length > 0 ? csoport[0].rowid : rowid;
     var foEl = document.getElementById('fo-osszeg-' + foRowid);
     if(foEl) foEl.innerText = '\u00d6sszesített fizeten\u0151: ' + (osszesenTermek + sdEff) + ' Ft';
 
-    // 7. Ha csak 1 rendelés → a Fizetendő tartalmazza a szállítást is
-    if(csoport.length <= 1) {
-        var fizEff = t + sdEff;
-        if(el) el.innerText = 'Fizeten\u0151: ' + Math.round(fizEff) + ' Ft';
+    var cardEl = document.getElementById('card-' + foRowid);
+    if(cardEl && cardEl.previousElementSibling) {
+        var fejlecVo = cardEl.previousElementSibling.querySelector('.card-osszezart-vegosszeg');
+        if(fejlecVo) fejlecVo.innerText = (osszesenTermek + sdEff) + ' Ft';
     }
 }
 
