@@ -1437,13 +1437,14 @@ function sulyValtozas(input) {
     var ar    = parseFloat(input.dataset.ar) || 0;
     var suly  = parseFloat((input.value || '0').replace(',', '.')) || 0;
     var parid = input.dataset.parid;
+    // Mentés gomb ELŐSZÖR megjelenítés (mielőtt bármi hibát dobhatna)
+    var mentBtn = document.getElementById(input.dataset.mentbtn);
+    if(mentBtn) mentBtn.style.display = 'inline-block';
     if(ar > 0 && parid) {
         var arInput = document.getElementById(parid);
         if(arInput) arInput.value = Math.round(suly * ar);
     }
-    szamolVegosszeg(parseInt(input.dataset.rowid));
-    var mentBtn = document.getElementById(input.dataset.mentbtn);
-    if(mentBtn) mentBtn.style.display = 'inline-block';
+    try { szamolVegosszeg(parseInt(input.dataset.rowid)); } catch(e) {}
 }
 
 // Ár változáskor: kiszámolja a súlyt, megmutatja a Mentés gombot
@@ -1451,15 +1452,16 @@ function arValtozas(input) {
     var ar    = parseFloat(input.dataset.ar) || 0;
     var arVal = parseFloat((input.value || '0').replace(',', '.')) || 0;
     var parid = input.dataset.parid;
+    // Mentés gomb ELŐSZÖR megjelenítés
+    var mentBtn = document.getElementById(input.dataset.mentbtn);
+    if(mentBtn) mentBtn.style.display = 'inline-block';
     if(ar > 0 && parid) {
         var sulyInput = document.getElementById(parid);
         if(sulyInput) {
             sulyInput.value = Math.round((arVal / ar) * 100) / 100;
-            szamolVegosszeg(parseInt(input.dataset.rowid));
+            try { szamolVegosszeg(parseInt(input.dataset.rowid)); } catch(e) {}
         }
     }
-    var mentBtn = document.getElementById(input.dataset.mentbtn);
-    if(mentBtn) mentBtn.style.display = 'inline-block';
 }
 
 // Mentés gomb megnyomásra
