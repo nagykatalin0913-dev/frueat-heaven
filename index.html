@@ -1349,8 +1349,7 @@
                     // Végösszeg frissítése
                     // Sheets-ben csak termékérték van → szállítást újra hozzáadjuk
                     const ujVoTermek = parseInt(aktiv.vegosszeg) || 0;
-                    if(ujVoTermek > 0) {
-                        // Szállítási díj kiszámítása az aktuális zóna adatokból
+                    if(ujVoTermek > 0 && aktualisZonaAdat) {
                         const szallDij = parseInt(zonaErtek(aktualisZonaAdat, 'szallitasi_dij')) || 0;
                         const ingyHatar = parseInt(zonaErtek(aktualisZonaAdat, 'ingyenes_hatar')) || 0;
                         const isHazhoz = (aktiv.atvetel_mod || r.atvetel_mod || '').toLowerCase().includes('házhoz');
@@ -1360,6 +1359,11 @@
                         if(String(ujVoFull) !== String(r.vegosszeg)) {
                             megmaradok[i].vegosszeg = ujVoFull;
                             volt_valtozas = true;
+                        }
+                    } else if(ujVoTermek > 0 && !aktualisZonaAdat) {
+                        // Ha zóna adat még nem töltődött be, megtartjuk az eddigi vegosszeg-et
+                        if(String(ujVoTermek) !== String(r.vegosszeg)) {
+                            // Nem írjuk felül - várjuk a következő szinkront
                         }
                     }
                     // Státusz frissítése
@@ -1578,13 +1582,13 @@
 
                 // Rugalmas kulcskeresés: szóköz, ékezet, kérdőjel, alulvonás mind irreleváns
         function zonaErtek(obj, kulcsReszlet) {
+            if(!obj) return "";
             const norm = s => s.toString().toLowerCase()
                 .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
                 .replace(/ó/g,'o').replace(/ö/g,'o').replace(/ő/g,'o')
                 .replace(/ú/g,'u').replace(/ü/g,'u').replace(/ű/g,'u')
                 .replace(/[^a-z0-9]/g, '');
             const k = norm(kulcsReszlet);
-            // Csak pontos normalizált egyezés (prefix egyezés félreviheti a mezőket!)
             for (let key of Object.keys(obj)) {
                 if (norm(key) === k) return obj[key];
             }
