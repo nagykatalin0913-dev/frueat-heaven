@@ -1225,9 +1225,12 @@ function render() {
         var sd_ = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
         var ingyHatar_ = (zonaLista[zona_] && zonaLista[zona_].ingyenes_hatar) ? zonaLista[zona_].ingyenes_hatar : 0;
         var isHazhoz_ = (fo.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
-        var osszesFo = 0;
-        csoport.forEach(function(o) { osszesFo += parseInt(o.vegosszeg) || 0; });
-        if(isHazhoz_ && sd_ > 0 && !(ingyHatar_ > 0 && osszesFo >= ingyHatar_)) osszesFo += sd_;
+        // osszesFo = csak termékértékek összege (szállítás nélkül) — ez alapján döntünk az ingyenességről
+        var osszesFoTermek = 0;
+        csoport.forEach(function(o) { osszesFoTermek += parseInt(o.vegosszeg) || 0; });
+        // Fejléc megjelenítéshez: szállítás hozzáadása ha kell
+        var osszesFo = osszesFoTermek;
+        if(isHazhoz_ && sd_ > 0 && !(ingyHatar_ > 0 && osszesFoTermek >= ingyHatar_)) osszesFo += sd_;
         var foStatusz = (fo.statusz || '').toString().trim().toLowerCase();
         var cardId = 'card-' + fo.rowid;
 
@@ -1254,11 +1257,11 @@ function render() {
         });
 
         if(csoport.length === 1) {
-            html += renderItemsTable(fo.termek || fo.termekek || '', fo.rowid, fo);
+            html += renderItemsTable(fo.termek || fo.termekek || '', fo.rowid, fo, true, osszesFoTermek);
         } else {
             csoport.forEach(function(o, oi) {
                 html += '<div style="font-size:11px;font-weight:800;color:#888;margin:8px 0 2px;padding:4px 6px;background:#f5f5f5;border-radius:6px;">&#9135; Rendelés #' + (o.id||o.rowid) + ' &#9135;</div>';
-                html += renderItemsTable(o.termek || o.termekek || '', o.rowid, o, oi === 0);
+                html += renderItemsTable(o.termek || o.termekek || '', o.rowid, o, oi === 0, osszesFoTermek);
             });
             var osszes2 = osszesFo;
             html += '<div id="fo-osszeg-' + fo.rowid + '" style="padding:8px 6px;font-size:15px;font-weight:800;color:#1b5e20;border-top:2px solid #c8e6c9;margin-top:6px;">Összesített fizetendő: ' + osszes2 + ' Ft</div>';
@@ -1399,7 +1402,7 @@ function szamolVegosszeg(rowid) {
     }
 }
 
-function renderItemsTable(str, rowid, order) {
+function renderItemsTable(str, rowid, order, isElso, csoportTermekErtek) {
     if (!str || !str.trim()) return '<div style="color:#bbb;font-size:14px;padding:10px 0;">Nincs termék adat</div>';
     var items = str.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
     var zona_r = (order.zona || '').toString().trim();
@@ -1448,11 +1451,14 @@ function renderItemsTable(str, rowid, order) {
         '</tr>';
     }).join('');
     var ingyHatar_rt = (zonaLista[zona_r] && zonaLista[zona_r].ingyenes_hatar) ? zonaLista[zona_r].ingyenes_hatar : 0;
-    var sdEff = (vs && sd > 0 && !(ingyHatar_rt > 0 && tot >= ingyHatar_rt)) ? sd : 0;
+    // Csoportszintű összes termékérték alapján dönt — ha eléri az ingyenes határt, szállítás 0
+    var osszErtek = (csoportTermekErtek !== undefined) ? csoportTermekErtek : tot;
+    var ingyenes = (ingyHatar_rt > 0 && osszErtek >= ingyHatar_rt);
+    var sdEff = (vs && sd > 0 && !ingyenes) ? sd : 0;
     if (sdEff > 0) tot += sdEff;
     return '<table class="items-table"><thead><tr><th>Termék</th><th style="text-align:right;">Mennyiség / Összeg</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         (sdEff > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Szállítási díj:</span><span>' + sdEff + ' Ft</span></div>' : '') +
-        (vs && sdEff === 0 && ingyHatar_rt > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#2e7d32;font-style:italic;"><span>Szállítási díj:</span><span>Ingyenes 🎉</span></div>' : '') +
+        (vs && ingyenes && ingyHatar_rt > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#2e7d32;font-style:italic;"><span>Szállítási díj:</span><span>Ingyenes 🎉</span></div>' : '') +
         '<div class="total-row" id="total-' + rowid + '">Fizetendő: ' + tot + ' Ft</div>';
 }
 
