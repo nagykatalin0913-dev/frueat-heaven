@@ -1418,7 +1418,7 @@ function renderItemsTable(str, rowid, order) {
                     '</div>'
                 : '') +
                 '<div style="margin-top:6px;text-align:right;">' +
-                    '<button id="' + mentBtnId + '" onclick="event.stopPropagation();mentSulyAr(\'' + rowid + '\',\'' + nev.replace(/\'/g,\'\') + '\',\'' + eg + '\',this)" style="display:none;padding:4px 12px;background:#2e7d32;color:white;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">✓ Mentés</button>' +
+                    '<button id="' + mentBtnId + '" onclick="event.stopPropagation();mentSulyAr(\'' + rowid + '\',\'' + encodeURIComponent(nev) + '\',\'' + eg + '\',this)" style="display:none;padding:4px 12px;background:#2e7d32;color:white;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">✓ Mentés</button>' +
                 '</div>' +
             '</td>' +
         '</tr>';
@@ -1463,7 +1463,8 @@ function arValtozas(input) {
 }
 
 // Mentés gomb megnyomásra
-async function mentSulyAr(rowid, nev, eg, btn) {
+async function mentSulyAr(rowid, nevEnc, eg, btn) {
+    var nev = decodeURIComponent(nevEnc);
     var ns = nev.replace(/[^a-zA-Z0-9]/g, '_');
     var sulyInput = document.getElementById('suly-' + rowid + '-' + ns);
     if(!sulyInput) return;
