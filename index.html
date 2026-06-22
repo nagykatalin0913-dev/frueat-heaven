@@ -240,8 +240,6 @@
             background: rgba(255,255,255,0.09);
         }
         #main-app { display: none; }
-        #loading-screen { display: flex; }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* AKTUÁLIS RENDELÉSEK PANEL */
         .ar-card {
@@ -1153,13 +1151,6 @@
             <button onclick="resetProfile()">Adatok módosítása</button>
         </div>
 
-        <div id="loading-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:18px;">
-            <div style="font-size:48px;">🍓</div>
-            <div style="color:var(--gold);font-size:18px;font-weight:600;letter-spacing:1px;">Fru'eat Heaven</div>
-            <div style="color:var(--text-dim);font-size:14px;">Kínálat betöltése...</div>
-            <div style="width:40px;height:40px;border:3px solid rgba(201,168,76,0.2);border-top:3px solid var(--gold);border-radius:50%;animation:spin 0.9s linear infinite;"></div>
-        </div>
-
         <div id="main-app">
             <div class="greeting">Hello <span id="greet-name"></span>! 🍓</div>
 
@@ -1593,12 +1584,10 @@
                 aktualisZonaAdat = data.zonak.find(z => String(z["iranyitoszam"]).trim() == String(userProfile.irsz).trim());
 
                 if(!aktualisZonaAdat) {
-                    document.getElementById("loading-screen").style.display = "none";
                     document.getElementById("out-of-zone").style.display = "block";
                     return;
                 }
 
-                document.getElementById("loading-screen").style.display = "none";
                 document.getElementById("main-app").style.display = "block";
                 document.getElementById("cart-fab").style.display = "flex";
 
@@ -1691,8 +1680,7 @@
                         // Push engedély státusz mentése a sheetbe
                         try {
                             var pushEngedelyezett = await OneSignal.User.PushSubscription.optedIn;
-                            var teljesNev = ((userProfile.vnev||"") + " " + (userProfile.knev||"")).trim();
-                            fetch(API_URL + "?setPushStatus=true&tel=" + encodeURIComponent(userProfile.tel || "") + "&status=" + (pushEngedelyezett ? "igen" : "nem") + "&nev=" + encodeURIComponent(teljesNev) + "&zona=" + encodeURIComponent(zonaAzonosito || "") + "&irsz=" + encodeURIComponent(userProfile.irsz || ""), { redirect: "follow" });
+                            fetch(API_URL + "?setPushStatus=true&tel=" + encodeURIComponent(userProfile.tel || "") + "&status=" + (pushEngedelyezett ? "igen" : "nem"), { redirect: "follow" });
                         } catch(pe) {}
                     });
                 }
@@ -2047,8 +2035,7 @@
 
         // Elfogyott-e a termék? Csak akkor igaz, ha keszlet pontosan 0 (üres = korlátlan)
         function isElfogyott(t) {
-            const raw = t.keszlet !== undefined ? t.keszlet : (t["keszlet"] !== undefined ? t["keszlet"] : "");
-            const k = raw.toString().trim();
+            const k = (t.keszlet || t["keszlet"] || "").toString().trim();
             if(k === "") return false; // üres = korlátlan
             const n = parseFloat(k.replace(",", "."));
             return !isNaN(n) && n === 0;
@@ -2266,8 +2253,7 @@
             if((window.lezartTermekNevek || []).includes(nev)) return;
             const t = termekAdatbazis[nev];
             if(!t) return;
-            const minMenny = parseFloat(t.min_mennyiseg || 0);
-            const lepeskoz = minMenny > 0 ? minMenny : ((t.egyseg || "").toLowerCase() === "kg" ? 0.5 : 1);
+            const lepeskoz = (t.egyseg || "").toLowerCase() === "kg" ? 0.5 : 1;
             if(!kosar[nev]) kosar[nev] = { qty: 0, ar: t.ar, egyseg: t.egyseg };
             kosar[nev].qty = Math.round((kosar[nev].qty + lepeskoz) * 100) / 100;
             repulKosarbaFAB();
@@ -2279,8 +2265,7 @@
         function stepperCsokkentes(nev) {
             const t = termekAdatbazis[nev];
             if(!t || !kosar[nev]) return;
-            const minMenny = parseFloat(t.min_mennyiseg || 0);
-            const lepeskoz = minMenny > 0 ? minMenny : ((t.egyseg || "").toLowerCase() === "kg" ? 0.5 : 1);
+            const lepeskoz = (t.egyseg || "").toLowerCase() === "kg" ? 0.5 : 1;
             kosar[nev].qty = Math.round((kosar[nev].qty - lepeskoz) * 100) / 100;
             if(kosar[nev].qty <= 0) {
                 delete kosar[nev];
@@ -2560,7 +2545,7 @@
                 zona: zonaAzonosito,
                 termek: termekLista,
                 allandok_rendeles: allandokRendeles.length > 0 ? JSON.stringify(allandokRendeles) : "",
-                vegosszeg: vegszamlaHUF,
+                vegosszeg: kosarErtek, // csak termékérték, szállítás nélkül
                 megjegyzes: document.getElementById("megjegyzes").value,
                 mod: atveteliMod === "hazhoz" ? "Házhozszállítás" : "Személyes átvétel",
                 kinalat_id: aktKinalatRowid || "",
