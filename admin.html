@@ -1261,7 +1261,7 @@ function render() {
                 html += renderItemsTable(o.termek || o.termekek || '', o.rowid, o, oi === 0);
             });
             var osszes2 = osszesFo;
-            html += '<div style="padding:8px 6px;font-size:15px;font-weight:800;color:#1b5e20;border-top:2px solid #c8e6c9;margin-top:6px;">Összesített fizetendő: ' + osszes2 + ' Ft</div>';
+            html += '<div id="fo-osszeg-' + fo.rowid + '" style="padding:8px 6px;font-size:15px;font-weight:800;color:#1b5e20;border-top:2px solid #c8e6c9;margin-top:6px;">Összesített fizetendő: ' + osszes2 + ' Ft</div>';
         }
 
         if(currentMode === 'szallitas') {
@@ -1373,6 +1373,30 @@ function szamolVegosszeg(rowid) {
     var el = document.getElementById('total-' + rowid);
     if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft' + (isHazhoz_ && sd > 0 ? ' (+ ' + sd + ' Ft szállítás)' : (isHazhoz_ && sd === 0 && ingyHatar > 0 ? ' (szállítás ingyenes)' : ''));
     order.vegosszeg = Math.round(t);
+    // Összesített fizetendő frissítése (több rendelés esetén)
+    var foRendeles = orders.find(function(o){ return o.rowid === rowid; });
+    if(foRendeles) {
+        var foTel = (foRendeles.telefon||'').replace(/[^0-9]/g,'');
+        var foKin = (foRendeles.kinalat_id||'').toString().trim();
+        // Megkeressük a csoport többi rendelését
+        var csoport2 = orders.filter(function(o){
+            var oTel = (o.telefon||'').replace(/[^0-9]/g,'');
+            var oKin = (o.kinalat_id||'').toString().trim();
+            return oTel === foTel && oKin === foKin;
+        });
+        if(csoport2.length > 1) {
+            var foRowid = csoport2[0].rowid;
+            var zona2 = (foRendeles.zona||'').toString().trim();
+            var sd2 = (zonaLista[zona2] && zonaLista[zona2].szallitasi_dij) ? zonaLista[zona2].szallitasi_dij : 0;
+            var ingy2 = (zonaLista[zona2] && zonaLista[zona2].ingyenes_hatar) ? zonaLista[zona2].ingyenes_hatar : 0;
+            var isHaz2 = (foRendeles.atvetel_mod||'').toLowerCase().indexOf('házhoz') >= 0;
+            var ossz2 = 0;
+            csoport2.forEach(function(o){ ossz2 += parseInt(o.vegosszeg)||0; });
+            if(isHaz2 && sd2 > 0 && !(ingy2 > 0 && ossz2 >= ingy2)) ossz2 += sd2;
+            var foEl = document.getElementById('fo-osszeg-' + foRowid);
+            if(foEl) foEl.innerText = 'Összesített fizetendő: ' + ossz2 + ' Ft';
+        }
+    }
 }
 
 function renderItemsTable(str, rowid, order) {
