@@ -1141,22 +1141,19 @@ function allandokSheetMentes() {
 //  ÁTVÉTEL / KISZÁLLÍTÁS – RENDER (VÁLTOZATLAN LOGIKA)
 // ══════════════════════════════════════════════════════════════
 function render() {
-    // Nyitott kártyák mentése render előtt
-    var nyitottKartyak = [];
     // Módosított inputok mentése render előtt
     var pendingInputs = {};
     document.querySelectorAll('.qty-input, .weight-input').forEach(function(inp) {
         if(inp.dataset.mentbtn) {
             var mb = document.getElementById(inp.dataset.mentbtn);
-            if(mb && mb.style.display !== 'none') {
-                pendingInputs[inp.id] = inp.value;
-            }
+            if(mb && mb.style.display !== 'none') pendingInputs[inp.id] = inp.value;
         }
     });
+    // Nyitott kártyák mentése render előtt
+    var nyitottKartyak = [];
     document.querySelectorAll('.card-reszletek.nyitva').forEach(function(el) {
         nyitottKartyak.push(el.id);
     });
-
     var list   = document.getElementById('main-list');
     var search = document.getElementById('searchInput').value.toLowerCase();
     var filtered = orders.filter(function(o) {
@@ -1220,17 +1217,15 @@ function render() {
         var tel = fo.telefon || fo.tel || '';
         var idkSzoveg = csoport.map(function(o){ return '#' + (o.id||o.rowid||'?'); }).join(' + ');
 
-        // Végösszeg összesítés az összezárt nézethez
+        // vegosszeg = termékérték (szállítás nélkül)
         var zona_ = (fo.zona||'').toString().trim();
         var sd_ = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
         var ingyHatar_ = (zonaLista[zona_] && zonaLista[zona_].ingyenes_hatar) ? zonaLista[zona_].ingyenes_hatar : 0;
         var isHazhoz_ = (fo.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
-        // osszesFo = csak termékértékek összege (szállítás nélkül) — ez alapján döntünk az ingyenességről
         var osszesFoTermek = 0;
         csoport.forEach(function(o) { osszesFoTermek += parseInt(o.vegosszeg) || 0; });
-        // Fejléc megjelenítéshez: szállítás hozzáadása ha kell
-        var osszesFo = osszesFoTermek;
-        if(isHazhoz_ && sd_ > 0 && !(ingyHatar_ > 0 && osszesFoTermek >= ingyHatar_)) osszesFo += sd_;
+        var sdEff_ = (isHazhoz_ && sd_ > 0 && !(ingyHatar_ > 0 && osszesFoTermek >= ingyHatar_)) ? sd_ : 0;
+        var osszesFo = osszesFoTermek + sdEff_;
         var foStatusz = (fo.statusz || '').toString().trim().toLowerCase();
         var cardId = 'card-' + fo.rowid;
 
@@ -1257,14 +1252,28 @@ function render() {
         });
 
         if(csoport.length === 1) {
-            html += renderItemsTable(fo.termek || fo.termekek || '', fo.rowid, fo, true, osszesFoTermek);
+            html += renderItemsTable(fo.termek || fo.termekek || '', fo.rowid, fo);
+            if(isHazhoz_) {
+                if(sdEff_ > 0) {
+                    html += '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Szállítási díj:</span><span id="szallitas-sor-' + fo.rowid + '">' + sdEff_ + ' Ft</span></div>';
+                } else if(ingyHatar_ > 0) {
+                    html += '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#2e7d32;font-style:italic;"><span>Szállítási díj:</span><span id="szallitas-sor-' + fo.rowid + '">Ingyenes 🎉</span></div>';
+                }
+            }
+            html += '<div class="total-row" id="total-' + fo.rowid + '">Fizetendő: ' + osszesFo + ' Ft</div>';
         } else {
-            csoport.forEach(function(o, oi) {
+            csoport.forEach(function(o) {
                 html += '<div style="font-size:11px;font-weight:800;color:#888;margin:8px 0 2px;padding:4px 6px;background:#f5f5f5;border-radius:6px;">&#9135; Rendelés #' + (o.id||o.rowid) + ' &#9135;</div>';
-                html += renderItemsTable(o.termek || o.termekek || '', o.rowid, o, oi === 0, osszesFoTermek);
+                html += renderItemsTable(o.termek || o.termekek || '', o.rowid, o);
             });
-            var osszes2 = osszesFo;
-            html += '<div id="fo-osszeg-' + fo.rowid + '" style="padding:8px 6px;font-size:15px;font-weight:800;color:#1b5e20;border-top:2px solid #c8e6c9;margin-top:6px;">Összesített fizetendő: ' + osszes2 + ' Ft</div>';
+            if(isHazhoz_) {
+                if(sdEff_ > 0) {
+                    html += '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;border-top:1px solid #eee;"><span>Szállítási díj:</span><span id="szallitas-sor-' + fo.rowid + '">' + sdEff_ + ' Ft</span></div>';
+                } else if(ingyHatar_ > 0) {
+                    html += '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#2e7d32;font-style:italic;border-top:1px solid #eee;"><span>Szállítási díj:</span><span id="szallitas-sor-' + fo.rowid + '">Ingyenes 🎉</span></div>';
+                }
+            }
+            html += '<div id="fo-osszeg-' + fo.rowid + '" style="padding:8px 6px;font-size:15px;font-weight:800;color:#1b5e20;border-top:2px solid #c8e6c9;margin-top:6px;">Összesített fizetendő: ' + osszesFo + ' Ft</div>';
         }
 
         if(currentMode === 'szallitas') {
@@ -1291,26 +1300,20 @@ function render() {
         card.innerHTML = html;
         list.appendChild(card);
     });
-
-    // Nyitott kártyák visszaállítása render után
+    // Nyitott kártyák visszaállítása
     nyitottKartyak.forEach(function(cardId) {
         var el = document.getElementById(cardId);
         var nyil = document.getElementById('nyil-' + cardId);
         if(el) el.classList.add('nyitva');
         if(nyil) nyil.classList.add('nyitva');
     });
-
-    // Módosított input értékek és mentés gombok visszaállítása
+    // Módosított inputok visszaállítása
     Object.keys(pendingInputs).forEach(function(iid) {
         var el = document.getElementById(iid);
         if(el) {
             el.value = pendingInputs[iid];
-            // Mentés gomb visszamutatása
-            var mentBtnId = el.dataset.mentbtn;
-            if(mentBtnId) {
-                var mentBtn = document.getElementById(mentBtnId);
-                if(mentBtn) mentBtn.style.display = 'inline-block';
-            }
+            var mb = el.dataset.mentbtn ? document.getElementById(el.dataset.mentbtn) : null;
+            if(mb) mb.style.display = 'inline-block';
         }
     });
 }
@@ -1336,7 +1339,7 @@ function szamolVegosszeg(rowid) {
     var ingyHatar = (zonaLista[zona_] && zonaLista[zona_].ingyenes_hatar) ? zonaLista[zona_].ingyenes_hatar : 0;
     var isHazhoz_ = (order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
 
-    // Csoport: ugyanaz a telefon + kinalat_id + hazhoz
+    // Csoport: ugyanaz a telefon + kinalat_id + házhoz
     var sajatTel = (order.telefon||'').replace(/[^0-9]/g,'');
     var sajatKin = (order.kinalat_id||'').toString().trim();
     var csoport = orders.filter(function(o){
@@ -1345,47 +1348,64 @@ function szamolVegosszeg(rowid) {
                (o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
     });
 
-    // Minden rendelés termekerteket az oldalon levo inputokbol olvassuk
+    // Minden rendelés termékértékét az inputokból olvassuk
     var osszesenTermek = 0;
     csoport.forEach(function(o) {
         var oTermek = 0;
-        document.querySelectorAll('.qty-input[data-rowid="' + o.rowid + '"]').forEach(function(inp){
-            var ar  = parseFloat(inp.dataset.ar) || 0;
-            var qty = parseFloat((inp.value||'0').replace(',','.')) || 0;
-            oTermek += Math.round(ar * qty);
-        });
-        if(oTermek === 0) oTermek = parseInt(o.vegosszeg) || 0;
+        var inputok = document.querySelectorAll('.qty-input[data-rowid="' + o.rowid + '"]');
+        if(inputok.length > 0) {
+            inputok.forEach(function(inp){
+                var ar  = parseFloat(inp.dataset.ar) || 0;
+                var qty = parseFloat((inp.value||'0').replace(',','.')) || 0;
+                oTermek += Math.round(ar * qty);
+            });
+        } else {
+            oTermek = parseInt(o.vegosszeg) || 0;
+        }
         o._termekErtek = oTermek;
         osszesenTermek += oTermek;
     });
 
-    // Szallitas
+    // Szállítás döntés
     var sdEff = (isHazhoz_ && sd > 0 && !(ingyHatar > 0 && osszesenTermek >= ingyHatar)) ? sd : 0;
 
-    // Frissites
-    order.vegosszeg = order._termekErtek || 0;
+    // Saját termékérték frissítése
+    order._termekErtek = order._termekErtek || 0;
 
-    csoport.forEach(function(o, idx) {
-        var oEl = document.getElementById('total-' + o.rowid);
-        if(oEl) {
-            var oFizet = (o._termekErtek||0) + (idx === 0 ? sdEff : 0);
-            oEl.innerText = 'Fizeten\u0151: ' + oFizet + ' Ft';
+    if(csoport.length <= 1) {
+        // 1 rendelés: Fizetendő = termék + szállítás
+        var fizEl = document.getElementById('total-' + rowid);
+        if(fizEl) fizEl.innerText = 'Fizetend\u0151: ' + (order._termekErtek + sdEff) + ' Ft';
+        // Szállítási díj sor frissítése
+        var sdEl = document.getElementById('szallitas-sor-' + rowid);
+        if(sdEl) sdEl.innerText = sdEff > 0 ? sdEff + ' Ft' : 'Ingyenes 🎉';
+    } else {
+        // 2+ rendelés: Termékek összege sorok + összesítő
+        csoport.forEach(function(o) {
+            var tEl = document.getElementById('termek-osszeg-' + o.rowid);
+            if(tEl) {
+                var span = tEl.querySelector('.termek-osszeg-ertek');
+                if(span) span.innerText = (o._termekErtek||0) + ' Ft';
+            }
+        });
+        // Szállítási díj sor
+        var sdEl = document.getElementById('szallitas-sor-' + csoport[0].rowid);
+        if(sdEl) sdEl.innerText = sdEff > 0 ? sdEff + ' Ft' : 'Ingyenes 🎉';
+        // Összesített fizetendő
+        var foRowid = csoport[0].rowid;
+        var foEl = document.getElementById('fo-osszeg-' + foRowid);
+        if(foEl) foEl.innerText = '\u00d6sszesített fizeten\u0151: ' + (osszesenTermek + sdEff) + ' Ft';
+        // Fejléc összeg
+        var cardEl = document.getElementById('card-' + foRowid);
+        if(cardEl && cardEl.previousElementSibling) {
+            var fejlecVo = cardEl.previousElementSibling.querySelector('.card-osszezart-vegosszeg');
+            if(fejlecVo) fejlecVo.innerText = (osszesenTermek + sdEff) + ' Ft';
         }
-    });
-
-    var foRowid = csoport.length > 0 ? csoport[0].rowid : rowid;
-    var foEl = document.getElementById('fo-osszeg-' + foRowid);
-    if(foEl) foEl.innerText = '\u00d6sszesített fizeten\u0151: ' + (osszesenTermek + sdEff) + ' Ft';
-
-    var cardEl = document.getElementById('card-' + foRowid);
-    if(cardEl && cardEl.previousElementSibling) {
-        var fejlecVo = cardEl.previousElementSibling.querySelector('.card-osszezart-vegosszeg');
-        if(fejlecVo) fejlecVo.innerText = (osszesenTermek + sdEff) + ' Ft';
     }
 }
 
 
-function renderItemsTable(str, rowid, order, isElso, csoportTermekErtek) {
+function renderItemsTable(str, rowid, order) {
     if (!str || !str.trim()) return '<div style="color:#bbb;font-size:14px;padding:10px 0;">Nincs termék adat</div>';
     var items = str.split(',').map(function(t){ return t.trim(); }).filter(Boolean);
     var zona_r = (order.zona || '').toString().trim();
@@ -1433,16 +1453,8 @@ function renderItemsTable(str, rowid, order, isElso, csoportTermekErtek) {
             '</td>' +
         '</tr>';
     }).join('');
-    var ingyHatar_rt = (zonaLista[zona_r] && zonaLista[zona_r].ingyenes_hatar) ? zonaLista[zona_r].ingyenes_hatar : 0;
-    // Csoportszintű összes termékérték alapján dönt — ha eléri az ingyenes határt, szállítás 0
-    var osszErtek = (csoportTermekErtek !== undefined) ? csoportTermekErtek : tot;
-    var ingyenes = (ingyHatar_rt > 0 && osszErtek >= ingyHatar_rt);
-    var sdEff = (vs && sd > 0 && !ingyenes) ? sd : 0;
-    if (sdEff > 0) tot += sdEff;
     return '<table class="items-table"><thead><tr><th>Termék</th><th style="text-align:right;">Mennyiség / Összeg</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-        (sdEff > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#777;font-style:italic;"><span>Szállítási díj:</span><span>' + sdEff + ' Ft</span></div>' : '') +
-        (vs && ingyenes && ingyHatar_rt > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px;font-size:13px;color:#2e7d32;font-style:italic;"><span>Szállítási díj:</span><span>Ingyenes 🎉</span></div>' : '') +
-        '<div class="total-row" id="total-' + rowid + '">Fizetendő: ' + tot + ' Ft</div>';
+        '<div id="termek-osszeg-' + rowid + '" style="display:flex;justify-content:space-between;padding:6px 6px 2px;font-size:13px;color:#555;"><span>Termékek összege:</span><span class="termek-osszeg-ertek">' + tot + ' Ft</span></div>';
 }
 
 // Súly változáskor: kiszámolja az árat, megmutatja a Mentés gombot
@@ -1450,14 +1462,13 @@ function sulyValtozas(input) {
     var ar    = parseFloat(input.dataset.ar) || 0;
     var suly  = parseFloat((input.value || '0').replace(',', '.')) || 0;
     var parid = input.dataset.parid;
-    // Mentés gomb ELŐSZÖR megjelenítés (mielőtt bármi hibát dobhatna)
     var mentBtn = document.getElementById(input.dataset.mentbtn);
     if(mentBtn) mentBtn.style.display = 'inline-block';
     if(ar > 0 && parid) {
         var arInput = document.getElementById(parid);
         if(arInput) arInput.value = Math.round(suly * ar);
     }
-    try { szamolVegosszeg(parseInt(input.dataset.rowid)); } catch(e) {}
+    try { szamolVegosszeg(parseInt(input.dataset.rowid)); } catch(e) { console.log('szamolVegosszeg hiba:', e); }
 }
 
 // Ár változáskor: kiszámolja a súlyt, megmutatja a Mentés gombot
@@ -1465,14 +1476,13 @@ function arValtozas(input) {
     var ar    = parseFloat(input.dataset.ar) || 0;
     var arVal = parseFloat((input.value || '0').replace(',', '.')) || 0;
     var parid = input.dataset.parid;
-    // Mentés gomb ELŐSZÖR megjelenítés
     var mentBtn = document.getElementById(input.dataset.mentbtn);
     if(mentBtn) mentBtn.style.display = 'inline-block';
     if(ar > 0 && parid) {
         var sulyInput = document.getElementById(parid);
         if(sulyInput) {
             sulyInput.value = Math.round((arVal / ar) * 100) / 100;
-            try { szamolVegosszeg(parseInt(input.dataset.rowid)); } catch(e) {}
+            try { szamolVegosszeg(parseInt(input.dataset.rowid)); } catch(e) { console.log('szamolVegosszeg hiba:', e); }
         }
     }
 }
@@ -1526,7 +1536,7 @@ async function updateOrderData(rowid, nev, val, eg) {
     }
 
     try {
-        var r = await fetch(API_URL + '?update=true&rowId=' + rowid + '&newItems=' + encodeURIComponent(rt) + '&newVegosszeg=' + order.vegosszeg, { redirect: 'follow' });
+        var r = await fetch(API_URL + '?update=true&rowId=' + rowid + '&newItems=' + encodeURIComponent(rt) + '&newVegosszeg=' + (order._termekErtek !== undefined ? order._termekErtek : order.vegosszeg), { redirect: 'follow' });
         var txt = await r.text();
         if (inputEl) {
             inputEl.style.borderColor = txt.trim() === 'ok' ? '#22c55e' : '#ef4444'; // zöld OK / piros hiba
