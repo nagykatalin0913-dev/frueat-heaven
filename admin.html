@@ -1330,77 +1330,53 @@ function parseQtyAndUnit(s) {
 function szamolVegosszeg(rowid) {
     var order = orders.find(function(o){ return o.rowid === rowid; });
     if (!order) return;
+
+    // 1. Saját rendelés termékértéke az inputokból
     var t = 0;
     document.querySelectorAll('.qty-input[data-rowid="' + rowid + '"]').forEach(function(inp){
         var ar  = parseFloat(inp.dataset.ar) || 0;
         var qty = parseFloat(inp.value.replace(',','.')) || 0;
-        var rs  = Math.round(ar * qty);
-        t += rs;
-        // Soronkénti részösszeg frissítése
-        var nev = inp.dataset.nev || '';
-        var rsEl = document.getElementById('item-rs-' + rowid + '-' + nev);
-        if (rsEl) rsEl.innerText = rs + ' Ft';
+        t += Math.round(ar * qty);
     });
+    order.vegosszeg = Math.round(t); // frissítjük az orders tömbben
+
     var zona_ = (order.zona || '').toString().trim();
     var sd = (zonaLista[zona_] && zonaLista[zona_].szallitasi_dij) ? zonaLista[zona_].szallitasi_dij : 0;
     var ingyHatar = (zonaLista[zona_] && zonaLista[zona_].ingyenes_hatar) ? zonaLista[zona_].ingyenes_hatar : 0;
-    var isHazhoz_ = (order.atvetel_mod||'').toLowerCase().indexOf('házhoz') >= 0;
+    var isHazhoz_ = (order.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
 
-    if(isHazhoz_) {
-        // Ugyanazon vevő többi rendelésének termék értéke (szállítási díj nélkül)
-        var sajatTel = (order.telefon || '').replace(/[^0-9]/g, '');
-        var sajatKinId = (order.kinalat_id || '').toString().trim();
-        var tobbRendeles = false;
-        var korabbiTermekErtek = 0;
-        orders.forEach(function(o) {
-            if(o.rowid === rowid) return; // saját rendelés kihagyása
-            var oTel = (o.telefon || '').replace(/[^0-9]/g, '');
-            var oMod = (o.atvetel_mod || '').toLowerCase();
-            var oKin = (o.kinalat_id || '').toString().trim();
-            var kinEgyezik = sajatKinId ? oKin === sajatKinId : true;
-            if(oTel === sajatTel && oMod.indexOf('házhoz') >= 0 && kinEgyezik) {
-                var oVo = parseInt(o.vegosszeg) || 0;
-                // Termék érték = végösszeg - szállítási díj (ha volt)
-                korabbiTermekErtek += tobbRendeles ? oVo : Math.max(0, oVo - sd);
-                tobbRendeles = true;
-            }
-        });
-        var osszesenTermek = t + korabbiTermekErtek;
-        // Ingyenes határ az összes termék érték alapján
-        if(ingyHatar > 0 && osszesenTermek >= ingyHatar) sd = 0;
-        // Ha már van másik rendelés → szállítási díj 0
-        else if(tobbRendeles) sd = 0;
-    }
+    // 2. Csoport összes rendelése (ugyanaz a telefon + kinalat_id + házhoz)
+    var sajatTel = (order.telefon||'').replace(/[^0-9]/g,'');
+    var sajatKin = (order.kinalat_id||'').toString().trim();
+    var csoport = orders.filter(function(o){
+        return (o.telefon||'').replace(/[^0-9]/g,'') === sajatTel &&
+               (o.kinalat_id||'').toString().trim() === sajatKin &&
+               (o.atvetel_mod||'').toLowerCase().indexOf('h\u00e1zhoz') >= 0;
+    });
 
-    if (isHazhoz_ && sd > 0) t += sd;
+    // 3. Összes termékérték (szállítás nélkül, frissített orders alapján)
+    var osszesenTermek = 0;
+    csoport.forEach(function(o){ osszesenTermek += parseInt(o.vegosszeg)||0; });
+
+    // 4. Szállítás: ha összes termékérték >= ingyenes határ → 0, egyébként +sd (egyszer)
+    var sdEff = (isHazhoz_ && sd > 0 && !(ingyHatar > 0 && osszesenTermek >= ingyHatar)) ? sd : 0;
+
+    // 5. Saját Fizetendő = saját termékérték (szállítás nélkül, mert az összesítőben jelenik meg)
     var el = document.getElementById('total-' + rowid);
-    if (el) el.innerText = 'Fizetendő: ' + Math.round(t) + ' Ft' + (isHazhoz_ && sd > 0 ? ' (+ ' + sd + ' Ft szállítás)' : (isHazhoz_ && sd === 0 && ingyHatar > 0 ? ' (szállítás ingyenes)' : ''));
-    order.vegosszeg = Math.round(t);
-    // Összesített fizetendő frissítése (több rendelés esetén)
-    var foRendeles = orders.find(function(o){ return o.rowid === rowid; });
-    if(foRendeles) {
-        var foTel = (foRendeles.telefon||'').replace(/[^0-9]/g,'');
-        var foKin = (foRendeles.kinalat_id||'').toString().trim();
-        // Megkeressük a csoport többi rendelését
-        var csoport2 = orders.filter(function(o){
-            var oTel = (o.telefon||'').replace(/[^0-9]/g,'');
-            var oKin = (o.kinalat_id||'').toString().trim();
-            return oTel === foTel && oKin === foKin;
-        });
-        if(csoport2.length > 1) {
-            var foRowid = csoport2[0].rowid;
-            var zona2 = (foRendeles.zona||'').toString().trim();
-            var sd2 = (zonaLista[zona2] && zonaLista[zona2].szallitasi_dij) ? zonaLista[zona2].szallitasi_dij : 0;
-            var ingy2 = (zonaLista[zona2] && zonaLista[zona2].ingyenes_hatar) ? zonaLista[zona2].ingyenes_hatar : 0;
-            var isHaz2 = (foRendeles.atvetel_mod||'').toLowerCase().indexOf('házhoz') >= 0;
-            var ossz2 = 0;
-            csoport2.forEach(function(o){ ossz2 += parseInt(o.vegosszeg)||0; });
-            if(isHaz2 && sd2 > 0 && !(ingy2 > 0 && ossz2 >= ingy2)) ossz2 += sd2;
-            var foEl = document.getElementById('fo-osszeg-' + foRowid);
-            if(foEl) foEl.innerText = 'Összesített fizetendő: ' + ossz2 + ' Ft';
-        }
+    if(el) el.innerText = 'Fizeten\u0151: ' + Math.round(t) + ' Ft';
+
+    // 6. Összesített fizetendő = összes termék + szállítás (egyszer)
+    var foRowid = csoport.length > 0 ? csoport[0].rowid : rowid;
+    var foEl = document.getElementById('fo-osszeg-' + foRowid);
+    if(foEl) foEl.innerText = '\u00d6sszesített fizeten\u0151: ' + (osszesenTermek + sdEff) + ' Ft';
+
+    // 7. Ha csak 1 rendelés → a Fizetendő tartalmazza a szállítást is
+    if(csoport.length <= 1) {
+        var fizEff = t + sdEff;
+        if(el) el.innerText = 'Fizeten\u0151: ' + Math.round(fizEff) + ' Ft';
     }
 }
+
 
 function renderItemsTable(str, rowid, order, isElso, csoportTermekErtek) {
     if (!str || !str.trim()) return '<div style="color:#bbb;font-size:14px;padding:10px 0;">Nincs termék adat</div>';
