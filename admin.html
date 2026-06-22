@@ -1392,7 +1392,7 @@ function renderItemsTable(str, rowid, order) {
             eg = eg || allandokTermekek[nev].egyseg || pq.unit || '';
         }
         var rs = Math.round(pq.qty * ar); tot += rs;
-        var ns = nev.replace(/'/g,'').replace(/"/g,'');
+        var ns = nev.replace(/[^a-zA-Z0-9]/g, '_');
         var suyRowId = 'suly-' + rowid + '-' + ns;
         var arRowId  = 'ar-' + rowid + '-' + ns;
         var mentBtnId = 'mentbtn-' + rowid + '-' + ns;
@@ -1418,7 +1418,7 @@ function renderItemsTable(str, rowid, order) {
                     '</div>'
                 : '') +
                 '<div style="margin-top:6px;text-align:right;">' +
-                    '<button id="' + mentBtnId + '" onclick="event.stopPropagation();mentSulyAr(\'' + rowid + '\',\'' + ns + '\',\'' + eg + '\',this)" style="display:none;padding:4px 12px;background:#2e7d32;color:white;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">✓ Mentés</button>' +
+                    '<button id="' + mentBtnId + '" onclick="event.stopPropagation();mentSulyAr(\'' + rowid + '\',\'' + nev.replace(/\'/g,\'\') + '\',\'' + eg + '\',this)" style="display:none;padding:4px 12px;background:#2e7d32;color:white;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">✓ Mentés</button>' +
                 '</div>' +
             '</td>' +
         '</tr>';
@@ -1464,7 +1464,8 @@ function arValtozas(input) {
 
 // Mentés gomb megnyomásra
 async function mentSulyAr(rowid, nev, eg, btn) {
-    var sulyInput = document.getElementById('suly-' + rowid + '-' + nev);
+    var ns = nev.replace(/[^a-zA-Z0-9]/g, '_');
+    var sulyInput = document.getElementById('suly-' + rowid + '-' + ns);
     if(!sulyInput) return;
     var val = sulyInput.value;
     btn.textContent = '⏳';
