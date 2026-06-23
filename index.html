@@ -1283,13 +1283,6 @@
                     </div>
                 `;
             }).join('');
-            // Összesítő sor ha több rendelés van
-            if(tarolt.length > 1) {
-                const osszesFizet = tarolt.reduce(function(sum, r) { return sum + (parseInt(r.vegosszeg) || 0); }, 0);
-                html += '<div style="margin-top:8px;padding:12px 16px;background:rgba(201,168,76,0.15);border-radius:12px;border:1px solid rgba(201,168,76,0.3);text-align:center;">' +
-                    '<span style="font-size:16px;font-weight:800;color:var(--gold-light);">Összesített fizetendő: ' + osszesFizet + ' Ft</span></div>';
-            }
-            return html;
         }
         renderAktualisRendelesek();
 
@@ -1347,24 +1340,10 @@
                         volt_valtozas = true;
                     }
                     // Végösszeg frissítése
-                    // Sheets-ben csak termékérték van → szállítást újra hozzáadjuk
-                    const ujVoTermek = parseInt(aktiv.vegosszeg) || 0;
-                    if(ujVoTermek > 0 && aktualisZonaAdat) {
-                        const szallDij = parseInt(zonaErtek(aktualisZonaAdat, 'szallitasi_dij')) || 0;
-                        const ingyHatar = parseInt(zonaErtek(aktualisZonaAdat, 'ingyenes_hatar')) || 0;
-                        const isHazhoz = (aktiv.atvetel_mod || r.atvetel_mod || '').toLowerCase().includes('házhoz');
-                        let sdEff = 0;
-                        if(isHazhoz && szallDij > 0 && !(ingyHatar > 0 && ujVoTermek >= ingyHatar)) sdEff = szallDij;
-                        const ujVoFull = ujVoTermek + sdEff;
-                        if(String(ujVoFull) !== String(r.vegosszeg)) {
-                            megmaradok[i].vegosszeg = ujVoFull;
-                            volt_valtozas = true;
-                        }
-                    } else if(ujVoTermek > 0 && !aktualisZonaAdat) {
-                        // Ha zóna adat még nem töltődött be, megtartjuk az eddigi vegosszeg-et
-                        if(String(ujVoTermek) !== String(r.vegosszeg)) {
-                            // Nem írjuk felül - várjuk a következő szinkront
-                        }
+                    const ujVo = aktiv.vegosszeg;
+                    if(ujVo !== undefined && String(ujVo) !== String(r.vegosszeg)) {
+                        megmaradok[i].vegosszeg = ujVo;
+                        volt_valtozas = true;
                     }
                     // Státusz frissítése
                     const ujStatusz = aktiv.statusz || "";
@@ -1582,13 +1561,13 @@
 
                 // Rugalmas kulcskeresés: szóköz, ékezet, kérdőjel, alulvonás mind irreleváns
         function zonaErtek(obj, kulcsReszlet) {
-            if(!obj) return "";
             const norm = s => s.toString().toLowerCase()
                 .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i')
                 .replace(/ó/g,'o').replace(/ö/g,'o').replace(/ő/g,'o')
                 .replace(/ú/g,'u').replace(/ü/g,'u').replace(/ű/g,'u')
                 .replace(/[^a-z0-9]/g, '');
             const k = norm(kulcsReszlet);
+            // Csak pontos normalizált egyezés (prefix egyezés félreviheti a mezőket!)
             for (let key of Object.keys(obj)) {
                 if (norm(key) === k) return obj[key];
             }
