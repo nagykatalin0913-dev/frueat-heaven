@@ -1240,6 +1240,7 @@
         let aktKinalatRowid = null; // az aktív kínálat rowid-ja, rendeléskor elküldjük
         let atveteliMod = "szemelyes"; // személyes az alapértelmezett ha van
         let vegszamlaHUF = 0;
+        let kosarTermekErtek = 0; // csak termékérték, szállítás nélkül
         let aktualisSzallitasInfo = {}; // kiszállítási/átvételi adatok a mentéshez
 
         // Régi formátum migrálása (egyszeri)
@@ -2474,6 +2475,7 @@
             }
 
             vegszamlaHUF = kosarErtek + szallitasiDij;
+            kosarTermekErtek = kosarErtek;
 
             html += `
                 <div class="cart-item" style="margin-top:10px; color:#777; font-size:14px;">
@@ -2545,7 +2547,7 @@
                 zona: zonaAzonosito,
                 termek: termekLista,
                 allandok_rendeles: allandokRendeles.length > 0 ? JSON.stringify(allandokRendeles) : "",
-                vegosszeg: kosarErtek, // csak termékérték, szállítás nélkül
+                vegosszeg: kosarTermekErtek, // csak termékérték, szállítás nélkül
                 megjegyzes: document.getElementById("megjegyzes").value,
                 mod: atveteliMod === "hazhoz" ? "Házhozszállítás" : "Személyes átvétel",
                 kinalat_id: aktKinalatRowid || "",
