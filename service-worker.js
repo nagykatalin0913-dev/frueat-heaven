@@ -1,7 +1,7 @@
 // Fru'eat Heaven – Service Worker v3.0
 // CSAK PWA cache – OneSignal külön van a /push/ mappában!
 
-const CACHE_NAME = 'frueat-v3';
+const CACHE_NAME = 'frueat-v4';
 const ASSETS = [
   './',
   './index.html',
