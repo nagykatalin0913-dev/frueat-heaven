@@ -3339,17 +3339,7 @@ async function terkepBetolt() {
                     var marker = new google.maps.Marker({
                         position: pos,
                         map: terkepMap,
-                        title: r.nev + '\n' + r.cim,
-                        label: { text: String(idx+1), color: 'white' },
-                        icon: {
-                            path: google.maps.SymbolPath.CIRCLE,
-                            scale: 18,
-                            fillColor: '#e53935',
-                            fillOpacity: 1,
-                            strokeColor: 'white',
-                            strokeWeight: 2,
-                            labelOrigin: new google.maps.Point(0, 0)
-                        }
+                        title: r.nev + '\n' + r.cim
                     });
                     var infoWindow = new google.maps.InfoWindow({
                         content: '<div style="font-family:sans-serif;min-width:160px;">' +
