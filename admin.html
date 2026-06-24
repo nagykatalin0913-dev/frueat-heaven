@@ -365,6 +365,7 @@
     <button id="btn-uzenetek"  class="mode-btn"        onclick="setMode('uzenetek')" style="border-color:#0288d1;color:#01579b;">&#128172; Üzenetek</button>
     <button id="btn-vevok"     class="mode-btn"        onclick="setMode('vevok')" style="border-color:#6a1b9a;color:#4a148c;">&#128101; Vevők</button>
     <button id="btn-allandok"  class="mode-btn"        onclick="setMode('allandok')" style="border-color:#00897b;color:#004d40;">&#128230; Állandók</button>
+    <button id="btn-terkep"    class="mode-btn"        onclick="setMode('terkep')" style="border-color:#e53935;color:#b71c1c;">&#128205; Térkép</button>
 </div>
 
 <div id="szallitas-szurok" style="display:none;">
@@ -655,7 +656,18 @@
 </div>
 
 <div id="main-list">
-    <div class="loading"><div class="loading-spinner"></div>Adatok betöltése...</div>
+    <div class="loading"><div class="loading-spinner"></div>
+
+<div id="terkep-szekció" style="display:none;padding:16px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+        <select id="terkep-zona" style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;">
+            <option value="">Minden zóna</option>
+        </select>
+        <button onclick="terkepBetolt()" style="padding:8px 16px;background:#e53935;color:white;border:none;border-radius:8px;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">🗺️ Térkép megjelenítése</button>
+    </div>
+    <div id="terkep-container" style="width:100%;height:65vh;border-radius:12px;overflow:hidden;border:1px solid #ddd;"></div>
+    <div id="terkep-lista" style="margin-top:12px;"></div>
+</div>Adatok betöltése...</div>
 </div>
 
 <script>
@@ -957,6 +969,9 @@ function setMode(mode) {
     var isBsz  = mode === 'beszerzes';
     var isPush = mode === 'push';
     var isKin  = mode === 'kinalat';
+    var isTerkep = mode === 'terkep';
+    document.getElementById('terkep-szekció').style.display = isTerkep ? 'block' : 'none';
+    if(isTerkep) { terkepZonaFelt(); return; }
     var isUz   = mode === 'uzenetek';
     var isVev  = mode === 'vevok';
     var isAll  = mode === 'allandok';
@@ -968,6 +983,7 @@ function setMode(mode) {
     document.getElementById('vevok-view').style.display        = isVev  ? 'block' : 'none';
     document.getElementById('allandok-view').style.display     = isAll  ? 'block' : 'none';
     document.getElementById('main-list').style.display         = isNorm ? 'block' : 'none';
+    if(document.getElementById('terkep-szekció')) document.getElementById('terkep-szekció').style.display = (mode === 'terkep') ? 'block' : 'none';
     document.getElementById('searchInput').style.display       = isNorm ? 'block' : 'none';
     document.getElementById('summary-bar-wrap').style.display  = isNorm ? 'flex'  : 'none';
     document.getElementById('szallitas-szurok').style.display  = mode === 'szallitas' ? 'block' : 'none';
@@ -3261,5 +3277,96 @@ async function pushKuldes(tipus) {
     </div>
 </div>
 
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBbpGqkc4iY3JVZVgJEZzSeKIParMIY9BI&callback=initMap" async defer></script>
+<script>
+var terkepMap = null;
+var terkepMarkers = [];
+
+function initMap() {
+    terkepMap = new google.maps.Map(document.getElementById('terkep-container'), {
+        center: { lat: 47.4979, lng: 19.0402 },
+        zoom: 11
+    });
+}
+
+function terkepZonaFelt() {
+    var sel = document.getElementById('terkep-zona');
+    var meglevo = Array.from(sel.options).map(o => o.value);
+    (zonaLista ? Object.keys(zonaLista) : []).forEach(function(z) {
+        if(z && !meglevo.includes(z)) {
+            var opt = document.createElement('option');
+            opt.value = z; opt.textContent = z;
+            sel.appendChild(opt);
+        }
+    });
+}
+
+async function terkepBetolt() {
+    if(!terkepMap) { alert('Térkép még tölt...'); return; }
+    var zona = document.getElementById('terkep-zona').value;
+    var url = API_URL + '?terkep=true&statusz=fogadva&mod=hazhoz' + (zona ? '&zona=' + encodeURIComponent(zona) : '');
+    
+    document.getElementById('terkep-lista').innerHTML = '<div style="color:#888;padding:8px;">Betöltés...</div>';
+    
+    try {
+        var r = await fetch(url, { redirect: 'follow' });
+        var adatok = await r.json();
+        
+        // Régi markerek törlése
+        terkepMarkers.forEach(function(m) { m.setMap(null); });
+        terkepMarkers = [];
+        
+        if(!adatok || adatok.length === 0) {
+            document.getElementById('terkep-lista').innerHTML = '<div style="color:#888;padding:8px;">Nincs házhozszállítás a mai napra.</div>';
+            return;
+        }
+        
+        var geocoder = new google.maps.Geocoder();
+        var bounds = new google.maps.LatLngBounds();
+        var listaHtml = '<div style="font-weight:700;margin-bottom:8px;">Címek (' + adatok.length + ' db):</div>';
+        
+        adatok.forEach(function(r, idx) {
+            listaHtml += '<div style="padding:6px 0;border-bottom:1px solid #eee;font-size:13px;">' +
+                '<b>' + (r.nev||'') + '</b> — ' + (r.cim||'') + 
+                ' <span style="color:#888;">(' + (r.zona||'') + ')</span></div>';
+            
+            geocoder.geocode({ address: r.cim + ', Magyarország' }, function(results, status) {
+                if(status === 'OK' && results[0]) {
+                    var pos = results[0].geometry.location;
+                    var marker = new google.maps.Marker({
+                        position: pos,
+                        map: terkepMap,
+                        title: r.nev + '\n' + r.cim,
+                        label: { text: String(idx+1), color: 'white' },
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 18,
+                            fillColor: '#e53935',
+                            fillOpacity: 1,
+                            strokeColor: 'white',
+                            strokeWeight: 2,
+                            labelOrigin: new google.maps.Point(0, 0)
+                        }
+                    });
+                    var infoWindow = new google.maps.InfoWindow({
+                        content: '<div style="font-family:sans-serif;min-width:160px;">' +
+                            '<b>' + r.nev + '</b><br>' + r.cim + '<br>' +
+                            '<span style="color:#888;font-size:12px;">' + (r.termek||'') + '</span>' +
+                        '</div>'
+                    });
+                    marker.addListener('click', function() { infoWindow.open(terkepMap, marker); });
+                    terkepMarkers.push(marker);
+                    bounds.extend(pos);
+                    if(terkepMarkers.length === adatok.length) terkepMap.fitBounds(bounds);
+                }
+            });
+        });
+        
+        document.getElementById('terkep-lista').innerHTML = listaHtml;
+    } catch(e) {
+        document.getElementById('terkep-lista').innerHTML = '<div style="color:red;padding:8px;">Hiba: ' + e.message + '</div>';
+    }
+}
+</script>
 </body>
 </html>
