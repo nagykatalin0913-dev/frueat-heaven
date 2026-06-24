@@ -656,7 +656,6 @@
 </div>
 
 <div id="main-list">
-    <div class="loading"><div class="loading-spinner"></div>
 
 <div id="terkep-szekcio" style="display:none;padding:16px;">
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
@@ -667,6 +666,9 @@
     </div>
     <div id="terkep-container" style="width:100%;height:65vh;border-radius:12px;overflow:hidden;border:1px solid #ddd;"></div>
     <div id="terkep-lista" style="margin-top:12px;"></div>
+    <div class="loading"><div class="loading-spinner"></div>
+
+
 </div>Adatok betöltése...</div>
 </div>
 
@@ -970,7 +972,8 @@ function setMode(mode) {
     var isPush = mode === 'push';
     var isKin  = mode === 'kinalat';
     var isTerkep = mode === 'terkep';
-    document.getElementById('terkep-szekcio').style.display = isTerkep ? 'block' : 'none';
+    var terkepEl = document.getElementById('terkep-szekcio');
+    if(terkepEl) terkepEl.style.display = isTerkep ? 'block' : 'none';
     if(isTerkep) { terkepZonaFelt(); return; }
     var isUz   = mode === 'uzenetek';
     var isVev  = mode === 'vevok';
@@ -983,7 +986,6 @@ function setMode(mode) {
     document.getElementById('vevok-view').style.display        = isVev  ? 'block' : 'none';
     document.getElementById('allandok-view').style.display     = isAll  ? 'block' : 'none';
     document.getElementById('main-list').style.display         = isNorm ? 'block' : 'none';
-    if(document.getElementById('terkep-szekcio')) document.getElementById('terkep-szekcio').style.display = (mode === 'terkep') ? 'block' : 'none';
     document.getElementById('searchInput').style.display       = isNorm ? 'block' : 'none';
     document.getElementById('summary-bar-wrap').style.display  = isNorm ? 'flex'  : 'none';
     document.getElementById('szallitas-szurok').style.display  = mode === 'szallitas' ? 'block' : 'none';
