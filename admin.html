@@ -3293,9 +3293,12 @@ function initMap() {
 
 function terkepZonaFelt() {
     var sel = document.getElementById('terkep-zona');
-    var meglevo = Array.from(sel.options).map(o => o.value);
-    (zonaLista ? Object.keys(zonaLista) : []).forEach(function(z) {
-        if(z && !meglevo.includes(z)) {
+    if(!sel) return;
+    // Csak az "Minden zóna" opciót hagyjuk meg
+    while(sel.options.length > 1) sel.remove(1);
+    var zonak = zonaLista ? Object.keys(zonaLista) : [];
+    zonak.forEach(function(z) {
+        if(z) {
             var opt = document.createElement('option');
             opt.value = z; opt.textContent = z;
             sel.appendChild(opt);
