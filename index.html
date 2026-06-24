@@ -240,6 +240,8 @@
             background: rgba(255,255,255,0.09);
         }
         #main-app { display: none; }
+        #loading-screen { display: flex; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* AKTUÁLIS RENDELÉSEK PANEL */
         .ar-card {
@@ -1151,6 +1153,13 @@
             <button onclick="resetProfile()">Adatok módosítása</button>
         </div>
 
+        <div id="loading-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:18px;">
+            <div style="font-size:48px;">🍓</div>
+            <div style="color:var(--gold);font-size:18px;font-weight:600;letter-spacing:1px;">Fru'eat Heaven</div>
+            <div style="color:var(--text-dim);font-size:14px;">Kínálat betöltése...</div>
+            <div style="width:40px;height:40px;border:3px solid rgba(201,168,76,0.2);border-top:3px solid var(--gold);border-radius:50%;animation:spin 0.9s linear infinite;"></div>
+        </div>
+
         <div id="main-app">
             <div class="greeting">Hello <span id="greet-name"></span>! 🍓</div>
 
@@ -1585,10 +1594,12 @@
                 aktualisZonaAdat = data.zonak.find(z => String(z["iranyitoszam"]).trim() == String(userProfile.irsz).trim());
 
                 if(!aktualisZonaAdat) {
+                    document.getElementById("loading-screen").style.display = "none";
                     document.getElementById("out-of-zone").style.display = "block";
                     return;
                 }
 
+                document.getElementById("loading-screen").style.display = "none";
                 document.getElementById("main-app").style.display = "block";
                 document.getElementById("cart-fab").style.display = "flex";
 
