@@ -972,20 +972,20 @@ function setMode(mode) {
     var isPush = mode === 'push';
     var isKin  = mode === 'kinalat';
     var isTerkep = mode === 'terkep';
-    var terkepEl = document.getElementById('terkep-szekcio');
-    if(terkepEl) terkepEl.style.display = isTerkep ? 'block' : 'none';
-    if(isTerkep) { terkepZonaFelt(); return; }
     var isUz   = mode === 'uzenetek';
     var isVev  = mode === 'vevok';
     var isAll  = mode === 'allandok';
-    var isNorm = !isBsz && !isPush && !isKin && !isUz && !isVev && !isAll;
-    document.getElementById('beszerzes-view').style.display    = isBsz  ? 'block' : 'none';
-    document.getElementById('push-view').style.display         = isPush ? 'block' : 'none';
-    document.getElementById('kinalat-view').style.display      = isKin  ? 'block' : 'none';
-    document.getElementById('uzenetek-view').style.display     = isUz   ? 'block' : 'none';
-    document.getElementById('vevok-view').style.display        = isVev  ? 'block' : 'none';
-    document.getElementById('allandok-view').style.display     = isAll  ? 'block' : 'none';
-    document.getElementById('main-list').style.display         = isNorm ? 'block' : 'none';
+    var isNorm = !isBsz && !isPush && !isKin && !isUz && !isVev && !isAll && !isTerkep;
+    document.getElementById('beszerzes-view').style.display    = isBsz    ? 'block' : 'none';
+    document.getElementById('push-view').style.display         = isPush   ? 'block' : 'none';
+    document.getElementById('kinalat-view').style.display      = isKin    ? 'block' : 'none';
+    document.getElementById('uzenetek-view').style.display     = isUz     ? 'block' : 'none';
+    document.getElementById('vevok-view').style.display        = isVev    ? 'block' : 'none';
+    document.getElementById('allandok-view').style.display     = isAll    ? 'block' : 'none';
+    document.getElementById('main-list').style.display         = isNorm   ? 'block' : 'none';
+    var terkepEl = document.getElementById('terkep-szekcio');
+    if(terkepEl) { terkepEl.style.display = isTerkep ? 'block' : 'none'; }
+    if(isTerkep) { terkepZonaFelt(); }
     document.getElementById('searchInput').style.display       = isNorm ? 'block' : 'none';
     document.getElementById('summary-bar-wrap').style.display  = isNorm ? 'flex'  : 'none';
     document.getElementById('szallitas-szurok').style.display  = mode === 'szallitas' ? 'block' : 'none';
@@ -3296,7 +3296,7 @@ function terkepZonaFelt() {
     if(!sel) return;
     // Csak az "Minden zóna" opciót hagyjuk meg
     while(sel.options.length > 1) sel.remove(1);
-    var zonak = zonaLista ? Object.keys(zonaLista) : [];
+    var zonak = (typeof zonaLista !== 'undefined' && zonaLista) ? Object.keys(zonaLista) : [];
     zonak.forEach(function(z) {
         if(z) {
             var opt = document.createElement('option');
