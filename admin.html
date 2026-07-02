@@ -358,7 +358,10 @@
 <div class="mode-selector">
     <button id="btn-atvetel"   class="mode-btn active" onclick="setMode('atvetel')">&#127968; Átvétel</button>
     <button id="btn-szallitas" class="mode-btn"        onclick="setMode('szallitas')">&#128666; Kiszállítás</button>
-    <button id="btn-beszerzes" class="mode-btn"        onclick="setMode('beszerzes')">&#128722; Beszerz.</button>
+    <button id="btn-manual"    class="mode-btn"        onclick="setMode('manual')" style="border-color:#f57c00;color:#e65100;background:white;">&#128221; Manuális</button>
+</div>
+<div style="margin-bottom:8px;">
+    <button id="btn-bszerzes" class="mode-btn" onclick="setMode('beszerzes')" style="width:100%;display:block;">&#128722; Bszerz.</button>
 </div>
 <div class="mode-selector-2">
     <button id="btn-push"      class="mode-btn"        onclick="setMode('push')" style="border-color:#ff9800;color:#e65100;">&#128276; Értesítés</button>
@@ -657,59 +660,82 @@
 </div>
 
 <div id="manual-view" style="display:none;padding:12px;">
+
+    <!-- ZÓNA + ÁTVÉTEL MÓD -->
     <div style="background:#fff3e0;border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid #ffe0b2;">
-        <div style="font-weight:800;color:#e65100;margin-bottom:10px;">&#128221; Manuális rendelés felvitele</div>
+        <div style="font-weight:800;color:#e65100;margin-bottom:10px;">📝 Manuális rendelés felvitele</div>
+
         <div style="margin-bottom:10px;">
             <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Zóna:</label>
             <select id="man-zona" onchange="manZonaValtozas()" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;">
                 <option value="">— Válassz zónát —</option>
             </select>
         </div>
+
         <div id="man-mod-wrap" style="display:none;margin-bottom:10px;">
             <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:6px;">Átvétel módja:</label>
             <div style="display:flex;gap:8px;">
-                <button id="man-btn-hazhoz" onclick="manModValaszt('hazhoz')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #ddd;background:white;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">&#128757; Házhozszállítás</button>
-                <button id="man-btn-szemelyes" onclick="manModValaszt('szemelyes')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #ddd;background:white;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">&#127968; Személyes átvétel</button>
+                <button id="man-btn-hazhoz" onclick="manModValaszt('hazhoz')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #ddd;background:white;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🛵 Házhozszállítás</button>
+                <button id="man-btn-szemelyes" onclick="manModValaszt('szemelyes')" style="flex:1;padding:10px;border-radius:8px;border:2px solid #ddd;background:white;font-family:Nunito,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">🏠 Személyes átvétel</button>
             </div>
         </div>
     </div>
+
+    <!-- VEVŐ ADATOK -->
     <div id="man-vevo-wrap" style="display:none;background:white;border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid #eee;">
-        <div style="font-weight:800;color:#333;margin-bottom:10px;">Vevő adatai</div>
+        <div style="font-weight:800;color:#333;margin-bottom:10px;">👤 Vevő adatai</div>
+
         <div style="margin-bottom:8px;">
-            <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Telefon (visszakeresés):</label>
+            <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Telefon (visszakereséshez):</label>
             <div style="display:flex;gap:6px;">
                 <input id="man-tel" type="tel" placeholder="+36..." style="flex:1;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;" oninput="manTelKeres()">
-                <button onclick="manTelKeres()" style="padding:10px 14px;border-radius:8px;background:#1976d2;color:white;border:none;font-family:Nunito,sans-serif;font-weight:700;cursor:pointer;">&#128269;</button>
+                <button onclick="manTelKeres()" style="padding:10px 14px;border-radius:8px;background:#1976d2;color:white;border:none;font-family:Nunito,sans-serif;font-weight:700;cursor:pointer;">🔍</button>
             </div>
             <div id="man-tel-talalat" style="display:none;margin-top:6px;padding:8px;background:#e3f2fd;border-radius:8px;font-size:13px;"></div>
         </div>
+
         <div style="margin-bottom:8px;">
             <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Név: *</label>
             <input id="man-nev" type="text" placeholder="Pl. Nagy Kata" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;box-sizing:border-box;">
         </div>
+
         <div id="man-cim-tel-wrap" style="display:none;">
             <div style="margin-bottom:8px;">
                 <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Cím: *</label>
                 <input id="man-cim" type="text" placeholder="Pl. Pécel, Petőfi utca 1." style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;box-sizing:border-box;">
             </div>
         </div>
+
         <div style="margin-bottom:8px;">
             <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:4px;">Megjegyzés:</label>
             <textarea id="man-megjegyzes" placeholder="Kapukód, egyéb info..." style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;box-sizing:border-box;height:70px;resize:none;"></textarea>
         </div>
     </div>
+
+    <!-- TERMÉKEK -->
     <div id="man-termekek-wrap" style="display:none;background:white;border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid #eee;">
         <div style="font-weight:800;color:#333;margin-bottom:10px;">&#128722; Termékek</div>
-        <input id="man-kereső" type="text" placeholder="&#128269; Keresés..." oninput="manSzuro()" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;box-sizing:border-box;margin-bottom:8px;">
+        <input id="man-kereső" type="text" placeholder="&#128269; Keresés termék neve alapján..." oninput="manSzuro()" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;box-sizing:border-box;margin-bottom:8px;">
         <div id="man-termek-lista"></div>
     </div>
+
+    <!-- ÖSSZESÍTŐ -->
     <div id="man-osszesito-wrap" style="display:none;background:#e8f5e9;border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid #c8e6c9;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:#555;margin-bottom:4px;"><span>Termékek összege:</span><span id="man-termek-ertek">0 Ft</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:#777;font-style:italic;margin-bottom:4px;"><span>Szállítási díj:</span><span id="man-szallitas-sor">—</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:#1b5e20;border-top:2px solid #c8e6c9;padding-top:8px;margin-top:4px;"><span>Fizetendő:</span><span id="man-fizetendo">0 Ft</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#555;margin-bottom:4px;">
+            <span>Termékek összege:</span><span id="man-termek-ertek">0 Ft</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#777;font-style:italic;margin-bottom:4px;">
+            <span>Szállítási díj:</span><span id="man-szallitas-sor">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:#1b5e20;border-top:2px solid #c8e6c9;padding-top:8px;margin-top:4px;">
+            <span>Fizetendő:</span><span id="man-fizetendo">0 Ft</span>
+        </div>
     </div>
-    <button id="man-mentes-btn" onclick="manMentes()" style="display:none;width:100%;padding:16px;background:#2e7d32;color:white;border:none;border-radius:12px;font-family:Nunito,sans-serif;font-size:16px;font-weight:800;cursor:pointer;">&#10003; Rendelés mentése</button>
+
+    <!-- MENTÉS GOMB -->
+    <button id="man-mentes-btn" onclick="manMentes()" style="display:none;width:100%;padding:16px;background:#2e7d32;color:white;border:none;border-radius:12px;font-family:Nunito,sans-serif;font-size:16px;font-weight:800;cursor:pointer;">✓ Rendelés mentése</button>
     <div id="man-eredmeny" style="display:none;margin-top:10px;padding:12px;border-radius:10px;text-align:center;font-weight:700;"></div>
+
 </div>
 
 <div id="terkep-szekcio" style="display:none;padding:16px;">
@@ -875,16 +901,16 @@ async function fetchData() {
                 var nev = (z.telepules || z['telepules/kerulet'] || z.zona || '').toString().trim();
                 if(nev) zonaLista[nev] = {
                     szallitasi_dij:  parseFloat(z['szallitasi dij'] || z.szallitasi_dij || 0),
-                    ingyenes_hatar:  parseFloat(z['ingyenes hatar'] || z['ingyenes_hatar'] || 0),
-                    atvetel_lehetseges: (z['atvetel lehetseges'] || z['atvetel_lehetseges'] || z['atvetel lehetseges?'] || '').toString()
+                    ingyenes_hatar:  parseFloat(z['ingyenes hatar'] || z['ingyenes_hatar'] || 0)
                 };
             });
-            // Manuális rendelés zóna select
+            // Manuális rendelés zóna select feltöltése
             var manZonaSel = document.getElementById('man-zona');
             if(manZonaSel) {
                 while(manZonaSel.options.length > 1) manZonaSel.remove(1);
                 Object.keys(zonaLista).forEach(function(z) {
-                    var opt = document.createElement('option'); opt.value = z; opt.textContent = z;
+                    var opt = document.createElement('option');
+                    opt.value = z; opt.textContent = z;
                     manZonaSel.appendChild(opt);
                 });
             }
@@ -1029,17 +1055,25 @@ function ujRendelesMegnezve() {
 // ══════════════════════════════════════════════════════════════
 function setMode(mode) {
     currentMode = mode; activeCardId = null;
-    document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('active'); });
-    document.getElementById('btn-' + mode).classList.add('active');
+    document.querySelectorAll('.mode-btn').forEach(function(b){ 
+        b.classList.remove('active');
+        // Manuális gomb alapszíne narancssárga keret, fehér háttér
+        if(b.id === 'btn-manual') b.style.background = 'white';
+    });
+    var activeBtn = document.getElementById('btn-' + mode);
+    if(activeBtn) {
+        activeBtn.classList.add('active');
+        if(mode === 'manual') activeBtn.style.background = '#fff3e0';
+    }
     var isBsz  = mode === 'beszerzes';
     var isPush = mode === 'push';
     var isKin  = mode === 'kinalat';
     var isTerkep = mode === 'terkep';
+    var isUz     = mode === 'uzenetek';
+    var isVev    = mode === 'vevok';
+    var isAll    = mode === 'allandok';
     var isManual = mode === 'manual';
-    var isUz   = mode === 'uzenetek';
-    var isVev  = mode === 'vevok';
-    var isAll  = mode === 'allandok';
-    var isNorm = !isBsz && !isPush && !isKin && !isUz && !isVev && !isAll && !isTerkep && !isManual;
+    var isNorm   = !isBsz && !isPush && !isKin && !isUz && !isVev && !isAll && !isTerkep && !isManual;
     document.getElementById('beszerzes-view').style.display    = isBsz    ? 'block' : 'none';
     document.getElementById('push-view').style.display         = isPush   ? 'block' : 'none';
     document.getElementById('kinalat-view').style.display      = isKin    ? 'block' : 'none';
@@ -1051,8 +1085,8 @@ function setMode(mode) {
     if(terkepEl) { terkepEl.style.display = isTerkep ? 'block' : 'none'; }
     if(isTerkep) { terkepZonaFelt(); }
     var manualEl = document.getElementById('manual-view');
-    if(manualEl) manualEl.style.display = isManual ? 'block' : 'none';
-    if(isManual) manualInit();
+    if(manualEl) { manualEl.style.display = isManual ? 'block' : 'none'; }
+    if(isManual) { manualInit(); }
     document.getElementById('searchInput').style.display       = isNorm ? 'block' : 'none';
     document.getElementById('summary-bar-wrap').style.display  = isNorm ? 'flex'  : 'none';
     document.getElementById('szallitas-szurok').style.display  = mode === 'szallitas' ? 'block' : 'none';
@@ -1296,7 +1330,7 @@ function render() {
         var fo = csoport[0];
         var isActive = csoport.some(function(o){ return o.rowid === activeCardId; });
         var card = document.createElement('div');
-        var isManualCard = csoport.some(function(o){ return (o.megjegyzes||'').toString().indexOf('Manuális') >= 0; });
+        var isManualCard = csoport.some(function(o){ return (o.megjegyzes||'').toString().indexOf('📝 Manuális') >= 0; });
         card.className = 'order-card' + (isActive ? ' active-card' : (isManualCard ? ' manual-card' : (ci === 0 ? ' next-card' : '')));
         // Kártya kattintás a fejlécen kezelt
         var ca  = (fo.cim||'').replace(/\r?\n|\r/g, ' ');
@@ -3348,55 +3382,82 @@ async function pushKuldes(tipus) {
 </div>
 
 <script>
+// ══════════════════════════════════════════════════════════════
+//  MANUÁLIS RENDELÉS FELVITEL
+// ══════════════════════════════════════════════════════════════
+
 var manMod = '';
 var manKosar = {};
 var manOsszeTermek = [];
 
 function manInit() {
-    manKosar = {};
-    manOsszeTermek = [];
-    manMod = '';
-    ['man-mod-wrap','man-vevo-wrap','man-termekek-wrap','man-osszesito-wrap','man-mentes-btn','man-eredmeny','man-tel-talalat','man-cim-tel-wrap'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if(el) el.style.display = 'none';
-    });
-    ['man-nev','man-cim','man-tel','man-megjegyzes'].forEach(function(id) {
-        var el = document.getElementById(id); if(el) el.value = '';
-    });
-    var kerEl = document.getElementById('man-kerő');
-    if(kerEl) kerEl.value = '';
-    var manZonaSel = document.getElementById('man-zona');
-    if(manZonaSel && typeof zonaLista !== 'undefined') {
-        while(manZonaSel.options.length > 1) manZonaSel.remove(1);
+    // Zóna select feltöltése
+    var sel = document.getElementById('man-zona');
+    if(!sel) return;
+    while(sel.options.length > 1) sel.remove(1);
+    if(typeof zonaLista !== 'undefined' && zonaLista) {
         Object.keys(zonaLista).forEach(function(z) {
-            var opt = document.createElement('option'); opt.value = z; opt.textContent = z;
-            manZonaSel.appendChild(opt);
+            if(z) {
+                var opt = document.createElement('option');
+                opt.value = z; opt.textContent = z;
+                sel.appendChild(opt);
+            }
         });
     }
+    // Reset
+    manKosar = {};
+    manMod = '';
+    document.getElementById('man-mod-wrap').style.display = 'none';
+    document.getElementById('man-vevo-wrap').style.display = 'none';
+    document.getElementById('man-termekek-wrap').style.display = 'none';
+    document.getElementById('man-osszesito-wrap').style.display = 'none';
+    document.getElementById('man-mentes-btn').style.display = 'none';
+    document.getElementById('man-eredmeny').style.display = 'none';
+    document.getElementById('man-nev').value = '';
+    document.getElementById('man-cim').value = '';
+    document.getElementById('man-tel').value = '';
+    document.getElementById('man-megjegyzes').value = '';
+    document.getElementById('man-tel-talalat').style.display = 'none';
+    var kerEl2 = document.getElementById('man-ker\u0151');
+    if(kerEl2) kerEl2.value = '';
+    manOsszeTermek = [];
     document.getElementById('man-zona').value = '';
 }
 
 function manZonaValtozas() {
     var zona = document.getElementById('man-zona').value;
-    if(!zona) { document.getElementById('man-mod-wrap').style.display = 'none'; document.getElementById('man-vevo-wrap').style.display = 'none'; document.getElementById('man-termekek-wrap').style.display = 'none'; return; }
-    var zonaAdat = typeof zonaLista !== 'undefined' ? zonaLista[zona] : null;
+    if(!zona) {
+        document.getElementById('man-mod-wrap').style.display = 'none';
+        document.getElementById('man-vevo-wrap').style.display = 'none';
+        document.getElementById('man-termekek-wrap').style.display = 'none';
+        return;
+    }
+    // Van-e személyes átvétel ebben a zónában?
+    var zonaAdat = zonaLista[zona];
     var vanAtvetel = zonaAdat && (zonaAdat.atvetel_lehetseges || '').toString().toLowerCase() === 'igen';
+
     if(vanAtvetel) {
         document.getElementById('man-mod-wrap').style.display = 'block';
         manMod = '';
         document.getElementById('man-vevo-wrap').style.display = 'none';
         document.getElementById('man-termekek-wrap').style.display = 'none';
     } else {
+        // Csak házhozszállítás
         manModValaszt('hazhoz');
     }
 }
 
 function manModValaszt(mod) {
     manMod = mod;
+    // Gombok vizuális visszajelzés
     var hBtn = document.getElementById('man-btn-hazhoz');
     var sBtn = document.getElementById('man-btn-szemelyes');
-    if(hBtn) { hBtn.style.borderColor = mod === 'hazhoz' ? '#2e7d32' : '#ddd'; hBtn.style.color = mod === 'hazhoz' ? '#2e7d32' : '#333'; }
-    if(sBtn) { sBtn.style.borderColor = mod === 'szemelyes' ? '#2e7d32' : '#ddd'; sBtn.style.color = mod === 'szemelyes' ? '#2e7d32' : '#333'; }
+    if(hBtn) hBtn.style.borderColor = mod === 'hazhoz' ? '#2e7d32' : '#ddd';
+    if(hBtn) hBtn.style.color = mod === 'hazhoz' ? '#2e7d32' : '#333';
+    if(sBtn) sBtn.style.borderColor = mod === 'szemelyes' ? '#2e7d32' : '#ddd';
+    if(sBtn) sBtn.style.color = mod === 'szemelyes' ? '#2e7d32' : '#333';
+
+    // Cím mező csak házhozszállításnál
     document.getElementById('man-cim-tel-wrap').style.display = mod === 'hazhoz' ? 'block' : 'none';
     document.getElementById('man-vevo-wrap').style.display = 'block';
     manTermekekFelt();
@@ -3406,52 +3467,84 @@ async function manTelKeres() {
     var tel = document.getElementById('man-tel').value.trim().replace(/[^0-9]/g, '');
     if(tel.length < 7) return;
     var talalat = document.getElementById('man-tel-talalat');
+
+    // Keresés a Rendelesek sheet-ben (API-n keresztül)
     try {
         var r = await fetch(API_URL + '?checkTel=' + tel.slice(-7), { redirect: 'follow' });
         var adatok = await r.json();
         if(adatok && adatok.length > 0) {
             var legutobb = adatok[adatok.length - 1];
+            // Visszatöltjük a nevet és a korábbi adatokat ha volt
             if(legutobb.nev) document.getElementById('man-nev').value = legutobb.nev || '';
             if(legutobb.cim) document.getElementById('man-cim').value = legutobb.cim || '';
-            talalat.innerHTML = 'Visszatérő vevő: <b>' + (legutobb.nev||'') + '</b>' + (legutobb.cim ? ' — ' + legutobb.cim : '');
-            talalat.style.background = '#e3f2fd'; talalat.style.display = 'block';
+            talalat.innerHTML = '\u2705 Visszatérő vevő: <b>' + (legutobb.nev||'') + '</b>' + (legutobb.cim ? ' — ' + legutobb.cim : '');
+            talalat.style.display = 'block';
         } else {
-            talalat.innerHTML = 'Új vevő'; talalat.style.background = '#fff9c4'; talalat.style.display = 'block';
+            talalat.innerHTML = '\u{1F195} Új vevő';
+            talalat.style.display = 'block';
         }
-    } catch(e) { }
+    } catch(e) {
+        talalat.innerHTML = 'Keresési hiba';
+        talalat.style.display = 'block';
+    }
 }
+
+var manOsszeTermek = [];
 
 function manTermekekFelt() {
     manOsszeTermek = [];
-    if(typeof termekek !== 'undefined') Object.keys(termekek).forEach(function(nev) { manOsszeTermek.push(termekek[nev]); });
-    if(typeof allandokTermekek !== 'undefined') Object.keys(allandokTermekek).forEach(function(nev) {
-        if(!termekek || !termekek[nev]) manOsszeTermek.push(allandokTermekek[nev]);
-    });
+    // Aktuális kínálat termékei
+    if(typeof termekek !== 'undefined') {
+        Object.keys(termekek).forEach(function(nev) { if(termekek[nev] && termekek[nev].nev) manOsszeTermek.push(termekek[nev]); });
+    }
+    // Állandó termékek (ha nincs már a kínálatban)
+    if(typeof allandokTermekek !== 'undefined') {
+        Object.keys(allandokTermekek).forEach(function(nev) {
+            if(allandokTermekek[nev] && allandokTermekek[nev].nev && !(termekek && termekek[nev])) {
+                manOsszeTermek.push(allandokTermekek[nev]);
+            }
+        });
+    }
     document.getElementById('man-termekek-wrap').style.display = 'block';
+    var kerEl = document.getElementById('man-ker\u0151');
+    if(kerEl) kerEl.value = '';
     manSzuro();
 }
 
 function manSzuro() {
     var lista = document.getElementById('man-termek-lista');
     if(!lista) return;
-    var kerEl = document.getElementById('man-kerő');
+    var kerEl = document.getElementById('man-ker\u0151');
     var q = kerEl ? kerEl.value.toLowerCase() : '';
-    var szurt = manOsszeTermek.filter(function(t) { return !q || (t.nev||'').toLowerCase().indexOf(q) >= 0; });
-    if(szurt.length === 0) { lista.innerHTML = '<div style="color:#888;padding:8px;">Nincs találat.</div>'; return; }
+    var szurt = manOsszeTermek.filter(function(t) {
+        return !q || (t.nev||'').toLowerCase().indexOf(q) >= 0;
+    });
+    if(szurt.length === 0) {
+        lista.innerHTML = '<div style="color:#888;padding:8px;">Nincs találat.</div>';
+        return;
+    }
     var html = '';
     szurt.forEach(function(t) {
-        var nev = t.nev || ''; var ar = parseFloat(t.ar) || 0; var eg = t.egyseg || 'db';
+        var nev = t.nev || '';
+        var ar = parseFloat(t.ar) || 0;
+        var eg = t.egyseg || 'db';
         var qty = manKosar[nev] ? manKosar[nev].qty : '';
         var ns = nev.replace(/[^a-zA-Z0-9]/g,'_');
         var step = eg.toLowerCase() === 'kg' ? '0.5' : '1';
         html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;gap:8px;">' +
-            '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;">' + nev + '</div>' +
-            '<div style="font-size:12px;color:#888;">' + ar.toLocaleString('hu-HU') + ' Ft / ' + eg + '</div></div>' +
+            '<div style="flex:1;min-width:0;">' +
+                '<div style="font-weight:700;font-size:14px;">' + nev + '</div>' +
+                '<div style="font-size:12px;color:#888;">' + ar.toLocaleString('hu-HU') + ' Ft / ' + eg + '</div>' +
+            '</div>' +
             '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">' +
-            '<input id="man-qty-' + ns + '" type="number" min="0" step="' + step + '" placeholder="0" value="' + (qty||'') + '"' +
-            ' data-nev="' + encodeURIComponent(nev) + '" oninput="manInputValtozas(this)"' +
-            ' style="width:65px;padding:6px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;text-align:center;">' +
-            '<span style="font-size:12px;color:#888;min-width:20px;">' + eg + '</span></div></div>';
+                '<input id="man-qty-' + ns + '" type="number" min="0" step="' + step + '"' +
+                ' placeholder="0" value="' + (qty||'') + '"' +
+                ' data-nev="' + encodeURIComponent(nev) + '"' +
+                ' oninput="manInputValtozas(this)"' +
+                ' style="width:65px;padding:6px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;text-align:center;">' +
+                '<span style="font-size:12px;color:#888;min-width:22px;">' + eg + '</span>' +
+            '</div>' +
+        '</div>';
     });
     lista.innerHTML = html;
 }
@@ -3462,27 +3555,43 @@ function manInputValtozas(inp) {
     var ar = t ? (parseFloat(t.ar)||0) : 0;
     var eg = t ? (t.egyseg||'db') : 'db';
     var qty = parseFloat((inp.value||'0').replace(',','.')) || 0;
-    if(qty > 0) { manKosar[nev] = { qty:qty, ar:ar, egyseg:eg }; } else { delete manKosar[nev]; }
+    if(qty > 0) {
+        manKosar[nev] = { qty:qty, ar:ar, egyseg:eg };
+    } else {
+        delete manKosar[nev];
+    }
     manOsszesitFrissit();
 }
 
 function manOsszesitFrissit() {
     var termekErtek = 0;
-    Object.keys(manKosar).forEach(function(nev) { termekErtek += Math.round(manKosar[nev].ar * manKosar[nev].qty); });
+    Object.keys(manKosar).forEach(function(nev) {
+        termekErtek += Math.round(manKosar[nev].ar * manKosar[nev].qty);
+    });
+
     var zona = document.getElementById('man-zona').value;
     var zonaAdat = zonaLista && zonaLista[zona] ? zonaLista[zona] : null;
     var szallDij = zonaAdat ? (parseFloat(zonaAdat.szallitasi_dij)||0) : 0;
     var ingyHatar = zonaAdat ? (parseFloat(zonaAdat.ingyenes_hatar)||0) : 0;
+
     var sdEff = 0;
-    if(manMod === 'hazhoz' && szallDij > 0) sdEff = (ingyHatar > 0 && termekErtek >= ingyHatar) ? 0 : szallDij;
+    if(manMod === 'hazhoz' && szallDij > 0) {
+        sdEff = (ingyHatar > 0 && termekErtek >= ingyHatar) ? 0 : szallDij;
+    }
+
     var fizetendo = termekErtek + sdEff;
+
     document.getElementById('man-termek-ertek').innerText = termekErtek.toLocaleString('hu-HU') + ' Ft';
-    document.getElementById('man-szallitas-sor').innerText = manMod === 'hazhoz' ? (sdEff > 0 ? sdEff.toLocaleString('hu-HU') + ' Ft' : 'Ingyenes 🎉') : 'Személyes átvétel';
+    document.getElementById('man-szallitas-sor').innerText = manMod === 'hazhoz'
+        ? (sdEff > 0 ? sdEff.toLocaleString('hu-HU') + ' Ft' : 'Ingyenes \uD83C\uDF89')
+        : 'Szem\u00e9lyes \u00e1tv\u00e9tel';
     document.getElementById('man-fizetendo').innerText = fizetendo.toLocaleString('hu-HU') + ' Ft';
+
     var vanTermek = Object.keys(manKosar).length > 0;
     document.getElementById('man-osszesito-wrap').style.display = vanTermek ? 'block' : 'none';
     document.getElementById('man-mentes-btn').style.display = vanTermek ? 'block' : 'none';
 }
+
 
 async function manMentes() {
     var zona = document.getElementById('man-zona').value;
@@ -3490,40 +3599,78 @@ async function manMentes() {
     var cim = document.getElementById('man-cim').value.trim();
     var tel = document.getElementById('man-tel').value.trim();
     var megjegyzes = document.getElementById('man-megjegyzes').value.trim();
+
     if(!zona) { alert('Válassz zónát!'); return; }
     if(!nev) { alert('Add meg a vevő nevét!'); return; }
     if(manMod === 'hazhoz' && !cim) { alert('Add meg a szállítási címet!'); return; }
     if(Object.keys(manKosar).length === 0) { alert('Adj hozzá legalább egy terméket!'); return; }
-    var termekStr = Object.keys(manKosar).map(function(n) { var i = manKosar[n]; return n + ': ' + i.qty + ' ' + i.egyseg; }).join(', ');
+
+    // Termék string összerakása
+    var termekStr = Object.keys(manKosar).map(function(nev) {
+        var i = manKosar[nev];
+        return nev + ': ' + i.qty + ' ' + i.egyseg;
+    }).join(', ');
+
+    // Végösszeg (termékérték, szállítás nélkül)
     var termekErtek = 0;
-    Object.keys(manKosar).forEach(function(n) { termekErtek += Math.round(manKosar[n].ar * manKosar[n].qty); });
+    Object.keys(manKosar).forEach(function(nev) {
+        termekErtek += Math.round(manKosar[nev].ar * manKosar[nev].qty);
+    });
+
     var modStr = manMod === 'hazhoz' ? 'Házhozszállítás' : 'Személyes átvétel';
-    var megjegyzesV = (megjegyzes ? megjegyzes + ' | ' : '') + '📝 Manuális';
+    var megjegyzesVegleges = (megjegyzes ? megjegyzes + ' | ' : '') + '\u{1F4DD} Manuális';
+
     var btn = document.getElementById('man-mentes-btn');
-    btn.disabled = true; btn.innerText = 'Mentés...';
+    btn.disabled = true;
+    btn.innerText = '\u23F3 Mentés...';
+
     try {
-        var params = new URLSearchParams({ nev:nev, tel:tel||'', cim:cim||'', zona:zona, termek:termekStr, vegosszeg:termekErtek, megjegyzes:megjegyzesV, mod:modStr, statusz:'Fogadva' });
+        var params = new URLSearchParams({
+            nev: nev,
+            tel: tel || '',
+            cim: cim || '',
+            zona: zona,
+            termek: termekStr,
+            vegosszeg: termekErtek,
+            megjegyzes: megjegyzesVegleges,
+            mod: modStr,
+            statusz: 'Fogadva',
+            kiszallitas_datum: ''
+        });
+
         var r = await fetch(API_URL + '?' + params.toString(), { redirect: 'follow' });
         var szoveg = await r.text();
+
         var eredmenyEl = document.getElementById('man-eredmeny');
-        if(szoveg.indexOf('ok') >= 0 || szoveg.indexOf('OK') >= 0) {
-            eredmenyEl.style.background = '#e8f5e9'; eredmenyEl.style.color = '#2e7d32';
-            eredmenyEl.innerText = 'Rendelés sikeresen rögzítve!'; eredmenyEl.style.display = 'block';
-            manKosar = {}; manTermekekFelt();
-            ['man-nev','man-cim','man-tel','man-megjegyzes'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
-            var kerEl = document.getElementById('man-kerő'); if(kerEl) kerEl.value = '';
+        if(szoveg.includes('ok') || szoveg.includes('OK')) {
+            eredmenyEl.style.background = '#e8f5e9';
+            eredmenyEl.style.color = '#2e7d32';
+            eredmenyEl.innerText = '\u2705 Rendelés sikeresen rögzítve!';
+            eredmenyEl.style.display = 'block';
+            manKosar = {};
+            manTermekekFelt();
+            document.getElementById('man-nev').value = '';
+            document.getElementById('man-cim').value = '';
+            document.getElementById('man-tel').value = '';
+            document.getElementById('man-megjegyzes').value = '';
             document.getElementById('man-tel-talalat').style.display = 'none';
         } else {
-            eredmenyEl.style.background = '#ffebee'; eredmenyEl.style.color = '#c62828';
-            eredmenyEl.innerText = 'Hiba: ' + szoveg; eredmenyEl.style.display = 'block';
+            eredmenyEl.style.background = '#ffebee';
+            eredmenyEl.style.color = '#c62828';
+            eredmenyEl.innerText = '\u274C Hiba: ' + szoveg;
+            eredmenyEl.style.display = 'block';
         }
     } catch(e) {
-        var eredmenyEl = document.getElementById('man-eredmeny');
-        eredmenyEl.style.background = '#ffebee'; eredmenyEl.style.color = '#c62828';
-        eredmenyEl.innerText = 'Hálózati hiba: ' + e.message; eredmenyEl.style.display = 'block';
+        document.getElementById('man-eredmeny').style.background = '#ffebee';
+        document.getElementById('man-eredmeny').style.color = '#c62828';
+        document.getElementById('man-eredmeny').innerText = '\u274C Hálózati hiba: ' + e.message;
+        document.getElementById('man-eredmeny').style.display = 'block';
     }
-    btn.disabled = false; btn.innerText = '✓ Rendelés mentése';
+
+    btn.disabled = false;
+    btn.innerText = '✓ Rendelés mentése';
 }
+
 </script>
 <script>
 var terkepMap = null;
