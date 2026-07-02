@@ -358,7 +358,7 @@
 <div class="mode-selector">
     <button id="btn-atvetel"   class="mode-btn active" onclick="setMode('atvetel')">&#127968; Átvétel</button>
     <button id="btn-szallitas" class="mode-btn"        onclick="setMode('szallitas')">&#128666; Kiszállítás</button>
-    <button id="btn-manual"    class="mode-btn"        onclick="setMode('manual')" style="border-color:#f57c00;color:#e65100;background:white;">&#128221; Manuális</button>
+    <button id="btn-manual"    class="mode-btn"        onclick="setMode('manual')">&#128221; Manuális</button>
 </div>
 <div style="margin-bottom:8px;">
     <button id="btn-bszerzes" class="mode-btn" onclick="setMode('beszerzes')" style="width:100%;display:block;">&#128722; Bszerz.</button>
@@ -876,8 +876,10 @@ async function fetchData() {
             termekek = {};
             td.termekek.forEach(function(t) {
                 termekek[t.nev] = {
+                    nev:             t.nev || '',
                     ar:              parseFloat(t.ar) || 0,
                     egyseg:          t.egyseg || '',
+                    min_mennyiseg:   parseFloat(t.min_mennyiseg) || 0,
                     beszerzesi_ar:   parseFloat(t.beszerzesi_ar) || 0,
                     atlag_suly:      parseFloat(t.atlag_suly) || 0,
                     tipus:           (t.tipus || '').toString().trim().toLowerCase(),
@@ -890,8 +892,10 @@ async function fetchData() {
             allandokTermekek = {};
             td.allandok.forEach(function(t) {
                 allandokTermekek[t.nev] = {
+                    nev:    t.nev || '',
                     ar:     parseFloat(t.ar) || 0,
-                    egyseg: (t.egyseg || 'db').toString().trim()
+                    egyseg: (t.egyseg || 'db').toString().trim(),
+                    min_mennyiseg: parseFloat(t.min_mennyiseg) || 0
                 };
             });
         }
