@@ -358,7 +358,7 @@
 <div class="mode-selector">
     <button id="btn-atvetel"   class="mode-btn active" onclick="setMode('atvetel')">&#127968; Átvétel</button>
     <button id="btn-szallitas" class="mode-btn"        onclick="setMode('szallitas')">&#128666; Kiszállítás</button>
-    <button id="btn-manual"    class="mode-btn"        onclick="setMode('manual')" style="border-color:#f57c00;color:#e65100;">&#128221; Manuális</button>
+    <button id="btn-manual"    class="mode-btn"        onclick="setMode('manual')" style="border-color:#f57c00;color:#e65100;background:white;">&#128221; Manuális</button>
 </div>
 <div style="margin-bottom:8px;">
     <button id="btn-bszerzes" class="mode-btn" onclick="setMode('beszerzes')" style="width:100%;display:block;">&#128722; Bszerz.</button>
@@ -903,6 +903,16 @@ async function fetchData() {
                     ingyenes_hatar:  parseFloat(z['ingyenes hatar'] || z['ingyenes_hatar'] || 0)
                 };
             });
+            // Manuális rendelés zóna select feltöltése
+            var manZonaSel = document.getElementById('man-zona');
+            if(manZonaSel) {
+                while(manZonaSel.options.length > 1) manZonaSel.remove(1);
+                Object.keys(zonaLista).forEach(function(z) {
+                    var opt = document.createElement('option');
+                    opt.value = z; opt.textContent = z;
+                    manZonaSel.appendChild(opt);
+                });
+            }
             // Zóna chipek dinamikus generálása a Zonak sheetből
             var grid = document.getElementById('kin-zona-grid');
             if (grid) {
@@ -1044,8 +1054,16 @@ function ujRendelesMegnezve() {
 // ══════════════════════════════════════════════════════════════
 function setMode(mode) {
     currentMode = mode; activeCardId = null;
-    document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('active'); });
-    document.getElementById('btn-' + mode).classList.add('active');
+    document.querySelectorAll('.mode-btn').forEach(function(b){ 
+        b.classList.remove('active');
+        // Manuális gomb alapszíne narancssárga keret, fehér háttér
+        if(b.id === 'btn-manual') b.style.background = 'white';
+    });
+    var activeBtn = document.getElementById('btn-' + mode);
+    if(activeBtn) {
+        activeBtn.classList.add('active');
+        if(mode === 'manual') activeBtn.style.background = '#fff3e0';
+    }
     var isBsz  = mode === 'beszerzes';
     var isPush = mode === 'push';
     var isKin  = mode === 'kinalat';
