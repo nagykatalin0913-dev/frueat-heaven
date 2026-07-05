@@ -3583,6 +3583,36 @@ function manModalZar() {
     manOsszesitFrissit();
 }
 
+function manOsszesitFrissit() {
+    var termekErtek = 0;
+    Object.keys(manKosar).forEach(function(nev) {
+        termekErtek += Math.round(manKosar[nev].ar * manKosar[nev].qty);
+    });
+    var zona = document.getElementById('man-zona').value;
+    var zonaAdat = (typeof zonaLista !== 'undefined' && zonaLista && zonaLista[zona]) ? zonaLista[zona] : null;
+    var szallDij = zonaAdat ? (parseFloat(zonaAdat.szallitasi_dij)||0) : 0;
+    var ingyHatar = zonaAdat ? (parseFloat(zonaAdat.ingyenes_hatar)||0) : 0;
+    var sdEff = 0;
+    if(manMod === 'hazhoz' && szallDij > 0) {
+        sdEff = (ingyHatar > 0 && termekErtek >= ingyHatar) ? 0 : szallDij;
+    }
+    var fizetendo = termekErtek + sdEff;
+    document.getElementById('man-termek-ertek').innerText = termekErtek.toLocaleString('hu-HU') + ' Ft';
+    var szallSzoveg = '';
+    if(manMod === 'hazhoz') {
+        if(szallDij === 0) szallSzoveg = '—';
+        else if(sdEff > 0) szallSzoveg = sdEff.toLocaleString('hu-HU') + ' Ft';
+        else szallSzoveg = 'Ingyenes 🎉';
+    } else {
+        szallSzoveg = 'Személyes átvétel';
+    }
+    document.getElementById('man-szallitas-sor').innerText = szallSzoveg;
+    document.getElementById('man-fizetendo').innerText = fizetendo.toLocaleString('hu-HU') + ' Ft';
+    var vanTermek = Object.keys(manKosar).length > 0;
+    document.getElementById('man-osszesito-wrap').style.display = vanTermek ? 'block' : 'none';
+    document.getElementById('man-mentes-btn').style.display = vanTermek ? 'block' : 'none';
+}
+
 function manKosarCimkek() {
     var el = document.getElementById('man-kosar-cimkek');
     if(!el) return;
