@@ -720,10 +720,9 @@
     </div>
 
     <!-- TERMÉKEK -->
-    <div id="man-termekek-wrap" style="display:none;background:white;border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid #eee;">
-        <div style="font-weight:800;color:#333;margin-bottom:10px;">&#128722; Termékek</div>
-        <input id="man-kereső" type="text" placeholder="&#128269; Keresés termék neve alapján..." oninput="manSzuro()" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;box-sizing:border-box;margin-bottom:8px;">
-        <div id="man-termek-lista"></div>
+    <div id="man-termekek-wrap" style="display:none;margin-bottom:12px;">
+        <button onclick="manModalNyit()" style="width:100%;padding:12px;border-radius:10px;border:2px dashed #2e7d32;background:#f1f8e9;color:#2e7d32;font-family:Nunito,sans-serif;font-size:14px;font-weight:700;cursor:pointer;">&#128722; Termékek kiválasztása</button>
+        <div id="man-kosar-cimkek" style="display:none;margin-top:8px;padding:8px;background:#f9f9f9;border-radius:8px;font-size:13px;"></div>
     </div>
 
     <!-- ÖSSZESÍTŐ -->
@@ -743,6 +742,23 @@
     <button id="man-mentes-btn" onclick="manMentes()" style="display:none;width:100%;padding:16px;background:#2e7d32;color:white;border:none;border-radius:12px;font-family:Nunito,sans-serif;font-size:16px;font-weight:800;cursor:pointer;">✓ Rendelés mentése</button>
     <div id="man-eredmeny" style="display:none;margin-top:10px;padding:12px;border-radius:10px;text-align:center;font-weight:700;"></div>
 
+</div>
+
+<!-- MANUÁLIS TERMÉK MODAL -->
+<div id="man-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:9500;">
+    <div style="position:absolute;bottom:0;left:0;right:0;background:white;border-radius:16px 16px 0 0;max-height:88vh;display:flex;flex-direction:column;">
+        <div style="padding:14px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+            <div style="font-weight:800;font-size:15px;">&#128722; Termékek kiválasztása</div>
+            <button onclick="manModalZar()" style="background:#f0f0f0;border:none;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;line-height:1;">&#215;</button>
+        </div>
+        <div style="padding:10px 16px;flex-shrink:0;">
+            <input id="man-kereses" type="search" placeholder="&#128269; Keresés..." oninput="manSzuro()" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;box-sizing:border-box;">
+        </div>
+        <div id="man-termek-lista" style="overflow-y:auto;flex:1;padding:0 16px 8px;-webkit-overflow-scrolling:touch;"></div>
+        <div style="padding:12px 16px;border-top:1px solid #eee;flex-shrink:0;">
+            <button onclick="manModalZar()" style="width:100%;padding:13px;background:#2e7d32;color:white;border:none;border-radius:10px;font-family:Nunito,sans-serif;font-size:15px;font-weight:800;cursor:pointer;">&#10003; Kész</button>
+        </div>
+    </div>
 </div>
 
 <div id="terkep-szekcio" style="display:none;padding:16px;">
@@ -3536,11 +3552,11 @@ var manOsszeTermek = [];
 
 function manTermekekFelt() {
     manOsszeTermek = [];
-    // Aktuális kínálat termékei
     if(typeof termekek !== 'undefined') {
-        Object.keys(termekek).forEach(function(nev) { if(termekek[nev] && termekek[nev].nev) manOsszeTermek.push(termekek[nev]); });
+        Object.keys(termekek).forEach(function(nev) {
+            if(termekek[nev] && termekek[nev].nev) manOsszeTermek.push(termekek[nev]);
+        });
     }
-    // Állandó termékek (ha nincs már a kínálatban)
     if(typeof allandokTermekek !== 'undefined') {
         Object.keys(allandokTermekek).forEach(function(nev) {
             if(allandokTermekek[nev] && allandokTermekek[nev].nev && !(termekek && termekek[nev])) {
@@ -3549,21 +3565,45 @@ function manTermekekFelt() {
         });
     }
     document.getElementById('man-termekek-wrap').style.display = 'block';
-    var kerEl = document.getElementById('man-ker\u0151');
+}
+
+function manModalNyit() {
+    var kerEl = document.getElementById('man-kereses');
     if(kerEl) kerEl.value = '';
     manSzuro();
+    document.getElementById('man-modal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    setTimeout(function(){ if(kerEl) kerEl.focus(); }, 300);
+}
+
+function manModalZar() {
+    document.getElementById('man-modal').style.display = 'none';
+    document.body.style.overflow = '';
+    manKosarCimkek();
+    manOsszesitFrissit();
+}
+
+function manKosarCimkek() {
+    var el = document.getElementById('man-kosar-cimkek');
+    if(!el) return;
+    var nevek = Object.keys(manKosar);
+    if(nevek.length === 0) { el.style.display = 'none'; return; }
+    el.innerHTML = nevek.map(function(n) {
+        return '<span style="display:inline-block;margin:2px 4px 2px 0;padding:3px 10px;background:#e8f5e9;border-radius:12px;color:#2e7d32;font-weight:700;font-size:12px;">' + n + ': ' + manKosar[n].qty + ' ' + manKosar[n].egyseg + '</span>';
+    }).join('');
+    el.style.display = 'block';
 }
 
 function manSzuro() {
     var lista = document.getElementById('man-termek-lista');
     if(!lista) return;
-    var kerEl = document.getElementById('man-ker\u0151');
+    var kerEl = document.getElementById('man-kereses');
     var q = kerEl ? kerEl.value.toLowerCase() : '';
     var szurt = manOsszeTermek.filter(function(t) {
         return !q || (t.nev||'').toLowerCase().indexOf(q) >= 0;
     });
     if(szurt.length === 0) {
-        lista.innerHTML = '<div style="color:#888;padding:8px;">Nincs találat.</div>';
+        lista.innerHTML = '<div style="color:#aaa;padding:16px;text-align:center;">Nincs találat.</div>';
         return;
     }
     var html = '';
@@ -3574,9 +3614,10 @@ function manSzuro() {
         var qty = manKosar[nev] ? manKosar[nev].qty : '';
         var ns = nev.replace(/[^a-zA-Z0-9]/g,'_');
         var step = eg.toLowerCase() === 'kg' ? '0.5' : '1';
-        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;gap:8px;">' +
+        var vanKosar = manKosar[nev] && manKosar[nev].qty > 0;
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0;">' +
             '<div style="flex:1;min-width:0;">' +
-                '<div style="font-weight:700;font-size:14px;">' + nev + '</div>' +
+                '<div style="font-weight:700;font-size:14px;color:' + (vanKosar?'#2e7d32':'#222') + ';">' + nev + (vanKosar?' ✓':'') + '</div>' +
                 '<div style="font-size:12px;color:#888;">' + ar.toLocaleString('hu-HU') + ' Ft / ' + eg + '</div>' +
             '</div>' +
             '<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">' +
@@ -3584,7 +3625,7 @@ function manSzuro() {
                 ' placeholder="0" value="' + (qty||'') + '"' +
                 ' data-nev="' + encodeURIComponent(nev) + '"' +
                 ' oninput="manInputValtozas(this)"' +
-                ' style="width:65px;padding:6px;border-radius:8px;border:1px solid #ddd;font-family:Nunito,sans-serif;font-size:14px;text-align:center;">' +
+                ' style="width:65px;padding:7px 6px;border-radius:8px;border:1px solid ' + (vanKosar?'#2e7d32':'#ddd') + ';font-family:Nunito,sans-serif;font-size:14px;text-align:center;font-weight:' + (vanKosar?'700':'400') + ';">' +
                 '<span style="font-size:12px;color:#888;min-width:22px;">' + eg + '</span>' +
             '</div>' +
         '</div>';
@@ -3600,39 +3641,11 @@ function manInputValtozas(inp) {
     var qty = parseFloat((inp.value||'0').replace(',','.')) || 0;
     if(qty > 0) {
         manKosar[nev] = { qty:qty, ar:ar, egyseg:eg };
+        inp.style.borderColor = '#2e7d32'; inp.style.fontWeight = '700';
     } else {
         delete manKosar[nev];
+        inp.style.borderColor = '#ddd'; inp.style.fontWeight = '400';
     }
-    manOsszesitFrissit();
-}
-
-function manOsszesitFrissit() {
-    var termekErtek = 0;
-    Object.keys(manKosar).forEach(function(nev) {
-        termekErtek += Math.round(manKosar[nev].ar * manKosar[nev].qty);
-    });
-
-    var zona = document.getElementById('man-zona').value;
-    var zonaAdat = zonaLista && zonaLista[zona] ? zonaLista[zona] : null;
-    var szallDij = zonaAdat ? (parseFloat(zonaAdat.szallitasi_dij)||0) : 0;
-    var ingyHatar = zonaAdat ? (parseFloat(zonaAdat.ingyenes_hatar)||0) : 0;
-
-    var sdEff = 0;
-    if(manMod === 'hazhoz' && szallDij > 0) {
-        sdEff = (ingyHatar > 0 && termekErtek >= ingyHatar) ? 0 : szallDij;
-    }
-
-    var fizetendo = termekErtek + sdEff;
-
-    document.getElementById('man-termek-ertek').innerText = termekErtek.toLocaleString('hu-HU') + ' Ft';
-    document.getElementById('man-szallitas-sor').innerText = manMod === 'hazhoz'
-        ? (sdEff > 0 ? sdEff.toLocaleString('hu-HU') + ' Ft' : 'Ingyenes \uD83C\uDF89')
-        : 'Szem\u00e9lyes \u00e1tv\u00e9tel';
-    document.getElementById('man-fizetendo').innerText = fizetendo.toLocaleString('hu-HU') + ' Ft';
-
-    var vanTermek = Object.keys(manKosar).length > 0;
-    document.getElementById('man-osszesito-wrap').style.display = vanTermek ? 'block' : 'none';
-    document.getElementById('man-mentes-btn').style.display = vanTermek ? 'block' : 'none';
 }
 
 
@@ -3696,7 +3709,8 @@ async function manMentes() {
             document.getElementById('man-cim').value = '';
             document.getElementById('man-tel').value = '';
             document.getElementById('man-megjegyzes').value = '';
-            document.getElementById('man-tel-talalat').style.display = 'none';
+            var cimk2 = document.getElementById('man-kosar-cimkek'); if(cimk2) cimk2.style.display='none';
+            var kerEl3 = document.getElementById('man-kereses'); if(kerEl3) kerEl3.value='';
         } else {
             eredmenyEl.style.background = '#ffebee';
             eredmenyEl.style.color = '#c62828';
