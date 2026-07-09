@@ -1517,12 +1517,19 @@ function szamolVegosszeg(rowid) {
     var sdEff = (isHazhoz_ && sd > 0 && !(ingyHatar > 0 && osszesenTermek >= ingyHatar)) ? sd : 0;
 
     // Saját termékérték frissítése
-    order._termekErtek = order._termekErtek || 0;
+    // Saját termékérték közvetlen olvasása az inputokból
+    var sajatTermek = 0;
+    document.querySelectorAll('.qty-input[data-rowid="' + rowid + '"]').forEach(function(inp){
+        var ar  = parseFloat(inp.dataset.ar) || 0;
+        var qty = parseFloat((inp.value||'0').replace(',','.')) || 0;
+        sajatTermek += Math.round(ar * qty);
+    });
+    if(sajatTermek > 0) { order._termekErtek = sajatTermek; order.vegosszeg = sajatTermek; }
+    var sajatFizet = (order._termekErtek||0) + sdEff;
 
     if(csoport.length <= 1) {
-        // 1 rendelés: Fizetendő = termék + szállítás
         var fizEl = document.getElementById('total-' + rowid);
-        if(fizEl) fizEl.innerText = 'Fizetend\u0151: ' + (order._termekErtek + sdEff) + ' Ft';
+        if(fizEl) fizEl.innerText = 'Fizetendő: ' + sajatFizet + ' Ft';
         // Szállítási díj sor frissítése
         var sdEl = document.getElementById('szallitas-sor-' + rowid);
         if(sdEl) sdEl.innerText = sdEff > 0 ? sdEff + ' Ft' : 'Ingyenes 🎉';
