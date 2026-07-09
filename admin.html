@@ -1650,8 +1650,40 @@ async function mentSulyAr(rowid, nevEnc, eg, btn) {
     var val = sulyInput.value;
     btn.textContent = '⏳';
     btn.disabled = true;
-    // Azonnal frissítjük a végösszeget — ne várjuk meg az API választ
-    try { szamolVegosszeg(parseInt(rowid)); } catch(e) {}
+
+    // Azonnali UI frissítés: összeszámoljuk az összes input értékét ezen a kártyán
+    var order = orders.find(function(o){ return o.rowid === parseInt(rowid); });
+    if(order) {
+        var ujTermekErtek = 0;
+        document.querySelectorAll('.qty-input[data-rowid="' + rowid + '"]').forEach(function(inp){
+            var ar2 = parseFloat(inp.dataset.ar) || 0;
+            var qty2 = parseFloat((inp.value||'0').replace(',','.')) || 0;
+            ujTermekErtek += Math.round(ar2 * qty2);
+        });
+        order._termekErtek = ujTermekErtek;
+        order.vegosszeg = ujTermekErtek;
+        // Termékek összege sor
+        var tEl = document.getElementById('termek-osszeg-' + rowid);
+        if(tEl) { var sp = tEl.querySelector('.termek-osszeg-ertek'); if(sp) sp.innerText = ujTermekErtek.toLocaleString('hu-HU') + ' Ft'; }
+        // Fizetendő sor (szállítással)
+        var zona2 = (order.zona||'').toString().trim();
+        var sd2 = (zonaLista[zona2] && zonaLista[zona2].szallitasi_dij) ? zonaLista[zona2].szallitasi_dij : 0;
+        var ingy2 = (zonaLista[zona2] && zonaLista[zona2].ingyenes_hatar) ? zonaLista[zona2].ingyenes_hatar : 0;
+        var hazhoz2 = (order.atvetel_mod||'').toLowerCase().indexOf('házhoz') >= 0;
+        var sdEff2 = (hazhoz2 && sd2 > 0 && !(ingy2 > 0 && ujTermekErtek >= ingy2)) ? sd2 : 0;
+        var fizEl2 = document.getElementById('total-' + rowid);
+        if(fizEl2) fizEl2.innerText = 'Fizetenő: ' + (ujTermekErtek + sdEff2).toLocaleString('hu-HU') + ' Ft';
+        // Összesített fizetendő (ha van)
+        var foEl = document.getElementById('fo-osszeg-' + rowid);
+        if(foEl) foEl.innerText = 'Összesített fizetenő: ' + (ujTermekErtek + sdEff2).toLocaleString('hu-HU') + ' Ft';
+        // Fejléc összeg (card-osszezart-vegosszeg) frissítése
+        var cardEl = document.getElementById('card-' + rowid);
+        if(cardEl && cardEl.previousElementSibling) {
+            var fejlecVo = cardEl.previousElementSibling.querySelector('.card-osszezart-vegosszeg');
+            if(fejlecVo) fejlecVo.innerText = (ujTermekErtek + sdEff2).toLocaleString('hu-HU') + ' Ft';
+        }
+    }
+
     await updateOrderData(parseInt(rowid), nev, val, eg);
     btn.textContent = '✓ Mentve';
     btn.style.background = '#22c55e';
@@ -1679,13 +1711,18 @@ async function updateOrderData(rowid, nev, val, eg) {
 
     var ns = szam + (eg ? ' ' + eg : '');
     var rt = (order.termek || order.termekek || '').split(',').map(function(t){
-        return t.trim().indexOf(nev) === 0 ? nev + ': ' + ns : t;
+        var trimmed = t.trim();
+        // Pontosabb egyezés: a termék neve a kettőspont előtt
+        var colonIdx = trimmed.indexOf(':');
+        var termNev = colonIdx >= 0 ? trimmed.slice(0, colonIdx).trim() : trimmed;
+        return termNev === nev ? nev + ': ' + ns : t;
     }).join(', ');
     if (order.termek !== undefined) order.termek = rt;
     if (order.termekek !== undefined) order.termekek = rt;
 
     // Vizuális visszajelzés: az input zölden villan mentés közben
-    var inputEl = document.querySelector('.qty-input[data-rowid="' + rowid + '"][data-nev="' + nev + '"]');
+    var ns2 = nev.replace(/[^a-zA-Z0-9]/g,'_');
+    var inputEl = document.getElementById('suly-' + rowid + '-' + ns2);
     if (inputEl) {
         inputEl.style.transition = 'border-color 0.2s';
         inputEl.style.borderColor = '#f59e0b'; // mentés folyamatban: sárga
