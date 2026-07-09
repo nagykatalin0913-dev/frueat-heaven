@@ -1643,6 +1643,8 @@ async function mentSulyAr(rowid, nevEnc, eg, btn) {
     var val = sulyInput.value;
     btn.textContent = '⏳';
     btn.disabled = true;
+    // Azonnal frissítjük a végösszeget — ne várjuk meg az API választ
+    try { szamolVegosszeg(parseInt(rowid)); } catch(e) {}
     await updateOrderData(parseInt(rowid), nev, val, eg);
     btn.textContent = '✓ Mentve';
     btn.style.background = '#22c55e';
