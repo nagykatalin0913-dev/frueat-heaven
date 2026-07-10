@@ -1107,13 +1107,10 @@ function setMode(mode) {
     document.querySelectorAll('.mode-btn').forEach(function(b){ 
         b.classList.remove('active');
         // Manuális gomb alapszíne narancssárga keret, fehér háttér
-        if(b.id === 'btn-manual') b.style.background = 'white';
+        
     });
     var activeBtn = document.getElementById('btn-' + mode);
-    if(activeBtn) {
-        activeBtn.classList.add('active');
-        if(mode === 'manual') activeBtn.style.background = '#fff3e0';
-    }
+    if(activeBtn) activeBtn.classList.add('active');
     var isBsz  = mode === 'beszerzes';
     var isPush = mode === 'push';
     var isKin  = mode === 'kinalat';
