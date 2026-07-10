@@ -3511,24 +3511,15 @@ function manInit() {
 function manZonaValtozas() {
     var zona = document.getElementById('man-zona').value;
     if(!zona) return;
-    // Van-e személyes átvétel ebben a zónában?
     var zonaAdat = (typeof zonaLista !== 'undefined') ? zonaLista[zona] : null;
     var vanAtvetel = zonaAdat && (zonaAdat.atvetel_lehetseges || '').toString().toLowerCase() === 'igen';
-    var hBtn = document.getElementById('man-btn-hazhoz');
     var sBtn = document.getElementById('man-btn-szemelyes');
+    if(sBtn) sBtn.style.display = vanAtvetel ? '' : 'none';
     if(!vanAtvetel) {
-        // Csak házhozszállítás — személyes gomb elrejtése, hazhoz automatikus
-        if(sBtn) sBtn.style.display = 'none';
         manModValaszt('hazhoz');
-    } else {
-        if(sBtn) sBtn.style.display = '';
-        // Ha még nem választott módot, alapból hazhoz
-        if(!manMod) manModValaszt('hazhoz');
+    } else if(!manMod) {
+        manModValaszt('hazhoz');
     }
-    // Termékek resetelése zónaváltáskor (új zónához új kínálat)
-    manOsszeTermek = [];
-    manMindenTermek = false;
-    // Összesítő frissítése
     manOsszesitFrissit();
 }
 
@@ -3601,17 +3592,31 @@ var manOsszeTermek = [];
 var manMindenTermek = false; // alapból csak a kínálat termékei
 
 function manTermekekFelt() {
-    var zona = (document.getElementById('man-zona') || {}).value || '';
     manOsszeTermek = [];
 
-    // Kínálat termékei: az aktuális (közzétett) kínálatból, az adott zónához
+    if(manMindenTermek) {
+        // Összes termék: kínálat + állandók
+        if(typeof termekek !== 'undefined') {
+            Object.keys(termekek).forEach(function(nev) {
+                if(termekek[nev] && termekek[nev].nev) manOsszeTermek.push(termekek[nev]);
+            });
+        }
+        if(typeof allandokTermekek !== 'undefined') {
+            Object.keys(allandokTermekek).forEach(function(nev) {
+                if(allandokTermekek[nev] && allandokTermekek[nev].nev && !(termekek && termekek[nev])) {
+                    manOsszeTermek.push(allandokTermekek[nev]);
+                }
+            });
+        }
+        return;
+    }
+
+    // Alapból: az összes aktív kínálat termékei (zónától függetlenül)
     var kinalatTermekNevek = [];
-    if(typeof kinalatok !== 'undefined') {
+    if(typeof kinalatok !== 'undefined' && typeof kinAdatbazis !== 'undefined') {
         kinalatok.forEach(function(k) {
-            var kZona = (k.zona || '').toString().trim();
-            var kStatusz = (k.statusz || '').toString().toLowerCase();
-            if(kStatusz !== 'közzétett' && kStatusz !== 'kozzétett' && kStatusz !== 'kozzetet' && kStatusz !== 'közzétett') return;
-            if(zona && kZona && kZona.toLowerCase() !== zona.toLowerCase()) return;
+            var kStatusz = (k.statusz || '').toString().toLowerCase().trim();
+            if(kStatusz !== 'közzétett') return;
             var idk = (k.termek_idk || '').toString().split(',');
             idk.forEach(function(id) {
                 id = id.trim();
@@ -3625,20 +3630,11 @@ function manTermekekFelt() {
         });
     }
 
-    // Ha "összes termék" mód vagy nincs kínálat termék: termekek + allandokTermekek is
-    if(manMindenTermek || manOsszeTermek.length === 0) {
+    // Ha nincs aktív kínálat termék → állandó termékek fallback
+    if(manOsszeTermek.length === 0) {
         if(typeof termekek !== 'undefined') {
             Object.keys(termekek).forEach(function(nev) {
-                if(termekek[nev] && termekek[nev].nev && kinalatTermekNevek.indexOf(nev) < 0) {
-                    manOsszeTermek.push(termekek[nev]);
-                }
-            });
-        }
-        if(typeof allandokTermekek !== 'undefined') {
-            Object.keys(allandokTermekek).forEach(function(nev) {
-                if(allandokTermekek[nev] && allandokTermekek[nev].nev && kinalatTermekNevek.indexOf(nev) < 0 && !(termekek && termekek[nev])) {
-                    manOsszeTermek.push(allandokTermekek[nev]);
-                }
+                if(termekek[nev] && termekek[nev].nev) manOsszeTermek.push(termekek[nev]);
             });
         }
     }
