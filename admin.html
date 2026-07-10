@@ -876,6 +876,7 @@ document.addEventListener("DOMContentLoaded", function() {
 var orders = [];
 var termekek = {};
 var globKinalatok = []; // aktív kínálatok a manuális rendeléshez
+var globTermekIdMap = {}; // termék ID → termék objektum
 var allandokTermekek = {}; // Allandok sheet adatai az adminban           // { "Termék neve": { ar, egyseg, beszerzesi_ar, atlag_suly, tipus, box_egyseg } }
 var currentMode = 'atvetel';
 var activeCardId = null;
@@ -933,6 +934,13 @@ async function fetchData() {
                 var st = (k.statusz || '').toString().toLowerCase().trim()
                     .replace(/ö/g,'o').replace(/ő/g,'o').replace(/é/g,'e');
                 return st === 'kozzetett' || st === 'ertesitve';
+            });
+        }
+        // Termék ID → objektum map (manuális rendelés termék szűréséhez)
+        if (td && td.termekek) {
+            globTermekIdMap = {};
+            td.termekek.forEach(function(t) {
+                if(t.id !== undefined && t.id !== '') globTermekIdMap[String(t.id)] = t;
             });
         }
         if (td && td.zonak) {
@@ -3622,18 +3630,18 @@ function manTermekekFelt() {
 
     // Alapból: az összes aktív kínálat termékei (zónától függetlenül)
     var kinalatTermekNevek = [];
-    if(globKinalatok.length > 0 && typeof kinAdatbazis !== 'undefined') {
+    if(globKinalatok.length > 0) {
         globKinalatok.forEach(function(k) {
-            // Már szűrve van globKinalatok-ban
             var idk = (k.termek_idk || '').toString().split(',');
             idk.forEach(function(id) {
                 id = id.trim();
                 if(!id) return;
-                var t = kinAdatbazis[id];
-                if(t && t.nev && kinalatTermekNevek.indexOf(t.nev) < 0) {
-                    kinalatTermekNevek.push(t.nev);
-                    manOsszeTermek.push({ nev: t.nev, ar: t.ar, egyseg: t.egyseg });
-                }
+                var t = globTermekIdMap[id] || (typeof kinAdatbazis !== 'undefined' ? kinAdatbazis[id] : null);
+                if(!t || !t.nev) return;
+                if(kinalatTermekNevek.indexOf(t.nev) >= 0) return;
+                var termekObj = (termekek && termekek[t.nev]) || t;
+                kinalatTermekNevek.push(t.nev);
+                manOsszeTermek.push({ nev: t.nev, ar: parseFloat(termekObj.ar)||0, egyseg: termekObj.egyseg||'kg' });
             });
         });
     }
