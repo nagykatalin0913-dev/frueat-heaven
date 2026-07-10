@@ -931,8 +931,9 @@ async function fetchData() {
             td.zonak.forEach(function(z) {
                 var nev = (z.telepules || z['telepules/kerulet'] || z.zona || '').toString().trim();
                 if(nev) zonaLista[nev] = {
-                    szallitasi_dij:  parseFloat(z['szallitasi dij'] || z.szallitasi_dij || 0),
-                    ingyenes_hatar:  parseFloat(z['ingyenes hatar'] || z['ingyenes_hatar'] || 0)
+                    szallitasi_dij:    parseFloat(z['szallitasi dij'] || z.szallitasi_dij || 0),
+                    ingyenes_hatar:    parseFloat(z['ingyenes hatar'] || z['ingyenes_hatar'] || 0),
+                    atvetel_lehetseges: (z['atvetel lehetseges'] || z['atvetel_lehetseges'] || z['atvetel lehetseges?'] || '').toString()
                 };
             });
             // Manuális rendelés zóna select feltöltése
@@ -3512,12 +3513,11 @@ function manZonaValtozas() {
     var zona = document.getElementById('man-zona').value;
     if(!zona) return;
     var zonaAdat = (typeof zonaLista !== 'undefined') ? zonaLista[zona] : null;
-    var vanAtvetel = zonaAdat && (zonaAdat.atvetel_lehetseges || '').toString().toLowerCase() === 'igen';
+    var atvetelErtek = zonaAdat ? (zonaAdat.atvetel_lehetseges || '').toString().toLowerCase().trim() : '';
+    var vanAtvetel = atvetelErtek === 'igen' || atvetelErtek === 'true' || atvetelErtek === '1';
     var sBtn = document.getElementById('man-btn-szemelyes');
     if(sBtn) sBtn.style.display = vanAtvetel ? '' : 'none';
-    if(!vanAtvetel) {
-        manModValaszt('hazhoz');
-    } else if(!manMod) {
+    if(!vanAtvetel || !manMod) {
         manModValaszt('hazhoz');
     }
     manOsszesitFrissit();
@@ -3615,8 +3615,9 @@ function manTermekekFelt() {
     var kinalatTermekNevek = [];
     if(typeof kinalatok !== 'undefined' && typeof kinAdatbazis !== 'undefined') {
         kinalatok.forEach(function(k) {
-            var kStatusz = (k.statusz || '').toString().toLowerCase().trim();
-            if(kStatusz !== 'közzétett') return;
+            var kStatusz = (k.statusz || '').toString().toLowerCase().trim()
+                .replace(/ö/g,'o').replace(/ő/g,'o').replace(/é/g,'e');
+            if(kStatusz !== 'kozzetett') return;
             var idk = (k.termek_idk || '').toString().split(',');
             idk.forEach(function(id) {
                 id = id.trim();
