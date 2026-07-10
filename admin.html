@@ -875,6 +875,7 @@ document.addEventListener("DOMContentLoaded", function() {
 // ══════════════════════════════════════════════════════════════
 var orders = [];
 var termekek = {};
+var globKinalatok = []; // aktív kínálatok a manuális rendeléshez
 var allandokTermekek = {}; // Allandok sheet adatai az adminban           // { "Termék neve": { ar, egyseg, beszerzesi_ar, atlag_suly, tipus, box_egyseg } }
 var currentMode = 'atvetel';
 var activeCardId = null;
@@ -924,6 +925,14 @@ async function fetchData() {
                     egyseg: (t.egyseg || 'db').toString().trim(),
                     min_mennyiseg: parseFloat(t.min_mennyiseg) || 0
                 };
+            });
+        }
+        // Kínálat adatok globális tárolása (manuális rendeléshez)
+        if (td && td.kinalat) {
+            globKinalatok = td.kinalat.filter(function(k) {
+                var st = (k.statusz || '').toString().toLowerCase().trim()
+                    .replace(/ö/g,'o').replace(/ő/g,'o').replace(/é/g,'e');
+                return st === 'kozzetett' || st === 'ertesitve';
             });
         }
         if (td && td.zonak) {
@@ -3613,11 +3622,9 @@ function manTermekekFelt() {
 
     // Alapból: az összes aktív kínálat termékei (zónától függetlenül)
     var kinalatTermekNevek = [];
-    if(typeof kinalatok !== 'undefined' && typeof kinAdatbazis !== 'undefined') {
-        kinalatok.forEach(function(k) {
-            var kStatusz = (k.statusz || '').toString().toLowerCase().trim()
-                .replace(/ö/g,'o').replace(/ő/g,'o').replace(/é/g,'e');
-            if(kStatusz !== 'kozzetett') return;
+    if(globKinalatok.length > 0 && typeof kinAdatbazis !== 'undefined') {
+        globKinalatok.forEach(function(k) {
+            // Már szűrve van globKinalatok-ban
             var idk = (k.termek_idk || '').toString().split(',');
             idk.forEach(function(id) {
                 id = id.trim();
